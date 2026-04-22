@@ -1,6 +1,7 @@
 package com.luka.lbdb.bufferManagement;
 
 import com.luka.lbdb.bufferManagement.exceptions.BufferPinException;
+import com.luka.lbdb.db.settings.BufferStrategy;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.fileManagement.FileManager;
 import com.luka.lbdb.logManagement.LogManager;
@@ -17,7 +18,7 @@ public class BufferManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
         FileManager fileManager = new FileManager(tmpDir, 512);
         LogManager logManager = new LogManager(fileManager, "test.log");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3, BufferStrategy.LRU);
 
         assertEquals(3, bufferManager.available());
     }
@@ -27,7 +28,7 @@ public class BufferManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
         FileManager fileManager = new FileManager(tmpDir, 512);
         LogManager logManager = new LogManager(fileManager, "test.log");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3, BufferStrategy.LRU);
 
         BlockId block1 = new BlockId("test.dat", 0);
         Buffer buffer1 = bufferManager.pin(block1);
@@ -42,7 +43,7 @@ public class BufferManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
         FileManager fileManager = new FileManager(tmpDir, 512);
         LogManager logManager = new LogManager(fileManager, "test.log");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3, BufferStrategy.LRU);
 
         BlockId block1 = new BlockId("test.dat", 0);
         Buffer buffer1 = bufferManager.pin(block1);
@@ -58,7 +59,7 @@ public class BufferManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
         FileManager fileManager = new FileManager(tmpDir, 512);
         LogManager logManager = new LogManager(fileManager, "test.log");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3, BufferStrategy.LRU);
 
         BlockId block1 = new BlockId("test.dat", 0);
         Buffer buffer1 = bufferManager.pin(block1);
@@ -73,7 +74,7 @@ public class BufferManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
         FileManager fileManager = new FileManager(tmpDir, 512);
         LogManager logManager = new LogManager(fileManager, "test.log");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3, BufferStrategy.LRU);
 
         BlockId block1 = new BlockId("test.dat", 0);
         BlockId block2 = new BlockId("test.dat", 1);
@@ -101,7 +102,7 @@ public class BufferManagerTests {
         Path tmpDir = TestUtils.setUpTempDirectory();
         FileManager fileManager = new FileManager(tmpDir, 512);
         LogManager logManager = new LogManager(fileManager, "test.log");
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, 3, BufferStrategy.LRU);
 
         BlockId block1 = new BlockId("test.dat", 0);
         BlockId block2 = new BlockId("test.dat", 1);

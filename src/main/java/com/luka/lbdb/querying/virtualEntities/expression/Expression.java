@@ -68,7 +68,7 @@ public sealed interface Expression permits
         };
     }
 
-    /// @return The runtimeLength needed for the longest operand
+    /// @return The runtime length needed for the longest operand
     /// in the expression AST for a given schema.
     default int length(Schema schema) {
         return switch (this) {

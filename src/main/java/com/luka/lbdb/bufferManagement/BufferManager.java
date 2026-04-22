@@ -1,6 +1,7 @@
 package com.luka.lbdb.bufferManagement;
 
 import com.luka.lbdb.bufferManagement.exceptions.BufferAbortException;
+import com.luka.lbdb.db.settings.BufferStrategy;
 import com.luka.lbdb.fileManagement.BlockId;
 import com.luka.lbdb.fileManagement.FileManager;
 import com.luka.lbdb.logManagement.LogManager;
@@ -16,17 +17,18 @@ public class BufferManager {
     private final Buffer[] bufferPool;
     private final int numMaxBuffers;
     private int numAvailableBuffers;
-    private final ChooseUnpinnedBufferStrategy chooseUnpinnedBufferStrategy = new ChooseUnpinnedBufferStrategy();
+    private final ChooseUnpinnedBufferStrategy chooseUnpinnedBufferStrategy;
     private int clockPosition = 0;
 
     public static final long MAX_TIME = 10_000;
 
     /// Initializes a buffer manager with a predefined number of buffers i.e. pages
     /// that the clients can use to interact with blocks in DB files.
-    public BufferManager(FileManager fileManager, LogManager logManager, int numBuffers) {
+    public BufferManager(FileManager fileManager, LogManager logManager, int numBuffers, BufferStrategy bufferStrategy) {
         bufferPool = new Buffer[numBuffers];
         numAvailableBuffers = numBuffers;
         numMaxBuffers = numBuffers;
+        chooseUnpinnedBufferStrategy = new ChooseUnpinnedBufferStrategy(bufferStrategy);
         for (int i = 0; i < numBuffers; i++) {
             bufferPool[i] = new Buffer(fileManager, logManager, i);
         }
@@ -138,7 +140,7 @@ public class BufferManager {
 
     /// Strategies for choosing the unpinned block in some buffer whose contents are
     /// about to be replaced by pinning a different block id to it.
-    /// The four type of strategies are:
+    /// The six types of strategies are:
     /// - Naive
     /// - FIFO
     /// - LRU
@@ -146,10 +148,23 @@ public class BufferManager {
     /// - First unmodified
     /// - LRM
     class ChooseUnpinnedBufferStrategy {
+        BufferStrategy bufferStrategy;
+
+        public ChooseUnpinnedBufferStrategy(BufferStrategy bufferStrategy) {
+            this.bufferStrategy = bufferStrategy;
+        }
+
         /// @return The buffer whose block is unpinned and can be safely replaced with new
         /// block's contents.
         public Buffer chooseUnpinnedBuffer() {
-            return lru();
+            return switch (bufferStrategy) {
+                case NAIVE -> naive();
+                case FIFO -> fifo();
+                case LRU -> lru();
+                case CLOCK -> clock();
+                case FIRST_UNMODIFIED -> firstUnmodified();
+                case LRM -> lrm();
+            };
         }
 
         /// This strategy has terrible performance as it does not
@@ -219,7 +234,7 @@ public class BufferManager {
         /// are modified, it will return a buffer according to the naive strategy.
         private Buffer firstUnmodified() {
             return Arrays.stream(bufferPool)
-                    .filter(b -> b.modifyingTransaction() == -1)
+                    .filter(b -> b.modifyingTransaction() == -1 && !b.isPinned())
                     .findFirst()
                     .orElseGet(this::naive);
         }
@@ -228,12 +243,12 @@ public class BufferManager {
         /// not be modified again, but may still be used for some purpose.
         ///
         /// @return The buffer that was earliest modified, else if no buffers
-        /// were modified, it will return a buffer according to the LRU strategy.
+        /// were modified, it will return a buffer according to the naive strategy.
         private Buffer lrm() {
             return Arrays.stream(bufferPool)
-                    .filter(b -> b.modifyingTransaction() != -1)
-                    .min(Comparator.comparing(Buffer::modifyingTransaction))
-                    .orElseGet(this::lru);
+                    .filter(b -> b.modifyingTransaction() != -1 && !b.isPinned())
+                    .min(Comparator.comparing(Buffer::getLsn))
+                    .orElseGet(this::naive);
         }
     }
 }

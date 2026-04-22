@@ -43,7 +43,7 @@ public class TransactionManager {
         this.fileManager = fileManager;
         this.settings = settings;
         logManager = new LogManager(fileManager, settings.LOG_FILE);
-        bufferManager = new BufferManager(fileManager, logManager, settings.BUFFER_POOL_SIZE);
+        bufferManager = new BufferManager(fileManager, logManager, settings.BUFFER_POOL_SIZE, settings.bufferStrategy);
         lockTable = new LockTable();
     }
 

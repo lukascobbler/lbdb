@@ -16,6 +16,7 @@ public class LBDBSettings {
     public boolean UNDO_ONLY_RECOVERY = true;
     public int BLOCK_SIZE = 4096;
     public int BUFFER_POOL_SIZE = 128;
+    public BufferStrategy bufferStrategy = BufferStrategy.LRU;
     public String LOG_FILE = "log_file";
     public QueryPlannerType queryPlannerType = QueryPlannerType.BETTER; // todo change default when heuristic is implemented
     public UpdatePlannerType updatePlannerType = UpdatePlannerType.BASIC;

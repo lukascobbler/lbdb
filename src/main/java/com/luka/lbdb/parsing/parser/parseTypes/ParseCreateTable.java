@@ -23,7 +23,7 @@ import com.luka.lbdb.records.exceptions.FieldLimitException;
 /// <FieldDefinition>       := <FieldName> INT | VARCHAR (<Expression>) | BOOLEAN [NOT NULL]
 /// ```
 ///
-/// For CREATE TABLE commands, putting expressions as VARCHAR runtimeLength values is technically
+/// For CREATE TABLE commands, putting expressions as VARCHAR length values is technically
 /// valid SQL, but these expressions must be constant and will be evaluated in the parser
 /// instead of in the scan.
 public class ParseCreateTable {
@@ -78,7 +78,7 @@ public class ParseCreateTable {
 
     /// @return Parsed one field definition wrapped in a schema object for
     /// easier addition of schemas.
-    /// @throws ParsingException if the VARCHAR runtimeLength isn't a constant or if it
+    /// @throws ParsingException if the VARCHAR length isn't a constant or if it
     /// isn't an integer; if the DB type isn't recognized.
     private Schema fieldDefinition() {
         String fieldName = fieldName();
@@ -89,7 +89,7 @@ public class ParseCreateTable {
         } else if (ctx.eatIfMatches(KeywordToken.VARCHAR)) {
             ctx.eat(SymbolToken.LEFT_PAREN);
 
-            // Since VARCHAR can contain expressions as the runtimeLength, they
+            // Since VARCHAR length can be an expression, it
             // must be calculated here instead of the planner to not complicate
             // Schema objects. The calculation fails if the user provides a
             // non-constant non-int expression as the value. Constant expressions

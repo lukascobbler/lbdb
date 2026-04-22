@@ -177,7 +177,7 @@ public class Transaction {
     }
 
     /// Firstly, shared locking of the whole file is performed, then the
-    /// runtimeLength in blocks is returned.
+    /// length in blocks is returned.
     ///
     /// @return The size of the file.
     public int lengthInBlocks(String filename) {

@@ -15,7 +15,7 @@ public class Schema {
     protected final Map<String, FieldInfo> info = new HashMap<>();
 
     /// Generic field adder, can accept any SQL type (can be dangerous) along with
-    /// the runtimeLength of that type. Allows duplicate types and assumes that every duplicate
+    /// the runtime length of that type. Allows duplicate types and assumes that every duplicate
     /// type will have the same metadata so it always returns the first one.
     public void addField(String fieldName, DatabaseType type, int runtimeLength, boolean isNullable) {
         fields.add(fieldName);
@@ -30,7 +30,7 @@ public class Schema {
         addField(fieldName, DatabaseType.INT, DatabaseType.INT.length, isNullable);
     }
 
-    /// Add a string field with the maximum runtimeLength (VARCHAR type).
+    /// Add a string field with the maximum runtime length (VARCHAR type).
     public void addStringField(String fieldName, int runtimeLength, boolean isNullable) {
         addField(fieldName, DatabaseType.VARCHAR, runtimeLength, isNullable);
     }

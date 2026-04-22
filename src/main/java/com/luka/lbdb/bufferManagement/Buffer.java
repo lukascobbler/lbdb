@@ -143,4 +143,8 @@ public class Buffer {
     public int getPosition() {
         return position;
     }
+
+    public int getLsn() {
+        return lsn;
+    }
 }
