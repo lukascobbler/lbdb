@@ -87,11 +87,13 @@ public class TransactionManager {
         manualTransactions.remove(sessionId);
     }
 
-    /// Waits for all transactions to finish and writes a checkpoint.
+    /// Waits for all transactions to finish, flushes all their
+    /// buffers and writes a checkpoint.
     public synchronized void writeCheckpoint(boolean terminal) {
         acceptingNewTransactions = false;
         System.out.println("Starting system checkpoint, waiting for all transactions to finish...");
         waitForAllTransactionsToFinish();
+        bufferManager.flushAll();
         try {
             int lastTxNum = nextTransactionNum.get();
             int lsn = QuiescentCheckpointRecord.writeToLog(logManager, lastTxNum);

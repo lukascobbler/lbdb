@@ -48,6 +48,13 @@ public class BufferManager {
                 .forEach(Buffer::flush);
     }
 
+    /// Flushes all buffers in the system.
+    /// Method is `synchronized` because the variable containing all buffers
+    /// can only be accessed by one thread at a time.
+    public synchronized void flushAll() {
+        Arrays.stream(bufferPool).forEach(Buffer::flush);
+    }
+
     /// Reduces the number of pins on a buffer. If a buffer becomes completely
     /// unpinned after the operation, the number of available buffers is increased
     /// and all threads that are trying to pin a buffer are notified that one has
