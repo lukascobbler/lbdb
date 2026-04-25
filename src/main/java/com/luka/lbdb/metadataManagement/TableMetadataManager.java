@@ -35,7 +35,7 @@ public class TableMetadataManager {
 
         Schema fieldCatalogSchema = new Schema();
         fieldCatalogSchema.addIntField("type", false);
-        fieldCatalogSchema.addIntField("runtimeLength", false);
+        fieldCatalogSchema.addIntField("runtimelength", false);
         fieldCatalogSchema.addIntField("offset", false);
         fieldCatalogSchema.addIntField("tableid", false);
         fieldCatalogSchema.addStringField("fieldname", MAX_NAME_LENGTH, false);
@@ -88,7 +88,7 @@ public class TableMetadataManager {
                 fieldCatalogScan.setValue("fieldname", new StringConstant(fieldName));
                 fieldCatalogScan.setValue("nullable", new BooleanConstant(schema.isNullable(fieldName)));
                 fieldCatalogScan.setValue("type", new IntConstant(schema.type(fieldName).sqlType));
-                fieldCatalogScan.setValue("runtimeLength", new IntConstant(schema.runtimeLength(fieldName)));
+                fieldCatalogScan.setValue("runtimelength", new IntConstant(schema.runtimeLength(fieldName)));
                 fieldCatalogScan.setValue("offset", new IntConstant(layout.getOffset(fieldName)));
             }
         }
@@ -129,7 +129,7 @@ public class TableMetadataManager {
                 if (fieldCatalogScan.getValue("tableid").asInt() == tableId) {
                     String fieldName = fieldCatalogScan.getValue("fieldname").asString();
                     int sqlType = fieldCatalogScan.getValue("type").asInt();
-                    int fieldLength = fieldCatalogScan.getValue("runtimeLength").asInt();
+                    int fieldLength = fieldCatalogScan.getValue("runtimelength").asInt();
                     int fieldOffset = fieldCatalogScan.getValue("offset").asInt();
                     boolean fieldNullable = fieldCatalogScan.getValue("nullable").asBoolean();
                     offsets.put(fieldName, fieldOffset);

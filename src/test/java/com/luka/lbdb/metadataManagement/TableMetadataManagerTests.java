@@ -70,7 +70,7 @@ public class TableMetadataManagerTests {
                 int tableId = fieldCatalogScan.getValue("tableid").asInt();
                 String fieldName = fieldCatalogScan.getValue("fieldname").asString();
                 int type = fieldCatalogScan.getValue("type").asInt();
-                int length = fieldCatalogScan.getValue("runtimeLength").asInt();
+                int length = fieldCatalogScan.getValue("runtimelength").asInt();
                 int offset = fieldCatalogScan.getValue("offset").asInt();
                 System.out.println("Table Id: " + tableId + ", field name: " +
                         fieldName + ", field type: " + type + ", runtimeLength: " + length + ", offset: " + offset);
