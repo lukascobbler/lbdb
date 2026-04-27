@@ -13,8 +13,8 @@ import com.luka.lbdb.parsing.tokenizer.token.*;
 ///
 /// ```
 /// <Parse>     := <ParseSelect> | <ParseInsert> | <ParseUpdate> | <ParseDelete> |
-///                CREATE <ParseCreate> | CREATE <ParseCreateView> | CREATE <ParseCreateIndex> |
-///                START TRANSACTION | COMMIT | ROLLBACK | EXPLAIN <Parse>
+///                CREATE <ParseCreateTable> | CREATE <ParseCreateIndex> |
+///                START TRANSACTION | COMMIT | ROLLBACK | EXPLAIN <Parse>;
 /// ```
 ///
 /// Each syntactic category is defined within its own class, for maintainability

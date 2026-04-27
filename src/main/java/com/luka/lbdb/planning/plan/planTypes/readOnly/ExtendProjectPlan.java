@@ -16,7 +16,7 @@ import java.util.*;
 /// Read-only operations only.
 public class ExtendProjectPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan;
-    private final Map<String, Expression> projectionFieldInfos;
+    private final Map<String, Expression> fieldInfos;
     private final Schema inputSchema;
     private final Schema outputSchema = new Schema();
 
@@ -26,7 +26,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
     public ExtendProjectPlan(Plan<Scan> childPlan, List<ProjectionFieldInfo> projectionFieldInfoList) {
         this.childPlan = childPlan;
         inputSchema = childPlan.outputSchema();
-        projectionFieldInfos = new HashMap<>();
+        fieldInfos = new HashMap<>();
 
         for (ProjectionFieldInfo projectionFieldInfo : projectionFieldInfoList) {
             DatabaseType type = projectionFieldInfo.expression().type(childPlan.outputSchema());
@@ -34,13 +34,13 @@ public class ExtendProjectPlan implements Plan<Scan> {
             boolean isNullable = projectionFieldInfo.expression().isNullable(childPlan.outputSchema());
 
             outputSchema.addField(projectionFieldInfo.name(), type, runtimeLength, isNullable);
-            projectionFieldInfos.put(projectionFieldInfo.name(), projectionFieldInfo.expression());
+            fieldInfos.put(projectionFieldInfo.name(), projectionFieldInfo.expression());
         }
     }
 
     @Override
     public Scan open() {
-        return new ExtendProjectScan(childPlan.open(), projectionFieldInfos);
+        return new ExtendProjectScan(childPlan.open(), fieldInfos);
     }
 
     /// Projection does not add change the number of block accesses.
@@ -74,7 +74,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
     /// projection list.
     @Override
     public int distinctValues(String fieldName) {
-        Expression expr = projectionFieldInfos.get(fieldName);
+        Expression expr = fieldInfos.get(fieldName);
 
         if (expr == null) return 0;
 
@@ -107,7 +107,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
     /// @return The null value count for a field, only if it's in the projection list.
     @Override
     public int nullValues(String fieldName) {
-        Expression expr = projectionFieldInfos.get(fieldName);
+        Expression expr = fieldInfos.get(fieldName);
 
         if (expr == null) return 0;
         if (!expr.isNullable(inputSchema)) return 0;

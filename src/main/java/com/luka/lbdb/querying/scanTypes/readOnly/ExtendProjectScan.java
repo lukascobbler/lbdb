@@ -11,15 +11,15 @@ import java.util.Map;
 /// It is a unary table read-only scan. The user specifies the list of projection expressions
 /// and the names for them.
 public class ExtendProjectScan extends UnaryScan {
-    private final Map<String, Expression> projectionFields;
+    private final Map<String, Expression> projections;
 
     /// An extend project scan requires the expressions that will be
     /// evaluated for every row, and names for them. Each expression
     /// will be treated as a field from this scan upwards, and
     /// a child scan.
-    public ExtendProjectScan(Scan childScan, Map<String, Expression> projectionFields) {
+    public ExtendProjectScan(Scan childScan, Map<String, Expression> projections) {
         super(childScan);
-        this.projectionFields = projectionFields;
+        this.projections = projections;
     }
 
     /// This scan has a field if its super scan has a field, or
@@ -29,7 +29,7 @@ public class ExtendProjectScan extends UnaryScan {
     /// scan or if the field equals the name of the named expression.
     @Override
     public boolean hasField(String fieldName) {
-        return projectionFields.containsKey(fieldName);
+        return projections.containsKey(fieldName);
     }
 
     /// For the named expression, its result is calculated on the child
@@ -39,8 +39,8 @@ public class ExtendProjectScan extends UnaryScan {
     /// @return The constant for the corresponding named expression or any other field.
     @Override
     public Constant getValue(String fieldName) {
-        if (projectionFields.containsKey(fieldName)) {
-            return projectionFields.get(fieldName).evaluate(childScan);
+        if (projections.containsKey(fieldName)) {
+            return projections.get(fieldName).evaluate(childScan);
         }
 
         return super.getValue(fieldName);

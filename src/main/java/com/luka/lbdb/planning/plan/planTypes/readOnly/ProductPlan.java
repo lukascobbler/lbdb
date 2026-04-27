@@ -12,7 +12,7 @@ import java.util.List;
 /// Read-only operations only.
 public class ProductPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan1, childPlan2;
-    private final Schema schema = new Schema();
+    private final Schema outputSchema = new Schema();
 
     /// Requires two subplans that will create the "combined record" which is a
     /// record that has all fields of both subplans. Assumes that no two fields
@@ -20,8 +20,8 @@ public class ProductPlan implements Plan<Scan> {
     public ProductPlan(Plan<Scan> childPlan1, Plan<Scan> childPlan2) {
         this.childPlan1 = childPlan1;
         this.childPlan2 = childPlan2;
-        schema.addAll(childPlan1.outputSchema());
-        schema.addAll(childPlan2.outputSchema());
+        outputSchema.addAll(childPlan1.outputSchema());
+        outputSchema.addAll(childPlan2.outputSchema());
     }
 
     @Override
@@ -94,7 +94,7 @@ public class ProductPlan implements Plan<Scan> {
     /// @return The schema describing the "combined record".
     @Override
     public Schema outputSchema() {
-        return schema;
+        return outputSchema;
     }
 
     @Override

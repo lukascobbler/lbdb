@@ -12,12 +12,12 @@ import java.util.Map;
 /// it is completely standalone.
 public class DummyTableScan extends Scan {
     int position = 0;
-    private final Map<String, Constant> fieldToValues;
+    private final Map<String, Constant> values;
 
     /// A dummy table scan needs the field names and the constant
     /// values those field names map to.
-    public DummyTableScan(Map<String, Constant> fieldToValues) {
-        this.fieldToValues = fieldToValues;
+    public DummyTableScan(Map<String, Constant> values) {
+        this.values = values;
     }
 
     /// Since there is for sure only one known row, the position "0" can
@@ -62,7 +62,7 @@ public class DummyTableScan extends Scan {
     /// equal the given field name.
     @Override
     public boolean hasField(String fieldName) {
-        return fieldToValues.containsKey(fieldName);
+        return values.containsKey(fieldName);
     }
 
     /// A virtual scan has no resources to release, so
@@ -73,6 +73,6 @@ public class DummyTableScan extends Scan {
     /// @return The value from the virtual row.
     @Override
     public Constant getValue(String fieldName) {
-        return fieldToValues.get(fieldName);
+        return values.get(fieldName);
     }
 }

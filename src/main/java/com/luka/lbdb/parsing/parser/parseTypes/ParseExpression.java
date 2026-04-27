@@ -27,7 +27,7 @@ import com.luka.lbdb.querying.virtualEntities.expression.*;
 /// for example, multiplication and division can be calculated before subtraction
 /// and addition. Three main functions exist that call each other recursively.
 public class ParseExpression {
-    private static final int PREFIX_PRECEDENCE = 30;
+    private static final int PREFIX_PRECEDENCE = 100;
     private final ParserContext ctx;
 
     /// Every syntactic category requires the parse context to

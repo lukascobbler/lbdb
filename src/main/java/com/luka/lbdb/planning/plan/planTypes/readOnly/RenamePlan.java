@@ -14,15 +14,15 @@ import java.util.Optional;
 /// Plan for the "rename" relational algebra operator. Read-only operations only.
 public class RenamePlan implements Plan<Scan> {
     private final Plan<Scan> childPlan;
-    private final Map<String, String> newToOldNames;
+    private final Map<String, String> fieldMapping;
     private final Schema outputSchema = new Schema();
 
     /// Requires the plan that contains old field names, and a mapping from new -> old for renaming.
     /// New -> old is chosen instead of old -> new, because the rename scan has an easier time mapping
     /// from new to old, instead from old to new.
-    public RenamePlan(Plan<Scan> childPlan, Map<String, String> newToOldNames) {
+    public RenamePlan(Plan<Scan> childPlan, Map<String, String> fieldMapping) {
         this.childPlan = childPlan;
-        this.newToOldNames = newToOldNames;
+        this.fieldMapping = fieldMapping;
 
         Schema oldSchema = childPlan.outputSchema();
 
@@ -31,8 +31,8 @@ public class RenamePlan implements Plan<Scan> {
             int runtimeLength = oldSchema.runtimeLength(oldFieldName);
             boolean isNullable = oldSchema.isNullable(oldFieldName);
 
-            if (newToOldNames.containsValue(oldFieldName)) {
-                Optional<String> newNameForOldName = newToOldNames.entrySet().stream()
+            if (fieldMapping.containsValue(oldFieldName)) {
+                Optional<String> newNameForOldName = fieldMapping.entrySet().stream()
                         .filter(e -> e.getValue().equals(oldFieldName))
                         .map(Map.Entry::getKey)
                         .findFirst();
@@ -47,7 +47,7 @@ public class RenamePlan implements Plan<Scan> {
 
     @Override
     public Scan open() {
-        return new RenameScan(childPlan.open(), newToOldNames);
+        return new RenameScan(childPlan.open(), fieldMapping);
     }
 
     /// Since renaming is only a wrapper for accessing fields through a new
@@ -76,10 +76,10 @@ public class RenamePlan implements Plan<Scan> {
     /// @return The number of distinct values for a field, rename-aware.
     @Override
     public int distinctValues(String fieldName) {
-        if (newToOldNames.containsKey(fieldName)) {
-            return childPlan.distinctValues(newToOldNames.get(fieldName));
+        if (fieldMapping.containsKey(fieldName)) {
+            return childPlan.distinctValues(fieldMapping.get(fieldName));
         }
-        if (newToOldNames.containsValue(fieldName)) {
+        if (fieldMapping.containsValue(fieldName)) {
             return 0;
         }
 
@@ -94,10 +94,10 @@ public class RenamePlan implements Plan<Scan> {
     /// @return The number of null values for a field, rename-aware.
     @Override
     public int nullValues(String fieldName) {
-        if (newToOldNames.containsKey(fieldName)) {
-            return childPlan.nullValues(newToOldNames.get(fieldName));
+        if (fieldMapping.containsKey(fieldName)) {
+            return childPlan.nullValues(fieldMapping.get(fieldName));
         }
-        if (newToOldNames.containsValue(fieldName)) {
+        if (fieldMapping.containsValue(fieldName)) {
             return 0;
         }
 

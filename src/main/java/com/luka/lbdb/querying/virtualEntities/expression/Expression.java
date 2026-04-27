@@ -124,7 +124,7 @@ public sealed interface Expression permits
     default Expression qualify(Map<String, String> aliases) {
         return switch (this) {
             case FieldNameExpression f -> {
-                if (f.rangeVariableName().isEmpty() && aliases.containsKey(f.fieldName())) {
+                if (f.rangeVariable().isEmpty() && aliases.containsKey(f.fieldName())) {
                     yield new FieldNameExpression(f.fieldName(), aliases.get(f.fieldName()));
                 }
                 yield f;

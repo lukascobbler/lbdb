@@ -44,7 +44,7 @@ public class BasicUpdatePlanner extends UpdatePlanner {
         List<String> fields = insertStatement.allTuplesValueInfo().fieldNames();
 
         try (UpdateScan insertScan = plan.open()) {
-            lastInsertionForTable.ifPresent(insertScan::moveToRecordId);
+            lastInsertionForTable.ifPresent(insertScan::moveToRecord);
 
             for (List<Constant> tuple : insertStatement.allTuplesValueInfo().newTuples()) {
                 insertScan.insert();
