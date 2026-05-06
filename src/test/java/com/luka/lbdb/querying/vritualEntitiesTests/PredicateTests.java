@@ -1,5 +1,6 @@
 package com.luka.lbdb.querying.vritualEntitiesTests;
 
+import com.luka.lbdb.planning.planner.ReductionFactorCalculator;
 import com.luka.lbdb.querying.QueryTestUtils;
 import com.luka.lbdb.planning.plan.ExplainData;
 import com.luka.lbdb.planning.plan.Plan;
@@ -120,6 +121,6 @@ public class PredicateTests {
             p.conjoinWith(new Predicate(t));
         }
 
-        assertEquals(Double.MAX_VALUE, p.reductionFactor(plan));
+        assertEquals(Double.MAX_VALUE, ReductionFactorCalculator.calculatePredicateReductionFactor(p, plan));
     }
 }

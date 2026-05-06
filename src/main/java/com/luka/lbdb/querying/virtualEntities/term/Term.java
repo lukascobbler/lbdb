@@ -1,6 +1,5 @@
 package com.luka.lbdb.querying.virtualEntities.term;
 
-import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.planning.planner.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
@@ -63,14 +62,6 @@ public class Term {
     /// @return True if both expressions apply to the given schema.
     public boolean appliesTo(Schema schema) {
         return lhs.appliesTo(schema) && rhs.appliesTo(schema);
-    }
-
-    /// A reduction factor for a term is the dividing factor for how many rows
-    /// this term will affect.
-    ///
-    /// @return The calculated reduction factor for this term.
-    public <T extends Scan> double reductionFactor(Plan<T> plan) {
-        return ReductionFactorCalculator.calculateReductionFactor(this, plan);
     }
 
     /// Checks for "Field = Constant" or "Constant = Field" cases

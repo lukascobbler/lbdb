@@ -1,10 +1,12 @@
-package com.luka.lbdb.querying.virtualEntities.term;
+package com.luka.lbdb.planning.planner;
 
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
+import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
+import com.luka.lbdb.querying.virtualEntities.term.Term;
 
 import java.util.Set;
 
@@ -21,6 +23,21 @@ public class ReductionFactorCalculator {
     private static final double INEQUALITY_MATCH = 3.0;
     private static final double COMPLEX_EXPRESSION_MATCH = 10.0;
 
+    /// A reduction factor of a predicate is the multiplication
+    /// of reduction factors of all terms that it holds.
+    ///
+    /// @return The total reduction factor of all predicates.
+    public static <T extends Scan> double calculatePredicateReductionFactor(Predicate p, Plan<T> plan) {
+        double totalFactor = 1.0;
+        for (Term term : p.getTerms()) {
+            totalFactor *= calculateTermReductionFactor(term, plan);
+            if (totalFactor > Double.MAX_VALUE) {
+                return Double.MAX_VALUE;
+            }
+        }
+        return totalFactor;
+    }
+
     /// Calculating the reduction factor can be broken down into these categories:
     /// - two constants
     /// - a field and a constant
@@ -31,7 +48,7 @@ public class ReductionFactorCalculator {
     /// null values. This is an estimation and should be treated like that.
     ///
     /// @return The calculated reduction factor for this term.
-    public static <T extends Scan> double calculateReductionFactor(Term t, Plan<T> plan) {
+    public static <T extends Scan> double calculateTermReductionFactor(Term t, Plan<T> plan) {
         Set<String> leftFields = t.getLhs().getFields();
         Set<String> rightFields = t.getRhs().getFields();
 

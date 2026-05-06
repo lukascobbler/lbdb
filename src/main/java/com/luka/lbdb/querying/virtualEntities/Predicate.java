@@ -1,6 +1,5 @@
 package com.luka.lbdb.querying.virtualEntities;
 
-import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.expression.ConstantExpression;
@@ -45,21 +44,6 @@ public class Predicate {
     public boolean isSatisfied(Scan scan) {
         return terms.stream()
                 .allMatch(t -> t.isSatisfied(scan));
-    }
-
-    /// A reduction factor of a predicate is the multiplication
-    /// of reduction factors of all terms that it holds.
-    ///
-    /// @return The total reduction factor of all predicates.
-    public <T extends Scan> double reductionFactor(Plan<T> plan) {
-        double totalFactor = 1.0;
-        for (Term term : terms) {
-            totalFactor *= term.reductionFactor(plan);
-            if (totalFactor > Double.MAX_VALUE) {
-                return Double.MAX_VALUE;
-            }
-        }
-        return totalFactor;
     }
 
     // todo add docs once heuristic table planner is complete
