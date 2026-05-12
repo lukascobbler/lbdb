@@ -4,7 +4,7 @@
 
 Klijenti šalju SQL naredbe u tekstualnom formatu, ali sistemu komad teksta nema nikakvo inherentno značenje. Podsistem za ekstrakciju informacija iz teksta naredbe se zove parser.
 
-Nije svaki komad teksta validna SQL naredba, ali njegova validnost se može podeliti na dva sloja #todo("citirati simpledb"):
+Nije svaki komad teksta validna SQL naredba, ali njegova validnost se može podeliti na dva sloja @simpledb:
 - sintaktička validnost, gde sintaksa predstavlja skup pravila koja definišu moguće operacije po nekoj gramatici,
 - semantička validnost, koja je ispunjena ako je neka operacija validna u kontekstu podataka koje koristi (imena tabela, imena kolona, ...)
 

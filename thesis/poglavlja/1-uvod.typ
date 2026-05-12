@@ -17,7 +17,7 @@ Moduli ovog sistema su raspoređeni tako da se svaki brine o jednoj grupi algori
 
 Svaka komponenta iz uprošćene arhitekture sistema je posebno detaljno objašnjena u nastavku, a uz te komponente se dodatno objašnjavaju i transakcije, koje su isprepletene kroz ceo sistem. Sličan dijagram koji opisuje celu arhitekturu sistema, ali mnogo detaljnije, se može pronaći ovde. #todo("citirati detaljan dijagram u pregledu sistema")
 
-Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ #todo("citirati simpledb"), a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #todo("citirati repozitorijum").
+Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #todo("citirati repozitorijum").
 
 == Klijentsko serverska arhitektura
 

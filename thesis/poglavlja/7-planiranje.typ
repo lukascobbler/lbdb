@@ -4,7 +4,7 @@
 
 Većina operacija definisanih SQL standardom zahteva propratno stablo relacionih operatora. Konstrukcija i provera tih stabala je posao podsistema planiranja, to jest planera.
 
-Glavna podela planera u relacionim bazama podataka je na planere koji prate striktna pravila pravljenja planova (_rule-based planner_, _RBO_) i planere koji rade sa procenjenim cenama individualnih operatora (eng. _cost-based planner_, _CBO_). Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ planere #todo("citirati https://www.cs.cmu.edu/~natassa/courses/15-721/papers/p189-stonebraker.pdf"), dok moderni sistemi koriste _CBO_ planere (#todo("citirati: https://www.postgresql.org/docs/current/planner-optimizer.html, https://www.postgresql.org/docs/current/planner-stats-details.html")) koji su postali popularni nakon _System R_ istraživačkog papira #todo("citirati https://courses.cs.duke.edu/compsci516/cps216/spring03/papers/selinger-etal-1979.pdf").
+Glavna podela planera u relacionim bazama podataka je na planere koji prate striktna pravila pravljenja planova (_rule-based planner_, _RBO_) i planere koji rade sa procenjenim cenama individualnih operatora (eng. _cost-based planner_, _CBO_). Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ planere @ingres_rbo, dok moderni sistemi koriste _CBO_ planere #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koji su postali popularni nakon _System R_ istraživačkog papira @systemR.
 
 == Struktura planova u sistemu
 
@@ -16,14 +16,11 @@ Statističke metapodatke koje plan može da izračuna su isti kao i statistički
 - broj jedinstvenih vrednosti za svaku kolonu,
 - broj _NULL_ vrednosti za svaku kolonu.
 
-#todo("opisati ekvivalentna stabla relacionih operatora")
-
-Planeri koriste statističke metapodatke za estimaciju cene izvršavanja stabla relacionih operatora i na osnovu nje sužavaju izbor svih mogućih ekvivalentnih stabala relacionih operatora na one koji su optimalni, ili bar približno optimalni. Izračunati statistički podaci #link(<table-plan>)[nisu 100% precizni], ali bez obzira na to mogu pomoći pri estimaciji ukupne cene izvršavanja stabla relacionih operatora.
+Ekvivalentna stabla relacionih operatora su ona koja generišu identične skupove rezultata. Planer konstruiše različite planove koji odgovaraju ovim stablima, a zatim, na osnovu statističkih metapodataka, procenjuje cenu njihovog izvršavanja. Eliminacijom skupih planova, bira onaj sa optimalnim vremenom izvršavanja. Izračunati statistički podaci #link(<table-plan>)[nisu 100% precizni], ali bez obzira na to, pomažu pri eliminaciji skupih planova.
 
 === Hijerarhija implementacije planova
 
-Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke, po #link(<hijerarhija_rel_op>)[hijerarhiji relacionih operatora]. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione planove je odrađena preko _generics_ Java konstrukta, umesto razdvajanja glavnog intefejsa na dva tipa.
-
+Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke, po #link(<hijerarhija_rel_op>)[hijerarhiji relacionih operatora]. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione planove je odrađena preko _generics_
 #figure(
   image("../dijagrami/hijerarhija_planova.pdf"),
   caption: [
@@ -53,11 +50,11 @@ Algoritam računanja redukcionog faktora jednog člana je predstavljen na #link(
 
 Specijalni slučaj nejednakosti je predstavljen konstantom _NEJEDNAKOSTI_ koja ima vrednost $3.0$ i označava procenjenu vrednost redukcije u slučaju korišćenja operacija nejednakosti.
 
-Specijalni slučaj kada postoje prekompleksni izrazi je predstavljen konstantom _KOMPLEKSNO_ koja ima vrednost $10.0$ i označava procenjenu vrednost redukcije u slučaju postojanja izraza koji ima ili više od dve kolone ili kombinuje kolone sa operacijama poređenja na netrivijalan način.
+Specijalni slučaj kada postoje prekompleksni izrazi je predstavljen konstantom _KOMPLEKSNO_ koja ima vrednost $10.0$ i označava procenjenu vrednost redukcije u slučaju postojanja izraza koji ima ili više od dve kolone ili izraza koji kombinuje kolone sa operacijama poređenja na netrivijalan način.
 
 Slučaj kada se ni jedan slog ne podudara sa članom je predstavljen konstantom maksimalne vrednosti `Double` tipa i označava maksimalnu redukciju. Slučaj kada svi slogovi podudaraju neki član je predstavljen konstantom $1.0$ i predstavlja odsustvo redukcije.
 
-Izbor vrednosti ovih konstanti je opisan u _System R_ istraživačkom papiru. #todo("citirati system R papir")
+Izbor vrednosti ovih konstanti je opisan u _System R_ istraživačkom papiru @systemR.
 
 #figure(
   image("../dijagrami/racunanje_redukcionog_faktora.pdf"),
@@ -105,7 +102,51 @@ Procena broja jedinstvenih vrednosti kolone je jednaka podređenom planu ukoliko
 
 ==== `ProductPlan`
 
-#todo("product plan")
+`ProductPlan` opisuje virtuelnu tabelu koja je proizvod dve tabele. Izlazna šema sadrži sve kolone od obe tabele.
+
+Za demonstaciju računice broja blokova kod proizvoda dve tabele, definišemo $T_1$ i $T_2$:
+
+#figure(
+  {
+    set par(justify: false)
+    table(
+      columns: (0.2fr, 0.4fr, 0.4fr, 0.4fr),
+      align: (center, center),
+      inset: 8pt,
+      [$T_i$], [$text("B")(T_i)$], [$text("R")(T_i)$], [$text("RPB")(T_i)$],
+      //
+      [$T_1$], [$5$], [$1000$], [$frac(1000, 5) = 200$],
+      //
+      [$T_2$], [$100$], [$500$], [$frac(500, 100) = 5$],
+    )
+  },
+  caption: [Primer karakteristika tabela za računanje broja blokova plana proizvoda],
+)<tbl:product_rpb>
+
+- $text("B")(T_i)$ predstavlja broj blokova neke tabele,
+- $text("R")(T_i)$ predstavlja broj slogova neke tabele,
+- $text("RPB")(T_i)$ predstavlja koliko slogova može da stane po jednom bloku za neku tabelu.
+
+Ovaj primer se odnosi na rad sa konkretnim fizičkim tabelama, ali u generalnom slučaju, tabele nisu fizičke, već su predstavljene podređenim planovima sa kojima plan proizvoda barata.
+
+Da bi se prošlo kroz svaki slog rezultujuće tabele, potrebno je da za se svaki slog leve tabele prođe kroz svaki slog desne tabele. Formula koja opisuje broj blokova potreban da se ovo izvrši je sledeća @simpledb:
+
+$text("B")(T_r) = text("B")(T_l) + (text("R")(T_l) * text("B")(T_d))$
+
+Ako stavimo konkretne vrednosti tabela $T_1$ i $T_2$ u ovu formulu, dobijamo različite rezultate u odnosu na to koja tabela je leva, a koja desna:
+
+- ($T_l = T_1$, $T_d = T_2$) $=>$ $text("B")(T_r) = 5 + (1000 * 100) = 100005$
+- ($T_l = T_2$, $T_d = T_1$) $=>$ $text("B")(T_r) = 100 + (500 * 5) = 2600$
+
+Vidi se da ako stavimo da tabela $T_1$ bude desna, a $T_2$ leva, dobijamo manji  broj blokova rezultujuće tabele, a sa time i efikasniju operaciju proizvoda. Ekvivalentna formula @simpledb:
+
+$text("B")(T_r) = text("B")(T_l) + (text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d))$
+
+daje bolji uvid zbog čega računica broja blokova rezultujuće tabele nije simetrična u odnosu na dve tabele koje učestvuju u proizvodu. Sabirak $text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d)$ znatno više utiče na finalni rezultat u odnosu na $text("B")(T_l)$.
+
+Što je slog manji, jedan blok može da ih sadrži više. U suprotnom, što je slog veći, jedan blok može da ih sadrži manje. U tabelama gde je slog veći, potrebno je pristupiti više blokova da bi se prošlo kroz isti broj slogova kao u tabelama gde je slog manji. U operacijama proizvoda bolje je staviti tabelu gde je slog veći (to jest gde je $text("RPB")$ manji) na levu stranu, a tabelu gde je slog manji (to jest gde je $text("RPB")$ veći) na desnu stranu jer se slogovima desne tabele pristupa znatno više nego slogovima leve tabele.
+
+Broj slogova je proizvod broja slogova oba podređena plana, a broj jedinstvenih i broj _NULL_ vrednosti se prosleđuje podređenom planu u kom se nalazi tražena kolona.
 
 ==== `UnionAllPlan`
 

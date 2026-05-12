@@ -2,7 +2,7 @@
 
 = Upravljanje datotekama <datoteke>
 
-Upravljanje datotekama se vrši kroz više slojeva u sistemu, gde je svaki sloj odgovoran za organizaciju datoteka na različitom apstrakcionom nivou. Osnovna premisa je da sve operacije sa datotekama to jest diskom moraju da se izvršavaju u jedinicama blokova, jer je operativni sistem a i hardver (disk) optimizovan za rad sa njima. Zbog toga što je blok najmanja jedinica interakcije sa diskom i datotekama, sva čitanja, pisanja i modifikacije podataka se rade zajedno sa celim blokom gde se ti podaci nalaze, a ne direktno. #todo("citirati simpledb zašto je rad sa blokovima bolji umesto direktnog rada sa bajtovima")
+Upravljanje datotekama se vrši kroz više slojeva u sistemu, gde je svaki sloj odgovoran za organizaciju datoteka na različitom apstrakcionom nivou. Osnovna premisa je da sve operacije sa datotekama to jest diskom moraju da se izvršavaju u jedinicama blokova, jer je operativni sistem a i hardver (disk) optimizovan za rad sa njima @simpledb. Zbog toga što je blok najmanja jedinica interakcije sa diskom i datotekama, sva čitanja, pisanja i modifikacije podataka se rade zajedno sa celim blokom gde se ti podaci nalaze, a ne direktno.
 
 == Upravljanje blokovima
 
@@ -72,7 +72,7 @@ Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transak
 
 === Algoritmi izbora smene bafera
 
-U opticaju je nekoliko algoritama #todo("citirati simpledb") za izbor bafera koji će biti smenjen i opcije su prikazane u okviru `BufferStrategy` enumeracije (#link(<fig:lbdbsettings>)[podesivo]):
+U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen i opcije su prikazane u okviru `BufferStrategy` enumeracije (#link(<fig:lbdbsettings>)[podesivo]):
 
 #figure(
   ```java

@@ -2,9 +2,9 @@
 
 = Relacioni operatori <relacioni-operatori>
 
-SQL programski jezik je jezik deklarativnog tipa. To znači da se preko njega specificira šta treba da se uradi sa podacima (dobavljanje, filtriranje, modifikacija, ...), ali za razliku od proceduralnih programskih jezika, ne specificira se i kako. Most između deklarativne prirode SQL jezika i potrebe definisanja načina pristupa podacima je rešen implementacijom _relacione algebre_. LBDB sistem prevodi kod SQL programskog jezika u stablo operatora relacione algebre.
+SQL programski jezik je jezik deklarativnog tipa. To znači da se preko njega specificira šta treba da se uradi sa podacima (dobavljanje, filtriranje, modifikacija, ...), ali za razliku od proceduralnih programskih jezika, ne specificira se i kako. Most između deklarativne prirode SQL jezika i potrebe definisanja načina pristupa podacima je rešen implementacijom _relacione algebre_ @relaciona_alg. LBDB sistem prevodi kod SQL programskog jezika u stablo operatora relacione algebre.
 
-Relacija $R$ je skup torki oblika ($d_1, d_2, ..., d_j$) gde za svaku komponentu $d_k$ torke $d_j$ važi $d_k in D_k$, gde je $D_k$ domen koji definiše skup svih dozvoljenih vrednosti za tu komponentu. U relacionim bazama podataka, tabela se modeluje kao relacija, dok operatori relacione algebre preslikavaju jednu ili više relacija u novu relaciju kao rezultat primenjene transformacije. Torke se mapiraju na slogove tabela. #todo("citirati relacionu algebru")
+Relacija $R$ je skup torki oblika ($d_1, d_2, ..., d_j$) gde za svaku komponentu $d_k$ torke $d_j$ važi $d_k in D_k$, gde je $D_k$ domen koji definiše skup svih dozvoljenih vrednosti za tu komponentu. U relacionim bazama podataka, tabela se modeluje kao relacija, dok operatori relacione algebre preslikavaju jednu ili više relacija u novu relaciju kao rezultat primenjene transformacije. Torke se mapiraju na slogove tabela.
 
 == Virtuelna mašina
 
@@ -58,7 +58,7 @@ Za izvršavanje komanda definisane SQL jezikom, često je potrebno primeniti vi�
 
 === Pajplajnovano procesovanje
 
-Relacioni operatori podržani u sistemu imaju dve zajedničke osobine: #todo("citirati simpledb")
+Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
 - generišu slogove jedan po jedan
 - ne čuvaju generisane slogove i ne čuvaju nikakve međurezultate
 
