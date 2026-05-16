@@ -62,15 +62,13 @@ Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
 - generišu slogove jedan po jedan
 - ne čuvaju generisane slogove i ne čuvaju nikakve međurezultate
 
-Zahtev za izvršenje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovako se prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko ni jedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
+Zahtev za izvršenje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko ni jedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
 
-Kombinacija dve navedene osobine uz delegaciju operacija se zove pajplajnovano procesovanje (eng. _pipelined processing_). Korišćenje pajplajnovanog procesovanja u mnogim scenarijima ne dodaje nikakvu dodatnu _U/I_ cenu pristupa tabelama, pa je pogodno ga koristiti.
+Kombinacija dve navedene osobine uz delegaciju operacija se zove pajplajnovano procesovanje (eng. _pipelined processing_). Korišćenje pajplajnovanog procesovanja u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ga je pogodno koristiti.
 
-Glavna cena izvršavanja stabla je upravo _U/I_ cena koja je određena brojem pristupa fizičkim blokovima. Ipak, kod upita nad više tabela, broj pristupanih blokova može biti veći od zbira blokova svih uključenih tabela, što zavisi od efikasnosti algoritma konstruisanja tog stabla (algoritam planera, #todo("citirati planer")).
+Prednost pajplajnovanog procesovanja što ne čuva međurezultate je upravo i njegova mana za određene operacije. Materijalizovano procesovanje (eng. _materialization_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim problemima. Takođe, neke operacije poput grupisane agregacije, vraćanje samo jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovanog procesovanja. Potrebno je koristiti oba načina procesovanja u sistemu za najbolje rezultate, ali LBDB sistem implementira samo pajplajnovano procesovanje.
 
-Prednost pajplajnovanog procesovanja što ne čuva međurezultate je upravo i njegova mana za određene operacije. Materijalizovano procesovanje (eng. _materialization_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim cenama. Takođe, neke operacije poput grupisane agregacije, vraćanje jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovanog procesovanja. Potrebno je koristiti oba načina procesovanja u sistemu za najbolje rezultate, ali LBDB sistem implementira samo pajplajnovano procesovanje.
-
-=== Hijerarhija implementacije operatora <hijerarhija_rel_op>
+=== Hijerarhija implementacije relacionih operatora <hijerarhija_rel_op>
 
 Najopštija podela relacionih operatora je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke. Ova distinkcija je napravljena da se obezbedi sigurnost od pogrešne primene operatora u vremenu kompajliranja koda (eng. _compile time_). Hijerarhija podrazumevanih implementacija se sastoji od raznih kosturskih implementacija koje se koriste za lako definisanje novog relacionog operatora. Ostale klase van hijerarhije podrazumevanih implementacija predstavljaju različite relacione operatore podržane u sistemu i objašnjene su ispod.
 
@@ -135,7 +133,7 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 === Primeri stabla relacionih operatora
 
-Sledeći primeri pokazuju kako pozivi metoda putuju kroz stablo relacionih operatora. Primeri ne oslikavaju stabla relacionih operatora koje bi LBDB #todo("planer") napravio, već služe da pokažu pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
+Sledeći primeri pokazuju kako pozivi metoda putuju kroz stablo relacionih operatora. Primeri ne oslikavaju stabla relacionih operatora koje bi LBDB sistem napravio, već služe da pokažu pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
 
 ==== Primer poziva `getValue()` metode
 

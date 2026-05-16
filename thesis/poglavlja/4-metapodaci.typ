@@ -4,7 +4,7 @@
 
 Metapodaci su podaci koji opisuju druge podatke. Iako su podaci struktuirani u okviru slogova (glava @datoteke), sistem im ne može pristupiti ako se ne pobrine o perzistiranju te strukture. Praćenje distribucije vrednosti je korisno prilikom pravljenja efikasnog načina dobavljanja slogova. Podaci koji definišu strukturu slogova i podaci o distribuciji vrednosti su primeri metapodataka kojima sistem barata.
 
-== Kataloške tabele
+== Kataloške tabele <kataloske-tabele>
 
 Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o postojećim tabelama i kako kolone tih tabela izgledaju. Ti podaci se čuvaju u okviru sistemskih tabela i one se nazivaju kataloške tabele. Kataloška tabela _tablecatalog_ čuva podatke o postojećim tabelama, dok kataloška tabela _fieldcatalog_ čuva podatke o fizičkoj strukturi sloga neke tabele. Vrednosti ovih tabela su pohranjene iz #link(<raspored_polja>)[rasporeda polja] i #link(<sema>)[šeme] koju on sadrži.
 
@@ -58,7 +58,7 @@ Svi identifikatori u sistemu (imena kolona, tabela, ...) se implicitno konvertuj
 
 == Statistički podaci <statisticki-metapodaci>
 
-Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji mogu proceniti vreme izvršavanja određenih načina pristupa. Sâm posao konstruisanja efikasnog načina pristupa je briga planera. #todo("citirati planer")
+Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji pomažu pri proceni vremena izvršavanja određenih načina pristupa. Sâm posao konstruisanja efikasnog načina pristupa je briga #link(<planiranje>)[podsistema planiranja].
 
 Statistički metapodaci neke tabele uključuju:
 - broj blokova tabele
@@ -72,12 +72,10 @@ Prilikom inicijalizacije sistema, računaju se statistički metapodaci za svaku 
 
 Broj blokova tabele i broj slogova u tabeli se trivijalno dobijaju iteracijom kroz svaki slog.
 
-Broj različitih vrednosti kolone tabele nije moguće izračunati precizno, jer je za to potrebno čuvanje svih jedinstvenih vrednosti te kolone u radnoj memoriji. Male nepreciznosti neće uticati na procenu vremena izvršavanja operacija, pa je iskorištena probabilistička struktura podataka _HyperLogLog_ koja rešava _count distinct_ problem i ona ne čuva sve jedinstvene vrednosti u radnoj memoriji. Jedna takva struktura se dodeljuje za svaku kolonu.
+Broj različitih vrednosti kolone tabele nije moguće izračunati precizno, jer je za to potrebno čuvanje svih jedinstvenih vrednosti te kolone u radnoj memoriji. Male nepreciznosti neće uticati na procenu vremena izvršavanja operacija, pa je iskorištena probabilistička struktura podataka _HyperLogLog_ @hll koja rešava _count distinct_ problem i ona ne čuva sve jedinstvene vrednosti u radnoj memoriji. Jedna takva struktura se dodeljuje za svaku kolonu.
 
 Brojanje _NULL_ vrednosti kolona tabele se svodi na čuvanje prostog brojača za svaku kolonu.
 
-#todo("citirati hyperloglog, count distinct problem")
+== Pristup metapodacima <metadata-menadzer>
 
-== Pristup metapodacima
-
-Menadžer metapodataka definiše glavno mesto pristupa svim ostalim metapodacima. Sastoji se iz menadžera metapodataka o tabelama i menadžera statističkih metapodataka. Menadžer metapodataka je jedan od tri glavna podsistema LBDB sistema #link(<sistem_za_obradu_upita>)[obrade upita].
+Menadžer metapodataka je glavno mesto pristupa svim ostalim metapodacima. Sastoji se iz menadžera metapodataka tabela i menadžera statističkih metapodataka. Menadžer metapodataka je jedan od tri glavna podsistema LBDB sistema #link(<sistem_za_obradu_upita>)[obrade upita].

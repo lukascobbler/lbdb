@@ -8,7 +8,7 @@ Nije svaki komad teksta validna SQL naredba, ali njegova validnost se može pode
 - sintaktička validnost, gde sintaksa predstavlja skup pravila koja definišu moguće operacije po nekoj gramatici,
 - semantička validnost, koja je ispunjena ako je neka operacija validna u kontekstu podataka koje koristi (imena tabela, imena kolona, ...)
 
-Parsiranje konstruiše apstraktno sintaktičko stablo (eng. _abstract syntax tree_, _AST_) koje se mapira na podržane operacije i služi za proveru *samo* sintaktičke validnosti operacije. Provera semantičke validnosti je deo planera. #todo("citirati planer")
+Parsiranje konstruiše apstraktno sintaktičko stablo (eng. _abstract syntax tree_, _AST_) koje se mapira na podržane operacije i služi za proveru *samo* sintaktičke validnosti operacije. Provera semantičke validnosti je #link(<planer>)[deo planera].
 
 == Tokenizator
 
@@ -30,7 +30,7 @@ Gramatika nekog jezika predstavlja skup pravila koje opisuju sve legalne komade 
 
 Vrsta parsiranja koja je implementirana se zove _recursive descent_ parsiranje. U _recurisive descent_ parsiranju, gramatika se proverava od gore ka dole. Ulazna tačka je koren sintaktičkog stabla i za svako podstablo, to jest gramatičko pravilo, postoji funkcija obrađuje to pravilo. Funkcije se često pozivaju rekurzivno da bi obradili veće celine, otud i ime ovog načina parsiranja. Svaka funkcija obrade pravila, na bilo kom nivou, se mapira na jednu sintaktičku kategoriju.
 
-=== Iskazi
+=== Iskazi <statement>
 
 Uspešno parsiranje nekog bloka teksta koji predstavlja SQL operaciju rezultuje u iskazu, koji sadrži sve neophodne podatke da se ta operacija izvrši. Iskaz (`Statement` klasa) je definisan _sealed interface_ Java konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Svaki iskaz je predstavljen Java _record_ strukturom i nasleđuje `Statement`.
 
@@ -47,7 +47,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse>
 
-`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaktičke kategorije. Omogućava i `EXPLAIN` komandu, koja generiše opis komande koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaktička kategorija. Vraća `Statement` objekat. #todo("cit. explain")
+`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaktičke kategorije. Omogućava i #link(<explain>)[`EXPLAIN`] naredbu, koja generiše opis komande koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaktička kategorija. Vraća `Statement` objekat.
 
 ==== `ParseUpdate`
 
@@ -60,7 +60,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
 
 `ParseUpdate` predstavlja komandu modifikovanja podataka neke tabele. Može sadržati proizvoljan broj novih dodela vrednosti, ali svako polje u svim dodelama vrednosti mora postojati u referenciranoj tabeli. Moguće je modifikovati samo neke slogove, a ne sve, tako što se definiše uslov pretrage. Vraća `UpdateStatement` objekat.
 
-==== `ParseSelect`
+==== `ParseSelect` <parse_select>
 
 #figure(
   image("../dijagrami/parsiranje/parse_select.svg", height: 52%),
@@ -124,7 +124,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_predicate>
 
-`ParseExpression` je specijalna vrsta sintaktičke kategorije koja ne proizvodi iskaz, već služi za kreiranje sintaktičkih stabala #link(<izrazi>)[izraza]. Parsiranje izraza je urađeno specijalnom tehnikom _recursive descent_ parsiranja koja se zove _Pratt parsing_ (#todo("citirati pratt parsing")). _Pratt parsing_ definiše tehnike obrade prioriteta operacija, zagrada, prepoznavanja identifikatora i zamenskih članova. Vraća `Expression` objekat.
+`ParseExpression` je specijalna vrsta sintaktičke kategorije koja ne proizvodi iskaz, već služi za kreiranje sintaktičkih stabala #link(<izrazi>)[izraza]. Parsiranje izraza je urađeno specijalnom tehnikom _recursive descent_ parsiranja koja se zove _Pratt parsing_ @pratt_parsing. _Pratt parsing_ definiše tehnike obrade prioriteta operacija, zagrada, prepoznavanja identifikatora i zamenskih članova. Vraća `Expression` objekat.
 
 Prvo se parsira prefiksni izraz, koji može biti literal različitog tipa, identifikator, zamenski član, izraz sa unarnom operacijom ili izraz u zagradama. Rezultat ovog koraka postaje početni levi operand. Zatim se ulazi u petlju koja se izvršava sve dok je prioritet sledećeg (infiksnog) operatora strogo veći od trenutnog prioriteta.
 

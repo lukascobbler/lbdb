@@ -15,9 +15,11 @@ Moduli ovog sistema su raspoređeni tako da se svaki brine o jednoj grupi algori
   ],
 )<fig:arh_sistema>
 
+#todo("pretvoriti ovo u pravi flowchart")
+
 Svaka komponenta iz uprošćene arhitekture sistema je posebno detaljno objašnjena u nastavku, a uz te komponente se dodatno objašnjavaju i transakcije, koje su isprepletene kroz ceo sistem. Sličan dijagram koji opisuje celu arhitekturu sistema, ali mnogo detaljnije, se može pronaći ovde. #todo("citirati detaljan dijagram u pregledu sistema")
 
-Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #todo("citirati repozitorijum").
+Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #footnote[https://github.com/lukascobbler/lbdb].
 
 == Klijentsko serverska arhitektura
 
@@ -25,4 +27,4 @@ Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Impleme
 
 == Sistem za obradu upita <sistem_za_obradu_upita>
 
-`LBDB` klasa predstavlja najviši apstrakcioni nivo sistema obrade upita na koji se server oslanja. Služi za orkestraciju glavnih podsistema: menadžer metapodataka, menadžer tranzakcija i planer. Takođe, klasa `LBDB` je odgovorna za inicijalizaciju i oporavljanje sistema od neočekivanog gašenja, za određeni direktorijum baze podataka. #todo("citirati podsisteme")
+`LBDB` klasa predstavlja najviši apstrakcioni nivo sistema obrade upita na koji se server oslanja. Služi za orkestraciju upravljača glavnim podsistemima: #link(<metadata-menadzer>)[menadžer metapodataka], #link(<sesije>)[menadžer transakcija] i #link(<planner-klasa>)[planer]. Takođe, klasa `LBDB` je odgovorna za inicijalizaciju i oporavljanje sistema od neočekivanog gašenja, za određeni direktorijum baze podataka.

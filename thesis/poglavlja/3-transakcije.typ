@@ -2,7 +2,7 @@
 
 = Upravljanje transakcijama <transakcije>
 
-Transakcije su osnovni mehanizam za garantovanje različitih osobina otpornosti sistema za upravljanje relacionim bazama podataka. Omogućavaju sistemu da vrši atomične operacije, da se uvek održi u konzistentnom stanju, da izoluje nezavisne konkurentne operacije i da garantuje perzistentnost podataka. Generalno, ove osobine se zovu _ACID_ osobine (eng. _atomicity, consistency, isolation, durability_). #todo("citirati acid")
+Transakcije su osnovni mehanizam za garantovanje različitih osobina otpornosti sistema za upravljanje relacionim bazama podataka. Omogućavaju sistemu da vrši atomične operacije, da se uvek održi u konzistentnom stanju, da izoluje nezavisne konkurentne operacije i da garantuje perzistentnost podataka. Generalno, ove osobine se zovu _ACID_ osobine (eng. _atomicity, consistency, isolation, durability_) @acid.
 
 Svaka operacija u sistemu mora biti izvršena u okviru jedne transakcije, ali se jedna transakcija može sastojati i od više operacija koje se sve moraju ili uspešno izvšiti ili se moraju sve poništiti. Svaka transakcija ima početak i kraj. Kraj može biti potvrda (eng. _commit_) ili poništavanje (eng. _rollback_). Ako je transakcija uspešno potvrđena, od tog trenutka pa na dalje sve izvršene promene moraju biti odmah vidljive drugim transakcijama.
 
@@ -24,7 +24,7 @@ Sistem za oporavak je podsistem u okviru transakcija koji sadrži prvi deo logik
 
 LBDB sistem je softversko rešenje koje radi u kontekstu nekog hardvera i operativnog sistema. Svaki od slojeva na koje se LBDB sistem oslanja, ima mogućnost da zakaže zbog nekog faktora koji je izvan kontrole LBDB sistema. Primeri su nestajanje struje, ubijanje LBDB serverskog procesa ili neuspešno pisanje na disk. Ako se u trenutku zakazivanja izvršava neka operacija koja menja podatke u sistemu, ti podaci će biti izgubljeni, a sistem će biti ostavljen u nekonzistentnom stanju. Korišćenje sistema koji je u nekonzistentnom stanju može dovesti do lošeg tumačenja podataka, ali može biti i opasno u pojedinim situacijama. Zbog ovoga se uvodi podsistem koji oporavlja sistem od nekonzistentnog stanja.
 
-Konzistentno stanje se može definisati sa sledeće dve osobine @simpledb:
+Konzistentno stanje se može definisati sa sledeće dve osobine @simpledb @acid:
 - sve nedovršene transakcije su poništene,
 - sve modifikacije potvrđenih (eng _commited_) transakcija moraju biti na disku
 
@@ -49,7 +49,7 @@ Hijerarhija _log_ zapisa počinje od glavnog interfejsa _LogRecord_ koji defini�
 
 ==== Algoritmi oporavka sistema <alg_oporavka>
 
-Algoritam opopravka sistema je procedura koja prati korake definisane strategijom oporavka koju sistem koristi i zajedno sa podacima iz _log_ datoteke vraća sistem u konzistentno stanje. Svaki algoritam oporavka mora biti idempotentan, jer sistem može naglo prestati sa radom i dok je u procesu oporavljanja. Proces oporavka se vrši u okviru podizanja sistema.
+Algoritam opopravka sistema je procedura koja prati korake definisane strategijom oporavka koju sistem koristi i zajedno sa podacima iz _log_ datoteke vraća sistem u konzistentno stanje. Svaki algoritam oporavka mora biti idempotentan, jer sistem može naglo prestati sa radom i dok je u procesu oporavljanja @simpledb. Proces oporavka se vrši u okviru podizanja sistema.
 
 Postoje tri generalna algoritma oporavke @simpledb:
 - ponovna primena uspešnih transakcija i poništavanje neuspešnih transakcija (eng. _undo redo recovery_),
@@ -147,7 +147,7 @@ Poštovanje ovakvog protokola zaključavanja uvek garantuje tačnost rada sa vre
   caption: [Različiti izolacioni nivoi transakcija],
 )<tbl:izolacioni_nivoi>
 
-Različiti izolacioni nivoi se mogu implementirati i pomoću _MVCC_ šablona (eng. _multi version concurrency control_), ali on nije podržan u okviru LBDB sistema. #todo("citirati MVCC")
+Različiti izolacioni nivoi se mogu implementirati i preko _MVCC_ (eng. _multi version concurrency control_) pristupa @mvcc, ali on nije podržan u okviru LBDB sistema.
 
 Izolacioni nivoi transakcija su koncipirani tako da svaki nivo izolacije rešava sve probleme nivoa ispod njega.
 

@@ -2,25 +2,23 @@
 
 = Planiranje <planiranje>
 
-Većina operacija definisanih SQL standardom zahteva propratno stablo relacionih operatora. Konstrukcija i provera tih stabala je posao podsistema planiranja, to jest planera.
-
-Glavna podela planera u relacionim bazama podataka je na planere koji prate striktna pravila pravljenja planova (_rule-based planner_, _RBO_) i planere koji rade sa procenjenim cenama individualnih operatora (eng. _cost-based planner_, _CBO_). Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ planere @ingres_rbo, dok moderni sistemi koriste _CBO_ planere #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koji su postali popularni nakon _System R_ istraživačkog papira @systemR.
+Planer i planovi čine podsistem planiranja koji je jedan od tri glavna podsistema LBDB sistema #link(<sistem_za_obradu_upita>)[obrade upita]. U okviru životnog ciklusa obrade jedne SQL naredbe, podsistem planiranja se nalazi između podsistema za parsiranje i stabla relacionih operatora.
 
 == Struktura planova u sistemu
 
-Za svaki relacioni operator se definiše njegov plan, a za svako stablo relacionih operatora se definiše stablo planova. Plan relacionog operatora opisuje šemu nakon primene operatora i omogućava računanje #link(<statisticki-metapodaci>)[statističkih metapodataka] za rezultujuću virtuelnu tabelu.
+Za svaki relacioni operator se definiše njegov plan, a za svako stablo relacionih operatora se definiše stablo planova. Plan relacionog operatora opisuje šemu nakon primene operatora i omogućava računanje #link(<statisticki-metapodaci>)[statističkih metapodataka] za rezultujuću virtuelnu tabelu. Ovi statistički metapodaci su jedan deo podataka koje algoritmi za konstrukciju stabla planova koriste za efikasan rad.
 
 Statističke metapodatke koje plan može da izračuna su isti kao i statistički metapodaci koji se prate za fizičke tabele, a oni su:
 - broj blokova potrebnih za prolazak kroz sve slogove,
 - broj slogova,
 - broj jedinstvenih vrednosti za svaku kolonu,
 - broj _NULL_ vrednosti za svaku kolonu.
-
-Ekvivalentna stabla relacionih operatora su ona koja generišu identične skupove rezultata. Planer konstruiše različite planove koji odgovaraju ovim stablima, a zatim, na osnovu statističkih metapodataka, procenjuje cenu njihovog izvršavanja. Eliminacijom skupih planova, bira onaj sa optimalnim vremenom izvršavanja. Izračunati statistički podaci #link(<table-plan>)[nisu 100% precizni], ali bez obzira na to, pomažu pri eliminaciji skupih planova.
+Izračunati statistički podaci #link(<table-plan>)[nisu 100% precizni], ali bez obzira na to, pomažu algoritmima konstrukcije planova (planerima).
 
 === Hijerarhija implementacije planova
 
-Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke, po #link(<hijerarhija_rel_op>)[hijerarhiji relacionih operatora]. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione planove je odrađena preko _generics_
+Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke, po #link(<hijerarhija_rel_op>)[hijerarhiji relacionih operatora]. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione planove je odrađena preko _generics_ Java konstrukta, umesto deljenja glavnog interfejsa na dva podtipa.
+
 #figure(
   image("../dijagrami/hijerarhija_planova.pdf"),
   caption: [
@@ -30,13 +28,13 @@ Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_
 
 ==== `Plan`
 
-`Plan` interfejs definiše operacije neophone za računanje svih statističkih podataka, dobijanje šeme rezultujuće tabele i dobijanje slogova za #link(<explain>)[automatski opis plana].
+`Plan` interfejs definiše operacije neophone za računanje svih statističkih podataka, dobijanje šeme rezultujuće tabele, pretvaranje stabla planova u stablo relacionih operatora i dobijanje slogova za #link(<explain>)[automatski opis plana].
 
 ==== `TablePlan` <table-plan>
 
 `TablePlan` opisuje konkretnu fizičku tabelu, umesto da vrši transformacije virtuelne tabele. Izlazna šema je jednaka šemi fizičke tabele. Izvlači statističke podatke direktno iz menadžera metapodataka za tabelu za koju je vezan. Statistički podaci #link(<racunanje-statistike>)[nisu ažurni], ali pružaju dovoljno dobru statistiku za potrebe LBDB sistema. Izračunati statistički metapodaci svih planova u stablu planova eventualno zavise od vrednosti statističkih metapodataka ovog plana. Može da se koristi i u kontekstima modifikujućih stabala operatora i u kontekstima _read-only_ stabala operatora i zbog toga postoji i `TableReadOnlyPlan` varijanta koja ima istu funkciju.
 
-==== `DummyTablePlan`
+==== `DummyTablePlan` <dummy_table_plan>
 
 `DummyTablePlan` opisuje virtuelnu tabelu koja se sastoji od jednog sloga u upitima koji ne rade sa fizičkim tabelama. Izlazna šema se određuje na osnovu konstantnih vrednosti u upitu, a statistički podaci su precizni jer se lako računaju pošto je broj konkretnih vrednosti jako mali.
 
@@ -57,7 +55,7 @@ Slučaj kada se ni jedan slog ne podudara sa članom je predstavljen konstantom 
 Izbor vrednosti ovih konstanti je opisan u _System R_ istraživačkom papiru @systemR.
 
 #figure(
-  image("../dijagrami/racunanje_redukcionog_faktora.pdf"),
+  image("../dijagrami/racunanje_redukcionog_faktora.pdf", height: 79%),
   caption: [
     _Flowchart_ računice redukcionog faktora člana
   ],
@@ -154,46 +152,184 @@ Broj slogova je proizvod broja slogova oba podređena plana, a broj jedinstvenih
 
 == Planer <planer>
 
-dve stvari: provera validnosti, konstrukcija efikasnog plana izvrsavanja
+Većina naredni definisanih SQL standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke tačnosti svih naredbi.
 
-=== Ulazna tačka kreiranja i izvršavanja planova
+Glavna podela tehnika planiranja u relacionim bazama podataka je na tehnike praćenja striktnih pravila pravljenja planova (eng. _rule-based optimisation_, _RBO_; _heuristics-based optimisation_, _HBO_) i tehnike planiranja koji rade sa cenama (eng. _cost-based optimisation_, _CBO_). Cena predstavlja kombinaciju statističkih metapodataka relacionih operatora sa hardverskim osobinama koji ti relacioni operatori koriste.
 
-`planner` klasa, o cemu se sve brine i omogucava jdbc podrsku
+Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ tehnike planiranja @ingres_rbo, dok moderni sistemi koriste _CBO_ tehnike planiranja #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koji su postali popularni nakon _System R_ istraživačkog papira @systemR.
 
-=== Parcijalna evaluacija izraza
+Evolucija tehnika planiranja, koja se može videti kroz ovu glavnu podelu, postoji jer je kroz istoriju bilo potrebno obezbediti sve efikasnije planere koji rade sa sve većim skupovima podataka.
 
-partial evaluator
+=== Evaluacija izraza tokom planiranja
 
-=== Planiranje _query_ komandi
+Evaluacija izraza u stablu relacionih operatora je najskuplje mesto evaluacije, jer se operacije izvršavaju u okviru virtuelne mašine sistema, gde se ne koriste procesorske instrukcije direktno. `PartialEvaluator` omogućava da se izrazi sa trivijalnim operacijama redukuju na čistu konstantu čija evaluacija ne zahteva obradu na virtuelnoj mašini.
 
-sta je query, query se mapira na SELECT, queryplanner interfejs
+Trivijalna operacija se definiše kao aritmetička operacija koja ne transformiše podatke ili kao aritmetička operacija između dve konstante.
 
-==== Osnovni algoritam planiranja _SELECT_ komandi
+Predikati se sastoje od članova, koji se sastoje od izraza, tako da `PartialEvaluator` može da redukuje i njih. Nije podržana redukcija trivijalnih logičkih operacija.
 
-#todo("objasniti kako se postize join dve tabele koje imaju istoimene kolone")
+=== Ulazna tačka kreiranja i izvršavanja planova <planner-klasa>
 
-#todo("dijagrami planiranja iz koda")
+Svaka SQL naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
+- `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za LBDB, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
+- `execute` koja je prilagođena #todo("klijentsko serverskoj arhitekturi") LBDB sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća objekat #todo("`Response` klase"), koji enkapsulira sva moguća stanja nakon izvršavanja naredbe.
 
-#todo("ne implementira nikakvu cost based optimizaciju")
+#figure(
+  image("../dijagrami/struktura_planera.pdf"),
+  caption: [
+    Struktura planera
+  ],
+)<fig:struktura_planera>
 
-=== Planiranje modifikacionih komandi
+=== Planiranje _read-only_ naredbi
 
-koje su modifikacione komande, updateplanner interfejs
+Kao što je već spominjano u tekstu, SQL naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
 
-==== Algoritam planiranja _INSERT_ komandi
+Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja sâmog plana. Semantička provera se sastoji od sledećih koraka:
+- provera postojanja fizičkih tabela spomenutih u naredbi
+- proširenje zamenskih članova na konkretne kolone
+- provera da se zamenski članovi ne koriste u izrazima
+- provera postojanja kolona pomenutih u izrazima i predikatu
+- provera dvosmislenih imena kolona (u slučaju da dve tabele imaju isti naziv kolone i ne može da se trivijalno skonta koja se koristi)
+- provera da li aritmetičke operacije mogu da se izvrše za tip kolone
+- provera da li kolone u unijama imaju iste tipove
 
-==== Algoritam planiranja _UPDATE_ komandi
+`QueryPlanner` apstraktna klasa pruža implementaciju semantičke provere, a konkretni algoritmi planiranja `SELECT` naredbe koji je nasleđuju mogu da podrazumevaju da su naredbe koje dobiju sigurno semantički validne. `QueryPlanner` takođe redukuje sve izraze i predikat pomoću `PartialEvaluator` klase.
 
-==== Algoritam planiranja _DELETE_ komandi
+==== Algoritam planiranja `SELECT` naredbi
 
-==== Algoritam planiranja _CREATE TABLE_ komandi
+`BetterQueryPlanner` klasa nasleđuje `QueryPlanner` i predstavlja implementaciju osnovnog planera koji podržava sve alternative `SELECT` naredbe predstavljene u #link(<parse_select>)[njenoj gramatici].
 
-#todo("specijalna vrsta operacije koja ne zahteva stablo rel. op. vec samo modifikuje tabele metapodataka")
+Stablo relacionih operatora je korektno (eng. _sound_), ako svi slogovi koje ono proizvodi ispunjavaju sve uslove relacionih operacija definisanih nekom `SELECT` naredbom. Stablo planova, koje se prevodi u stablo relacionih operatora, koje `BetterQueryPlanner` konstruiše je uvek korektno.
 
-=== Automatsko generisanje opisa planova <explain>
+Problem `BetterQueryPlanner` implementacije je niska efikasnost konstruisanih stabala planova, jer ne koristi ni tehnike _RBO_ planiranja, ni tehnike _CBO_ planiranja, već izvršava samo minimalni skup koraka koji su neophodni da se obezbedi korektnost.
 
-#todo("pomenuti da explain postoji")
+Algoritam planiranja se može videti na #link(<fig:algoritam_planiranja>)[dijagramu ispod].
 
-#todo(
-  "objasniti poentu planiranja i da se planovi dobijaju od statementa, objasniti podelu na query i update plannere, objasniti da oba implementiraju interfejs i da kada statement dodje do logike planiranja, da je sigurno proveren, staviti dijagrame izlaznih planova, objasniti da je ovo najobicniji planner i da nije najefikasniji, ali je matematicki tacan",
-)
+#figure(
+  image("../dijagrami/planer_algoritam_dijagram.pdf"),
+  caption: [_Flowchart_ dijagram `BetterQueryPlanner` algoritma planiranja],
+)<fig:algoritam_planiranja>
+
+Kreira finalno stablo planova kroz četiri funkcije koje zovu jedne druge, imaju rastući prioritet i zadužene su za različite operacije:
+- `createPlan` funkcija je ulazna tačka algoritma, definisana u `QueryPlanner` klasi i ima zaduženje kreiranja unija više `SELECT` naredbi, u slučaju postojanja `UNION ALL` gramatičke alternative.
+
+  Unije `SELECT` naredbi zahtevaju da se kolonama svake `SELECT` naredbe pristupa pomoću imena datih u prvoj `SELECT` naredbi. Zbog ovoga se dodaje operator preimenovanja ispred svakog podstabla planova svake naredbe u uniji, sem prve. Operacija unije ima najmanji prioritet, pa se poslednja izvršava.
+
+  Ukoliko ne postoji `UNION ALL` gramatička alternativa, funkcija vraća podstablo planova jedine `SELECT` naredbe.
+
+  #figure(
+    image("../dijagrami/primeri_stabla_planova/unija.pdf", width: 66%),
+    caption: [Primer stabla planova nakon unije 3 naredbe],
+  ) <fig:primer_plan_unija>
+
+- `createSingleSelectionPlan` funkcija obezbeđuje korektnost filtriranja i projekcije.
+
+  Dodaje operator filtriranja samo ako filter postoji; dodaje nove virtuelne kolone i briše kolone koje nisu spomenute.
+
+  #figure(
+    image("../dijagrami/primeri_stabla_planova/filtriranje_projekcija.pdf", width: 20%),
+    caption: [Primer stabla planova nakon filtriranja i projekcije],
+  ) <fig:primer_plan_filter_projekcija>
+
+- `getDataSourcePlan` funkcija se brine o tome odakle će doći slogovi i ima dve putanje izvršavanja.
+
+  Prva putanja izvršavanja se dešava kada se u `SELECT` naredbi ne spominje ni jedna fizička tabela, već se radi upit virtuelne tabele koja ima jedan slog koji se sastoji samo od konstanti. U tom slučaju, samo vraća jedan jedini #link(<dummy_table_plan>)[`DummyTablePlan`] plan čvor.
+
+  Druga putanja izvršavanja se dešava kada se spominje jedna ili više fizičkih tabela. Ako se spominje jedna fizička tabela, njen plan biva vraćen. Ako se spominje više od jedne fizičke tabele, potrebno je uraditi operaciju proizvoda. Proizvod tabela se vrši tako što se prva spomenuta tabela proglasi da bude početna, pa se prolazi kroz sve ostale spomenute tabele i ponavlja se postupak: kreiraju se dva proizvod plana, jedan gde je dosadašnje podstablo planova na levom mestu, a plan sledeće tabele na desnom i jedan gde je redosled obrnut; plan koji ima manje pristupa blokovima se uzima kao sledeći koren podstabla planova i postupak se izvršava dok se ne prođe kroz sve pomenute tabele. Time se dobija oformljeno podstablo planova gde su proizvodi tabela zadovoljeni. Ovakva provera broja pristupanih blokova nije optimalna, ali može pomoći u otklanjanju veoma neefikasnih stabala planova i predstavlja jedino mesto gde se primenjuje _RBO_ tehnika planiranja.
+
+  #figure(
+    image("../dijagrami/primeri_stabla_planova/proizvod.pdf", width: 66%),
+    caption: [Primer stabla planova nakon proizvoda 3 tabele],
+  ) <fig:primer_plan_proizvod>
+
+- `fullyQualifiedTablePlan` obezbeđuje davanje punokvalifikujućih imena kolonama fizičkih tabela.
+
+  U slučajevima gde se vrši proizvod dve (ili više) tabele, postoji mogućnost da te dve tabele imaju istoimenu kolonu. Ovo je čest slučaj jer povećava čitljivost upita i strukture tabela, pa je za njega potrebno pružiti adekvatnu podršku.
+
+  U prethodnoj funkciji koja vrši proizvode, rečeno je da se direktno barata sa planovima tabela. Ovo nije precizno, jer se ne barata direktno sa tabelama, već sa podstablom planova koje predstavlja tabelu sa punokvalifikovanim imenama kolona. Kvalifikacija imena kolona se vrši preko operatora preimenovanja, tako što se pre samog imena kolone doda ime tabele i tačka (`ime_kolone` postaje `ime_tabele.ime_kolone`). Dozvoljava i preimenovanje tabela u slučaju da vršimo proizvod dve (ili više) iste tabele.
+
+  Ako se proizvod radi samo sa punokvalifikovanim tabelama, ne postoji mogućnost da sistem ne može da prepozna kojoj tabeli kolona pripada, sem ako korisnik nije zadao semantički neispravnu naredbu.
+
+  #figure(
+    image("../dijagrami/primeri_stabla_planova/kvalifikacija_tabele.pdf", width: 20%),
+    caption: [Primer stabla planova nakon kvalifikacije kolona tabele],
+  ) <fig:primer_kvalifikacija>
+
+#figure(
+  image("../dijagrami/primeri_stabla_planova/celo_stablo.pdf", width: 88%),
+  caption: [Primer kompletnog stabla planova],
+) <fig:primer_kvalifikacija>
+
+==== Automatsko generisanje opisa planova <explain>
+
+Drugi primer _read-only_ naredbe je `EXPLAIN` naredba. Njena uloga u sistemu je tabelarno ispisivanje kompletnih stabla planova. `EXPLAIN` naredba se poziva tako što se doda ključna reč `EXPLAIN` ispred `SELECT` naredbe. Nije podržana za modifikacione naredbe.
+
+`EXPLAIN` naredba je implementirana tako da generiše slogove koji prate šemu specijalne tabele koja ima sledeće kolone: ime relacionog operatora, procena kroz koliko blokova će taj relacioni operator proći da generiše sve slogove, procena broja slogova i specijalni detalji. Svaki slog predstavlja čvor rezultujućeg stabla relacionih operatora. Iako je poenta naredbe tabelarni prikaz stabla, naredba samo generiše ove slogove i ne brine se o #todo("formatiranju tabele").
+
+#figure(
+  ```text
+  ┌────────────────────┬────────────┬─────────────┬─────────────────────────┐
+  │ Scan               │ Block est. │ Record est. │ Details                 │
+  ├────────────────────┼────────────┼─────────────┼─────────────────────────┤
+  │ ExtendProjectScan  │          5 │          52 │                         │
+  │ └─ SelectScan      │          5 │          52 │ student.isactive = TRUE │
+  │    └─ RenameScan   │          5 │         103 │                         │
+  │       └─ TableScan │          5 │         103 │ 'student'               │
+  └────────────────────┴────────────┴─────────────┴─────────────────────────┘
+  ```,
+  caption: [Primer rezultujuće tabele `EXPLAIN` naredbe],
+)<fig:explain_naredba>
+
+=== Planiranje modifikacionih naredbi
+
+Modifikacione naredbe su razne, a `UpdatePlanner` ima istu ulogu za njih, kao što `QueryPlanner` ima za `SELECT` naredbu, a to je samo semantička provera. Konkretni algoritmi planiranja modifikacionih naredbi mogu da podrazumevaju da je naredba semantički validna i da su izrazi i predikati redukovani pomoću `PartialEvaluator` klase.
+Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
+
+`INSERT` naredba služi za umetanje novih slogova u tabelu. Semantička provera `INSERT` naredbi se sastoji od sledećih koraka:
+- provera postojanja fizičke tabele u koju se umeću novi slogovi,
+- provera broja kolona novih slogova,
+- provera tipova kolona novih slogova sa tipovima kolona definisanih u šemi tabele,
+- provera dozvole _NULL_ vrednosti za kolone gde je vrednost novih slogova _NULL_.
+
+`UPDATE` naredba služi za ažuriranje vrednosti postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `UPDATE` naredbi se sastoji od sledećih koraka:
+- provera postojanja fizičke tabele čiji se slogovi ažuriraju,
+- provera postojanja kolona pomenutih u predikatu i izrazima ažuriranja,
+- provera dozvole _NULL_ vrednosti za kolone gde je nova vrednost _NULL_,
+- provera tipova kolona ažuriranih slogova sa tipovima kolona definisanih u šemi tabele.
+
+`DELETE` naredba služi za brisanje postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `DELETE` naredbi se sastoji od sledećih koraka:
+- provera postojanja fizičke tabele čiji se slogovi brišu,
+- provera postojanja kolona pomenutih u predikatu.
+
+`CREATE TABLE` naredba služi za kreiranje novih tabela. Semantička provera `CREATE TABLE` naredbi se sastoji od sledećih koraka:
+- provera da li tabela sa tim imenom već postoji,
+- provera da li je veličina sloga prevazilazi maksimalnu veličinu sloga. #todo("citirati limitaciju unspanned sloga")
+
+==== Algoritam planiranja `INSERT` naredbe
+
+Stablo planova za `INSERT` naredbe je uvek isto i sastoji se samo od jednog `TablePlan` čvora. Taj čvor se pretvara u svoj prateći relacioni operator `TableScan` nad kojim se vrše umetanja novih slogova.
+
+Algoritam umetanja novog sloga u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za nov slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek počinjati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno dobro iskorištava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto.
+
+Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši od kraja. Prednost je konzistentno dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora baca na obrisane slogove.
+
+Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednje umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen, kada se sistem ugasi ovi podaci se gube. Zadržava prednost brzine umetanja, a kada se sistem restartuje, mesta obrisanih slogova mogu ponovo biti popunjena.
+
+==== Algoritam planiranja `UPDATE` naredbe
+
+Stablo planova za `UPDATE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da slogovi koji trebaju biti ažurirani moraju da ispune neki uslov filtriranja. Ova dva (ili jedan) čvora se pretvaraju u svoje prateće relacione operatore koji znaju da postave nove vrednosti.
+
+Za razliku od `INSERT` naredbe, `UPDATE` naredba može da sadrži izraze koji nisu konstantni, to jest koji pominju kolone tabele koja se ažurira.
+
+==== Algoritam planiranja `DELETE` naredbe
+
+Stablo planova za `DELETE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da ne trebaju da se obrišu svi slogovi iz tabele već samo oni koji ispunjavaju uslov filtriranja.
+
+Brisanje samo označava mesto gde se slog nalazio kao slobodno za umetanje novog sloga, umesto da radi kompresiju datoteke i zapravo smanji veličinu datoteke.
+
+==== Algoritam planiranja `CREATE TABLE` naredbe
+
+`CREATE TABLE` naredba je specijalna vrsta naredbe jer ne modifikuje slogove običnih tabela, već slogove #link(<kataloske-tabele>)[kataloških tabela]. Dodaje jedan slog u katalošku tabelu koja pamti sve postojeće tabele. Dodaje slog za svaku kolonu nove tabele u katalošku tabelu koja pamti sve postojeće kolone.
+
+Menadžer metapodataka tabela konstruiše tri `TableScan` objekta direktno: prvi koristi da proveri da li već postoji tabela sa tim imenom, drugi koristi da umetne nov slog tabele u `tablecatalog` katalošku tabelu, a treći koristi da umetne nove slogove kolona u `fieldcatalog` katalošku tabelu. Posledica ovakve implementacije je ta da `UpdatePlanner` interfejs zapravo ne vrši semantičku proveru pre pozivanja algoritma planiranja `CREATE TABLE` naredbe, nego reaguje na greške i transformiše ih, ako se one dese.

@@ -202,9 +202,7 @@ Kao što za blokove postoji #link(<fig:blok_id>)[unikatni identifikator], tako u
 
 #figure(
   ```java
-  public record RecordId(
-      int blockNum, int record
-  ) { }
+  public record RecordId(int blockNum, int record) { }
   ```,
   caption: [
     Identifikator sloga
