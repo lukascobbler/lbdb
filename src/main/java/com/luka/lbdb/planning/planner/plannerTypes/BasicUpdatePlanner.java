@@ -66,7 +66,10 @@ public class BasicUpdatePlanner extends UpdatePlanner {
     @Override
     protected int executeUpdate(UpdateStatement updateStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, updateStatement.tableName(), metadataManager);
-        plan = new SelectPlan(plan, updateStatement.predicate());
+
+        if (!updateStatement.predicate().getTerms().isEmpty()) {
+            plan = new SelectPlan(plan, updateStatement.predicate());
+        }
 
         int count = 0;
         try (UpdateScan updateScan = plan.open()) {
@@ -89,7 +92,10 @@ public class BasicUpdatePlanner extends UpdatePlanner {
     @Override
     protected int executeDelete(DeleteStatement deleteStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, deleteStatement.tableName(), metadataManager);
-        plan = new SelectPlan(plan, deleteStatement.predicate());
+
+        if (!deleteStatement.predicate().getTerms().isEmpty()) {
+            plan = new SelectPlan(plan, deleteStatement.predicate());
+        }
 
         int count = 0;
         try (UpdateScan deleteScan = plan.open()) {

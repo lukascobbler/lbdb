@@ -41,7 +41,7 @@ public abstract class QueryPlanner {
     /// Validates every aspect of a query statement, expands wildcard operators, gives fields
     /// fully qualified names and folds constant expressions.
     /// Checks for:
-    /// - tables (and views) existing
+    /// - tables existing
     /// - expands the wildcards to their equivalent fields
     /// - checks for wildcards usage in expressions
     /// - checks that each actual table field name appears exactly

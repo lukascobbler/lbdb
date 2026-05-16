@@ -35,7 +35,8 @@ public class ProductPlan implements Plan<Scan> {
     /// of the right subplan for one **record** (not block) of the left subplan, it is
     /// better to place the subplan that has more records in one block to be the left subplan.
     /// That way, more records will be processed in per block access. This formula will be
-    /// symmetric if both subplans have the same number of records per block.
+    /// symmetric if both subplans have the same number of records per block and the same number
+    /// of blocks.
     ///
     /// @return  The total number of blocks accessed for the product operation where the
     /// first subplan is the left subplan, and the second subplan is the right
