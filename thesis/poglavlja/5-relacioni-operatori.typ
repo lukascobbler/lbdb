@@ -54,7 +54,7 @@ Predikati ulančavaju članove logičkim operatorima. Koriste se za uslov filtri
 
 == Struktura relacionih operatora u sistemu
 
-Za izvršavanje komanda definisane SQL jezikom, često je potrebno primeniti više relacionih operatora. Primena više relacionih operatora se radi njihovim ulančavanjem u stablovsku strukturu podataka i zbog ovoga se kaže da sistem izvršava "stablo" relacionih operatora.
+Za izvršavanje naredbi definisanih SQL jezikom, često je potrebno primeniti više relacionih operatora. Primena više relacionih operatora se radi njihovim ulančavanjem u stablovsku strukturu podataka i zbog ovoga se kaže da sistem izvršava "stablo" relacionih operatora.
 
 === Pajplajnovano procesovanje
 

@@ -172,7 +172,7 @@ Predikati se sastoje od članova, koji se sastoje od izraza, tako da `PartialEva
 
 Svaka SQL naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
 - `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za LBDB, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
-- `execute` koja je prilagođena #todo("klijentsko serverskoj arhitekturi") LBDB sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća objekat #todo("`Response` klase"), koji enkapsulira sva moguća stanja nakon izvršavanja naredbe.
+- `execute` koja je prilagođena #link(<klijent-server>)[klijentsko serverskoj arhitekturi] LBDB sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
 
 #figure(
   image("../dijagrami/struktura_planera.pdf"),
@@ -265,7 +265,7 @@ Kreira finalno stablo planova kroz četiri funkcije koje zovu jedne druge, imaju
 
 Drugi primer _read-only_ naredbe je `EXPLAIN` naredba. Njena uloga u sistemu je tabelarno ispisivanje kompletnih stabla planova. `EXPLAIN` naredba se poziva tako što se doda ključna reč `EXPLAIN` ispred `SELECT` naredbe. Nije podržana za modifikacione naredbe.
 
-`EXPLAIN` naredba je implementirana tako da generiše slogove koji prate šemu specijalne tabele koja ima sledeće kolone: ime relacionog operatora, procena kroz koliko blokova će taj relacioni operator proći da generiše sve slogove, procena broja slogova i specijalni detalji. Svaki slog predstavlja čvor rezultujućeg stabla relacionih operatora. Iako je poenta naredbe tabelarni prikaz stabla, naredba samo generiše ove slogove i ne brine se o #todo("formatiranju tabele").
+`EXPLAIN` naredba je implementirana tako da generiše slogove koji prate šemu specijalne tabele koja ima sledeće kolone: ime relacionog operatora, procena kroz koliko blokova će taj relacioni operator proći da generiše sve slogove, procena broja slogova i specijalni detalji. Svaki slog predstavlja čvor rezultujućeg stabla relacionih operatora. Iako je poenta naredbe tabelarni prikaz stabla, naredba samo generiše ove slogove i ne brine se o #link(<stampac-tabela>)[formatiranju tabele].
 
 #figure(
   ```text
@@ -286,7 +286,7 @@ Drugi primer _read-only_ naredbe je `EXPLAIN` naredba. Njena uloga u sistemu je 
 Modifikacione naredbe su razne, a `UpdatePlanner` ima istu ulogu za njih, kao što `QueryPlanner` ima za `SELECT` naredbu, a to je samo semantička provera. Konkretni algoritmi planiranja modifikacionih naredbi mogu da podrazumevaju da je naredba semantički validna i da su izrazi i predikati redukovani pomoću `PartialEvaluator` klase.
 Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
 
-`INSERT` naredba služi za umetanje novih slogova u tabelu. Semantička provera `INSERT` naredbi se sastoji od sledećih koraka:
+`INSERT` naredba služi za umetanje novih slogova. Semantička provera `INSERT` naredbi se sastoji od sledećih koraka:
 - provera postojanja fizičke tabele u koju se umeću novi slogovi,
 - provera broja kolona novih slogova,
 - provera tipova kolona novih slogova sa tipovima kolona definisanih u šemi tabele,
@@ -308,28 +308,26 @@ Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
 
 ==== Algoritam planiranja `INSERT` naredbe
 
-Stablo planova za `INSERT` naredbe je uvek isto i sastoji se samo od jednog `TablePlan` čvora. Taj čvor se pretvara u svoj prateći relacioni operator `TableScan` nad kojim se vrše umetanja novih slogova.
+Stablo planova za `INSERT` naredbe je uvek isto i sastoji se samo od jednog `TablePlan` čvora. Taj čvor se pretvara u svoj prateći relacioni operator nad kojim se vrše umetanja novih slogova. Vraća broj dodatih slogova.
 
-Algoritam umetanja novog sloga u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za nov slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek počinjati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno dobro iskorištava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto.
+Algoritam umetanja novog sloga implementiran u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za nov slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek počinjati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno dobro iskorišćava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto. Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši od kraja. Prednost je konzistentno dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora baca na obrisane slogove.
 
-Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši od kraja. Prednost je konzistentno dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora baca na obrisane slogove.
-
-Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednje umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen, kada se sistem ugasi ovi podaci se gube. Zadržava prednost brzine umetanja, a kada se sistem restartuje, mesta obrisanih slogova mogu ponovo biti popunjena.
+Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednje umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen i resetuje se prilikom gašenja sistema. Zadržava prednost brzine umetanja, a nakon restarta sistema mesta obrisanih slogova mogu ponovo biti popunjena.
 
 ==== Algoritam planiranja `UPDATE` naredbe
 
-Stablo planova za `UPDATE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da slogovi koji trebaju biti ažurirani moraju da ispune neki uslov filtriranja. Ova dva (ili jedan) čvora se pretvaraju u svoje prateće relacione operatore koji znaju da postave nove vrednosti.
+Stablo planova za `UPDATE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da slogovi koji trebaju biti ažurirani moraju da ispune neki uslov filtriranja. Ova dva (ili jedan) čvora se pretvaraju u svoje prateće relacione operatore koji znaju da postave nove vrednosti. Vraća broj ažuriranih slogova.
 
 Za razliku od `INSERT` naredbe, `UPDATE` naredba može da sadrži izraze koji nisu konstantni, to jest koji pominju kolone tabele koja se ažurira.
 
 ==== Algoritam planiranja `DELETE` naredbe
 
-Stablo planova za `DELETE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da ne trebaju da se obrišu svi slogovi iz tabele već samo oni koji ispunjavaju uslov filtriranja.
+Stablo planova za `DELETE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da ne trebaju da se obrišu svi slogovi iz tabele već samo oni koji ispunjavaju uslov filtriranja. Vraća broj obrisanih slogova.
 
-Brisanje samo označava mesto gde se slog nalazio kao slobodno za umetanje novog sloga, umesto da radi kompresiju datoteke i zapravo smanji veličinu datoteke.
+Brisanje nekog sloga samo označava mesto gde se taj slog nalazio kao slobodno za umetanje novog sloga, umesto da radi kompresiju datoteke i zapravo izvrši fizičko brisanje.
 
 ==== Algoritam planiranja `CREATE TABLE` naredbe
 
-`CREATE TABLE` naredba je specijalna vrsta naredbe jer ne modifikuje slogove običnih tabela, već slogove #link(<kataloske-tabele>)[kataloških tabela]. Dodaje jedan slog u katalošku tabelu koja pamti sve postojeće tabele. Dodaje slog za svaku kolonu nove tabele u katalošku tabelu koja pamti sve postojeće kolone.
+`CREATE TABLE` naredba je specijalna vrsta naredbe jer ne modifikuje slogove običnih tabela, već slogove #link(<kataloske-tabele>)[kataloških tabela]. Dodaje jedan slog u katalošku tabelu koja pamti sve postojeće tabele. Dodaje slog za svaku kolonu nove tabele u katalošku tabelu koja pamti sve postojeće kolone. Pošto ne utiče na slogove običnih tabela, uvek vraća nula za broj slogova na koje je uticala.
 
-Menadžer metapodataka tabela konstruiše tri `TableScan` objekta direktno: prvi koristi da proveri da li već postoji tabela sa tim imenom, drugi koristi da umetne nov slog tabele u `tablecatalog` katalošku tabelu, a treći koristi da umetne nove slogove kolona u `fieldcatalog` katalošku tabelu. Posledica ovakve implementacije je ta da `UpdatePlanner` interfejs zapravo ne vrši semantičku proveru pre pozivanja algoritma planiranja `CREATE TABLE` naredbe, nego reaguje na greške i transformiše ih, ako se one dese.
+Menadžer metapodataka tabela interno konstruiše tri `TableScan` objekta: prvi koristi da proveri jedinstvenost imena nove tabele, drugi koristi da umetne slog za novu tabelu u `tablecatalog` katalošku tabelu, a treći koristi da umetne slogove novih kolona u `fieldcatalog` katalošku tabelu. Posledica ovakve implementacije je ta da `UpdatePlanner` apstraktna klasa zapravo ne vrši semantičku proveru pre pozivanja algoritma planiranja `CREATE TABLE` naredbe, nego reaguje na greške i transformiše ih, ako se dese.

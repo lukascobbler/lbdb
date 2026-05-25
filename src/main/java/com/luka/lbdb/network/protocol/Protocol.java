@@ -27,9 +27,9 @@ public class Protocol {
     /// ```
     ///
     /// Response types (as bytes) are as follows:
-    /// - [EmptySet]: `!`
+    /// - [EmptySet]: `_`
     /// - [ErrorResponse]: `-`
-    /// - [QuerySet]: `+`
+    /// - [QuerySet]: `*`
     ///
     /// Response serializations are as follows:
     /// - [EmptySet]: `rows affected AS INTEGER`
@@ -54,7 +54,7 @@ public class Protocol {
 
         switch (response) {
             case EmptySet emptySet -> {
-                payload.write('!');
+                payload.write('_');
                 writeIntLE(payload, emptySet.rowsAffected());
             }
             case ErrorResponse errorResponse -> {
@@ -62,7 +62,7 @@ public class Protocol {
                 payload.write(errorResponse.error().getBytes(StandardCharsets.UTF_8));
             }
             case QuerySet querySet -> {
-                payload.write('+');
+                payload.write('*');
                 writeShortLE(payload, (short) querySet.schema().getFields().size());
 
                 for (String column : querySet.schema().getFields()) {
@@ -107,8 +107,8 @@ public class Protocol {
 
         return switch (payloadType) {
             case '-' -> new ErrorResponse(StandardCharsets.UTF_8.decode(payload).toString());
-            case '!' -> new EmptySet(payload.getInt());
-            case '+' -> {
+            case '_' -> new EmptySet(payload.getInt());
+            case '*' -> {
                 Schema outputSchema = new Schema();
                 short schemaLength = payload.getShort();
 
@@ -215,11 +215,5 @@ public class Protocol {
     private static void writeShortLE(ByteArrayOutputStream out, short value) {
         out.write(value & 0xFF);
         out.write((value >> 8) & 0xFF);
-    }
-
-    /// Helper function for writing a boolean value.
-    private static void writeBoolean(ByteArrayOutputStream out, boolean value) {
-        byte byteValue = (byte) (value ? 1 : 0);
-        out.write(byteValue & 0xFF);
     }
 }

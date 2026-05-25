@@ -4,8 +4,7 @@
 
 == O sistemu
 
-LBDB je višekorisniški sistem sa transakcijama za upravljanje relacionim bazama podataka. Njegova svrha je da prima komande dobijene od klijenata, intepretira ih po standardu SQL
-programskog jezika i da vrati rezultat operacije tim klijentima. Rezultat može biti broj pogođenih redova za slučaj modifikacionih operacija ili rezultujuća tabela za slučaj upita. Zarad efikasnog interpretiranja, potrebno je obezbediti algoritme i strukture podataka za sledeće module: upravljanje datotekama, rad sa transakcijama, rad sa metapodacima, parsiranje upita, pravljenje planova izvršavanja upita, izvršavanje upita i za mrežnu komunikaciju.
+LBDB je višekorisniški sistem sa transakcijama za upravljanje relacionim bazama podataka. Njegova svrha je da prima naredbe dobijene od klijenata, intepretira ih po standardu SQL programskog jezika i da vrati rezultat tim klijentima. Rezultat može biti broj pogođenih redova za slučaj modifikacionih operacija ili rezultujuća tabela za slučaj upita. Zarad efikasnog interpretiranja, potrebno je obezbediti algoritme i strukture podataka za sledeće module: upravljanje datotekama, rad sa transakcijama, rad sa metapodacima, parsiranje upita, pravljenje planova izvršavanja upita, izvršavanje upita i za mrežnu komunikaciju.
 Moduli ovog sistema su raspoređeni tako da se svaki brine o jednoj grupi algoritama i struktura podataka kroz koju upit prolazi.
 
 #figure(

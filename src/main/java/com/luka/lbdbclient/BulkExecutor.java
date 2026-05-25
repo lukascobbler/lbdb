@@ -2,7 +2,6 @@ package com.luka.lbdbclient;
 
 import com.luka.lbdb.network.protocol.Protocol;
 import com.luka.lbdb.network.protocol.response.*;
-import org.jline.reader.*;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -18,13 +17,13 @@ import java.util.List;
 
 /// Not a general purpose client. Executes all queries / commands
 /// in a file and disconnects.
-public class BulkModifier implements AutoCloseable {
+public class BulkExecutor implements AutoCloseable {
     private final Socket socket;
     private final DataInputStream in;
     private final OutputStream out;
 
     /// A bulk modifier client needs to know what is the port of the server.
-    public BulkModifier(int port) throws IOException {
+    public BulkExecutor(int port) throws IOException {
         this.socket = new Socket("localhost", port);
         this.in = new DataInputStream(socket.getInputStream());
         this.out = socket.getOutputStream();
@@ -34,7 +33,7 @@ public class BulkModifier implements AutoCloseable {
     /// by one and exits. On encountering an error, rolls back.
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.out.println("USAGE: BulkModifier <port> <file_path>");
+            System.out.println("USAGE: BulkExecutor <port> <file_path>");
             System.exit(1);
         }
 
@@ -52,7 +51,7 @@ public class BulkModifier implements AutoCloseable {
             System.exit(3);
         }
 
-        try (BulkModifier client = new BulkModifier(port)) {
+        try (BulkExecutor client = new BulkExecutor(port)) {
             boolean error = false;
 
             System.out.println("Connected to port " + port + ". Executing file: " + filePath);

@@ -47,7 +47,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse>
 
-`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaktičke kategorije. Omogućava i #link(<explain>)[`EXPLAIN`] naredbu, koja generiše opis komande koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaktička kategorija. Vraća `Statement` objekat.
+`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaktičke kategorije. Omogućava i #link(<explain>)[`EXPLAIN`] naredbu, koja generiše opis naredbe koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaktička kategorija. Vraća `Statement` objekat.
 
 ==== `ParseUpdate`
 
@@ -58,7 +58,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_update>
 
-`ParseUpdate` predstavlja komandu modifikovanja podataka neke tabele. Može sadržati proizvoljan broj novih dodela vrednosti, ali svako polje u svim dodelama vrednosti mora postojati u referenciranoj tabeli. Moguće je modifikovati samo neke slogove, a ne sve, tako što se definiše uslov pretrage. Vraća `UpdateStatement` objekat.
+`ParseUpdate` predstavlja naredbu modifikovanja podataka neke tabele. Može sadržati proizvoljan broj novih dodela vrednosti, ali svako polje u svim dodelama vrednosti mora postojati u referenciranoj tabeli. Moguće je modifikovati samo neke slogove, a ne sve, tako što se definiše uslov pretrage. Vraća `UpdateStatement` objekat.
 
 ==== `ParseSelect` <parse_select>
 
@@ -69,7 +69,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_select>
 
-`ParseSelect` predstavlja komandu upita (eng. _query_) podataka. Može sadržati proizvoljan broj projektovanih kolona, gde je svaka kolona predstavljena izrazom kome se može dodeliti neko ime (uz `AS` ključnu reč). Podržava filtriranje na osnovu uslova pretrage. Upit može biti nad pravim tabelama ili nad #link(<dummy_table_sken>)[virtuelnom tabelom koja sadrži jedan slog]. Ulančavanje tabela se može raditi na dva načina: samo navođenje tabela odvojene zarezom ili preko `JOIN` ključne reči gde se uslov ulančavanja upisuje odmah. Uslov ulančavanja napisan u `JOIN` sekciji se samo dodaje na uslov pretrage, umesto da predstavlja neki specijalan način ulančavanja. #todo("Jedno od glavnih ograničenja sistema je da projektovane kolone ne mogu da sadrže logička računanja"), već samo aritmetička. Vraća `SelectStatement` objekat.
+`ParseSelect` predstavlja naredbu upita (eng. _query_) podataka. Može sadržati proizvoljan broj projektovanih kolona, gde je svaka kolona predstavljena izrazom kome se može dodeliti neko ime (uz `AS` ključnu reč). Podržava filtriranje na osnovu uslova pretrage. Upit može biti nad pravim tabelama ili nad #link(<dummy_table_sken>)[virtuelnom tabelom koja sadrži jedan slog]. Ulančavanje tabela se može raditi na dva načina: samo navođenje tabela odvojene zarezom ili preko `JOIN` ključne reči gde se uslov ulančavanja upisuje odmah. Uslov ulančavanja napisan u `JOIN` sekciji se samo dodaje na uslov pretrage, umesto da predstavlja neki specijalan način ulančavanja. #todo("Jedno od glavnih ograničenja sistema je da projektovane kolone ne mogu da sadrže logička računanja"), već samo aritmetička. Vraća `SelectStatement` objekat.
 
 ==== `ParseInsert`
 
@@ -80,7 +80,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_insert>
 
-`ParseInsert` predstavlja komandu umetanja novih slogova u neku tabelu. Lista polja ne mora biti definisana, uzima se podrazumevani redosled koji je napravljen tokom kreiranja te tabele. Izrazi moraju biti konstantni, to jest njihova evaluacija ne sme zavisiti od vrednosti koje ne mogu da se izračunaju bez pristupa tabelama. Vraća `InsertStatement` objekat.
+`ParseInsert` predstavlja naredbu umetanja novih slogova u neku tabelu. Lista polja ne mora biti definisana, uzima se podrazumevani redosled koji je napravljen tokom kreiranja te tabele. Izrazi moraju biti konstantni, to jest njihova evaluacija ne sme zavisiti od vrednosti koje ne mogu da se izračunaju bez pristupa tabelama. Vraća `InsertStatement` objekat.
 
 ==== `ParseDelete`
 
@@ -91,7 +91,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_delete>
 
-`ParseDelete` predstavlja komandu brisanja slogova iz neke tabele. Moguće je obrisati samo slogove koji ispunjavaju neki uslov, tako što se definiše uslov pretrage. Vraća `DeleteStatement` objekat.
+`ParseDelete` predstavlja naredbu brisanja slogova iz neke tabele. Moguće je obrisati samo slogove koji ispunjavaju neki uslov, tako što se definiše uslov pretrage. Vraća `DeleteStatement` objekat.
 
 ==== `ParseCreateTable`
 
@@ -102,7 +102,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_create_table>
 
-`ParseCreateTable` predstavlja komandu kreiranja nove tabele. Tabela može sadržati maksimalno #link(<primena_strukture_na_blok>)[31 polje]. Polje može biti jedno od tipova #link(<fig:tip>)[podržanih u sistemu], a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTabeStatement` objekat.
+`ParseCreateTable` predstavlja naredbu kreiranja nove tabele. Tabela može sadržati maksimalno #link(<primena_strukture_na_blok>)[31 polje]. Polje može biti jedno od tipova #link(<fig:tip>)[podržanih u sistemu], a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTabeStatement` objekat.
 
 ==== `ParsePredicate`
 

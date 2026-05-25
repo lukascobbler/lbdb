@@ -72,7 +72,7 @@ Prilikom inicijalizacije sistema, računaju se statistički metapodaci za svaku 
 
 Broj blokova tabele i broj slogova u tabeli se trivijalno dobijaju iteracijom kroz svaki slog.
 
-Broj različitih vrednosti kolone tabele nije moguće izračunati precizno, jer je za to potrebno čuvanje svih jedinstvenih vrednosti te kolone u radnoj memoriji. Male nepreciznosti neće uticati na procenu vremena izvršavanja operacija, pa je iskorištena probabilistička struktura podataka _HyperLogLog_ @hll koja rešava _count distinct_ problem i ona ne čuva sve jedinstvene vrednosti u radnoj memoriji. Jedna takva struktura se dodeljuje za svaku kolonu.
+Broj različitih vrednosti kolone tabele nije moguće izračunati precizno, jer je za to potrebno čuvanje svih jedinstvenih vrednosti te kolone u radnoj memoriji. Male nepreciznosti neće uticati na procenu vremena izvršavanja operacija, pa je iskorišćena probabilistička struktura podataka _HyperLogLog_ @hll koja rešava _count distinct_ problem i ona ne čuva sve jedinstvene vrednosti u radnoj memoriji. Jedna takva struktura se dodeljuje za svaku kolonu.
 
 Brojanje _NULL_ vrednosti kolona tabele se svodi na čuvanje prostog brojača za svaku kolonu.
 

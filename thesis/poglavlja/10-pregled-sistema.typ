@@ -4,6 +4,16 @@
 
 ...
 
+== Rukovođenje zavisnostima
+
+#todo("objasniti da sistem koristi maven, opisati ukratko sve zavisnosti")
+
+== Pokretanje sistema
+
+#todo("objasniti build sistem sa odvojenim jarovima")
+
+#todo("objasniti pokretanje testova")
+
 == Sistemska konfiguracija
 
 U okviru sistema postoji i konfiguraciona klasa `LBDBSettings` preko koje je moguće postaviti parametre izbora algoritama ili vrednosti za određene operacije. Podrazumevane vrednosti su dobar izbor za nenadgledanu inicijalizaciju sistema i mogu se videti u sledećem bloku koda:

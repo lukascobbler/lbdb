@@ -92,11 +92,11 @@ Naivni algoritam, kako mu i ime kaže, ne razmišlja mnogo o baferu kojeg će sm
 
 ==== _FIFO_
 
-_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma ali _FIFO_ algoritam pati od toga da će zameniti i jako često korištene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
+_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma ali _FIFO_ algoritam pati od toga da će zameniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
 
 ==== _LRU_
 
-_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišten. Performanse su odlične jer ako bafer dugo nije korišten, verovatno se neće još dugo ni koristiti.
+_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišćen. Performanse su odlične jer ako bafer dugo nije korišćen, verovatno se neće još dugo ni koristiti.
 
 ==== _Clock_
 
@@ -104,11 +104,11 @@ _Clock_ algoritam smenjuje prvi bafer koji ima nula pinova, ali pretragu počinj
 
 ==== _First unmodified_
 
-_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova ili ako je svaki modifikovan, prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma, ali može se desiti da modifikovan bafer neće dugo biti korišten pa je onda to bacanje bafera.
+_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova ili ako je svaki modifikovan, prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma, ali može se desiti da modifikovan bafer neće dugo biti korišćen pa je onda to bacanje bafera.
 
 ==== _LRM_
 
-_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Predpostavka je da modifikovani bafer neće ponovo biti korišten neko vreme jer je transakcija već završila. Performansa deluje okej, ali je algoritam dosta nepredvidiv.
+_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Predpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Performansa deluje okej, ali je algoritam dosta nepredvidiv.
 
 == Slogovi
 
@@ -133,7 +133,7 @@ Svaki slog jedne tabele se sastoji od istih metapodataka, to jest istih kolona. 
   ],
 )<fig:kolona>
 
-Svaki od tipova je definisan u SQL Java standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišteni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
+Svaki od tipova je definisan u SQL Java standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
 
 #figure(
   ```java
@@ -181,7 +181,7 @@ Za svaku kolonu postoji se pamte sledeće fizičke karakteristike: pozicija poč
 
 Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U LBDB sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine. Ovo je jedna od glavnih ograničenja sistema. #todo("citirati zakljucak sa limitacijom sistema, fiksni nespanovani slogovi")
 
-Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišteno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji #link(<metapodaci>)[poseban podsistem] koji se nadograđuje na ovaj.
+Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišćeno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji #link(<metapodaci>)[poseban podsistem] koji se nadograđuje na ovaj.
 
 Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu prisutne, to jest imaju _NULL_ vrednost i to da li je slog obrisan. Rezerviše se četvorobajtno zaglavlje na početku svakog sloga i njegovi bitovi predstavljaju ove metapodatke. Da li je slog označen kao obrisan se predstavlja prvim bitom (O), dok ostalih 31 bitova (N#sub[i]) označavaju da li polje na toj poziciji ima _NULL_ vrednost. Zbog ovoga postoji ograničenje na broj polja po tabeli, maksimalno 31 polje.
 
