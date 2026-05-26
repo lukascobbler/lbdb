@@ -4,15 +4,19 @@
 
 ...
 
-== Rukovođenje zavisnostima
-
-#todo("objasniti da sistem koristi maven, opisati ukratko sve zavisnosti")
-
 == Pokretanje sistema
 
 #todo("objasniti build sistem sa odvojenim jarovima")
 
 #todo("objasniti pokretanje testova")
+
+== Rukovođenje zavisnostima <rukovodjenje-zavisnostima>
+
+#todo("objasniti da sistem koristi maven, opisati ukratko sve zavisnosti")
+
+=== Zavisnosti servera
+
+=== Zavisnosti klijenta
 
 == Sistemska konfiguracija
 
@@ -43,6 +47,10 @@ Redom, parametri označavaju:
 5. putanja do datoteke gde se čuvaju podaci potrebni za oporavak sistema i poništavanje transakcija,
 6. implementacija planera za operacije upita; podržana samo `BETTER` implementacija,
 7. implementacija planera za operacije modifikacije; podržana samo `BASIC` implementacija.
+
+== Pokretanje testova na _GitHub_ platformi
+
+#todo("implementiran je CI koji pokreće testove na linux i windows masinama koristeci in memory file sistem")
 
 == Primer funkcionisanja celokupnog sistema
 

@@ -24,7 +24,7 @@ LBDB sistem podržava samo serveski režim rada.
 
 Kod serverskog režima rada, predpostavlja se da je klijent na udaljenom računaru i nema pristup nikakvim resursima računara na kom se pokreće server. Posledica ovog je da sva komunikacija mora da se vrši kroz mrežu, preko nekog protokola komunikacije.
 
-=== `Response` <response>
+=== Odgovori sistema <response>
 
 Sve vrste odgovora koje server može dati za neku naredbu koju je klijent zadao predstavljene su Java _record_ konstruktom i implementiraju `Response` _sealed interface_.
 

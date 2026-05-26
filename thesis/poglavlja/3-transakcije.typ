@@ -97,7 +97,7 @@ Kontrolna tačka predstavlja zapis u _log_ fajlu posle kojeg se ne mora čitati 
 
 Nakon oporavka, umesto pisanja kontrolne tačke, sistem radi arhiviranje _log_ datoteke. Arhiviranje je ekvivalentna operacija, a omogućava preglednije održavanje sistema.
 
-==== Algoritam poništavanje transakcije
+==== Algoritam poništavanja transakcije
 
 Sistem radi poništavanje transakcije tako što prolazi kroz _log_ datoteku od kraja ka početku i poništava svaku modifikacionu operaciju te transakcije, a staje sa prolaskom _log_ datoteke kada naiđe na operaciju koja označava početak te transakcije.
 
