@@ -6,7 +6,7 @@ Pošto je za korektno funkcionisanje sistema potrebno mnogo kompleksnih funkcion
 
 == Organizacija testova
 
-Sve testove u sistemu podržava _JUnit_#footnote[https://junit.org/] biblioteka. _JUnit_ sadrži razne konfiguracione parametre, a za LBDB sistem testiranja su najbitniji parametri koji omogućavaju #link(<disk-filesystem>)[definisanje čistača] i parametri koji omogućavaju paralelno pokretanje testova.
+Sve testove u sistemu podržava _JUnit_ biblioteka. _JUnit_ sadrži razne konfiguracione parametre, a za LBDB sistem testiranja su najbitniji parametri koji omogućavaju #link(<disk-filesystem>)[definisanje čistača] i parametri koji omogućavaju paralelno pokretanje testova.
 
 #figure(
   ```properties
@@ -19,7 +19,7 @@ Sve testove u sistemu podržava _JUnit_#footnote[https://junit.org/] biblioteka.
   ],
 )<fig:junit_konfiguracija>
 
-Sistem prati standardnu definiciju strukture direktorijuma izvornog koda _Maven_#footnote[https://maven.apache.org/] sistema za upravljanje zavisnostima. Više o njemu u #link(<rukovodjenje-zavisnostima>)[pregledu sistema]. Po _Maven_-u, testovi se nalaze unutar `src/test/java` direktorijuma, a konfiguracioni parametri _JUnit_ biblioteke se nalaze unutar `src/test/resources` direktorijuma. Testovi su grupisani po istim modulima kao i glavni izvorni kod.
+Sistem prati standardnu definiciju strukture direktorijuma izvornog koda _Maven_ sistema za upravljanje zavisnostima. Više o njemu u #link(<buildsystem>)[pregledu sistema]. Po _Maven_-u, testovi se nalaze unutar `src/test/java` direktorijuma, a konfiguracioni parametri _JUnit_ biblioteke se nalaze unutar `src/test/resources` direktorijuma. Testovi su grupisani po istim modulima kao i glavni izvorni kod.
 
 === Testno okruženje
 
@@ -49,6 +49,6 @@ Da bi se postigla izolacija testova i kroz iteracije pokretanja istih testova, p
 
 === Sistem izolacije direktorijuma u radnoj memoriji
 
-Drugi od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze u radnoj memoriji. Pošto je LBDB sistem kompatibilan sa `java.nio.file` _API_-jem, rukovođenje direktorijumima u radnoj memoriji se vrši preko _Jimfs_#footnote[https://github.com/google/jimfs] biblioteke. Prednost ovog načina pokretanja je brzina testova. Mane ovog načina pokretanja su težak pristup datotekama zarad otklanjanja grešaka i velika potrošnja radne memorije.
+Drugi od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze u radnoj memoriji. Pošto je LBDB sistem kompatibilan sa `java.nio.file` _API_-jem, rukovođenje direktorijumima u radnoj memoriji se vrši preko _Jimfs_ biblioteke. Prednost ovog načina pokretanja je brzina testova. Mane ovog načina pokretanja su težak pristup datotekama zarad otklanjanja grešaka i velika potrošnja radne memorije.
 
 U okviru `TestUtils` klase se podešava način pokretanja testova, gde je pokretanje u radnoj memoriji podrazumevano podešeno. `TestUtils` definiše jednu instancu `Jimfs` implementacije `Filesystem` klase koja se koristi za sve testove. Nema potrebe za čišćenjem preko `GlobalCleanup` klase jer se radna memorija sama čisti kada se proces u kom su pokrenuti testovi završi.

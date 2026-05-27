@@ -2,21 +2,64 @@
 
 = Pregled sistema <pregled-sistema>
 
-...
+U okviru ovog poglavlja su objašnjeni raznovrsni detalji sistema koji nisu vezani za sâme funkcionalnosti sistema.
 
-== Pokretanje sistema
+== Izgradnja i pokretanje <buildsystem>
 
-#todo("objasniti build sistem sa odvojenim jarovima")
+Sistem koristi _Maven_#footnote[https://maven.apache.org/] za: automatizaciju kompilacije, izgradnju artifakata (aplikacija koje se pokreću) i za rukovođenje zavisnostima. U _Maven_ ekosistemu, izvorni kod prati striktno definisanu strukturu i nalazi se unutar `src/main` direktorijuma.
 
-#todo("objasniti pokretanje testova")
+Za korektno funkcionisanje _Maven_ aplikacija, potrebno je definisati `pom.xml` datoteku u kojoj se nalaze sve neophone instrukcije potrebne _Maven_-u.
 
-== Rukovođenje zavisnostima <rukovodjenje-zavisnostima>
+Po instrukcijama `pom.xml` datoteke LBDB sistema, klijentske aplikacije i serverska aplikacija se grade odvojeno, u tri različita artifakta. Ovo omogućava jednostavno odvojeno pokretanje. Nakon izgradnje, artifakti se mogu pronaći unutar `target` direktorijuma pod imenima: `LBDBServer.jar`, `LBDBClient.jar` i `BulkExecutor.jar`.
 
-#todo("objasniti da sistem koristi maven, opisati ukratko sve zavisnosti")
+#figure(
+  ```sh
+  mvn clean package -Dmaven.test.skip=true
+  ```,
+  caption: [
+    Izgradnja svih artifakata sistema, bez pokretanja testova
+  ],
+)<fig:build>
 
-=== Zavisnosti servera
+#figure(
+  ```sh
+  mvn test
+  ```,
+  caption: [
+    Pokretanje svih testova u sistemu
+  ],
+)<fig:pokretanje_testova>
 
-=== Zavisnosti klijenta
+=== Rukovođenje zavisnostima
+
+Klijentske aplikacije i serverska aplikacija dele kod za:
+- protokol komunikacije,
+- definiciju svih ključnih reči (zbog _auto complete_ funkcionalnosti klijentske aplikacije)
+- definiciju konstante zbog dobijanja njene _String_ vrednosti zarad ispisa,
+- definiciju šeme i tipa vrednosti zbog korektnog ispisa.
+
+Sav ostali kod nije deljen, uključujući i zavisnosti koje isto nisu deljene.
+
+==== Zavisnosti servera
+
+Zavisnosti servera su sledeće:
+- `datasketches-java` za Java implementaciju _HyperLogLog_ strukture podataka#footnote[https://datasketches.apache.org/],
+- `annotations` pruža dodatne Java anotacije poput `@NotNull`#footnote[https://github.com/JetBrains/java-annotations].
+
+==== Zavisnosti klijenta
+
+Zavisnosti običnog klijenta su sledeće:
+- `jline-reader`, `jline-terminal` i `jline-terminal-jna` pružaju implementaciju terminala i omogućavaju sistemski agnostičnu podršku za _UTF-8_ ispis#footnote[https://github.com/jline/jline3],
+- `net.java.dev.jna:jna` za pristup nativnim instrukcijama operativnog sistema (isto za lepo formatiranje)#footnote[https://github.com/java-native-access/jna].
+
+Zavisnosti `BulkExecutor` klijenta su iste kao i zavisnosti običnog klijenta, sa time da `jline` terminal nije iskorišćen.
+
+==== Zavisnosti testnog okruženja
+
+Ove zavisnosti se koriste u testnom okruženju i ne ulaze u artifakte:
+- `junit-jupiter-engine` i `junit-jupiter-params` za pokretanje i definisanje testova#footnote[https://junit.org/],
+- `jimfs` je implementacija sistema datoteka u radnoj memoriji#footnote[https://github.com/google/jimfs],
+- `mockito-core` i `mockito-junit-jupiter` za pravljenje objekata koji imaju praznu implementaciju a neophodni su za pozivanje funkcija i metoda#footnote[https://github.com/mockito/mockito].
 
 == Sistemska konfiguracija
 
@@ -39,18 +82,20 @@ U okviru sistema postoji i konfiguraciona klasa `LBDBSettings` preko koje je mog
   ],
 )<fig:lbdbsettings>
 
+#pagebreak()
+
 Redom, parametri označavaju:
 1. #link(<alg_oporavka>)[algoritam oporavke] sistema,
 2. veličina jednog bloka u bajtovima gde jedan blok predstavlja najmanju jedinicu interakcije sa diskom,
 3. količina bafera sa kojim sistem raspolaže,
-4. strategija izbora bafera koji će biti smenjen,
+4. #link(<algoritmi-smene-bafera>)[algoritam izbora] bafera koji će biti smenjen,
 5. putanja do datoteke gde se čuvaju podaci potrebni za oporavak sistema i poništavanje transakcija,
 6. implementacija planera za operacije upita; podržana samo `BETTER` implementacija,
 7. implementacija planera za operacije modifikacije; podržana samo `BASIC` implementacija.
 
-== Pokretanje testova na _GitHub_ platformi
+== Integracija sa _GitHub_ platformom
 
-#todo("implementiran je CI koji pokreće testove na linux i windows masinama koristeci in memory file sistem")
+_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continious Integration_, _CI_) i izgradnju aplikacija (eng. _Continious Delivery_, _CD_) u okviru njihovih servera, što omogućava ljudima koji rade na softveru da imaju glavni izvor poverenja na jednom mestu. LBDB sistem iskorištava ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje, testovi se pokreću i rezultat pokretanja (da li su svi testovi prošli) stoji u `README.md` datoteci repozitorijuma.
 
 == Primer funkcionisanja celokupnog sistema
 

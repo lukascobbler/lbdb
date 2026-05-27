@@ -70,7 +70,7 @@ Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transak
 - U slučaju da ne postoji ni jedan bafer sa nula pinova, nova stranica čeka određeni vremenski period da se oslobodi neki bafer i ako se ni jedan bafer ne oslobodi, vraća se greška klijentu.
 - U slučaju da postoji više bafera sa nula pinova, potrebno je izabrati koji će biti izbačen iz radne memorije pomoću algoritma izbora.
 
-=== Algoritmi izbora smene bafera
+=== Algoritmi izbora smene bafera <algoritmi-smene-bafera>
 
 U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen i opcije su prikazane u okviru `BufferStrategy` enumeracije (#link(<fig:lbdbsettings>)[podesivo]):
 
