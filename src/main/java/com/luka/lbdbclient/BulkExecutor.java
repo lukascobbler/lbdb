@@ -6,6 +6,7 @@ import com.luka.lbdb.network.protocol.response.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,18 +16,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
 /// Not a general purpose client. Executes all queries / commands
 /// in a file and disconnects.
 public class BulkExecutor implements AutoCloseable {
     private final Socket socket;
     private final DataInputStream in;
     private final OutputStream out;
+    private final Terminal terminal;
+    private final PrintWriter writer;
 
     /// A bulk modifier client needs to know what is the port of the server.
     public BulkExecutor(int port) throws IOException {
         this.socket = new Socket("localhost", port);
         this.in = new DataInputStream(socket.getInputStream());
         this.out = socket.getOutputStream();
+        this.terminal = TerminalBuilder.builder().system(true).build();
+        this.writer = terminal.writer();
     }
 
     /// Executes all queries / commands from the given path one
@@ -54,10 +62,10 @@ public class BulkExecutor implements AutoCloseable {
         try (BulkExecutor client = new BulkExecutor(port)) {
             boolean error = false;
 
-            System.out.println("Connected to port " + port + ". Executing file: " + filePath);
+            client.writer.println("Connected to port " + port + ". Executing file: " + filePath);
 
-            System.out.println("\n--- Starting Transaction ---");
-            handleResponse(client.executeQuery("START TRANSACTION;"));
+            client.writer.println("\n--- Starting Transaction ---");
+            client.handleResponse(client.executeQuery("START TRANSACTION;"));
 
             List<String> lines = Files.readAllLines(filePath);
             StringBuilder queryBuffer = new StringBuilder();
@@ -75,14 +83,14 @@ public class BulkExecutor implements AutoCloseable {
                     String fullQuery = queryBuffer.toString().trim();
                     queryBuffer.setLength(0);
 
-                    System.out.println("\nExecuting: " + fullQuery);
+                    client.writer.println("\nExecuting: " + fullQuery);
 
                     Response response = client.executeQuery(fullQuery);
 
-                    handleResponse(response);
+                    client.handleResponse(response);
 
                     if (response instanceof ErrorResponse) {
-                        System.err.println("Error encountered. Aborting remaining statements.");
+                        client.writer.println("Error encountered. Aborting remaining statements.");
                         error = true;
                         break;
                     }
@@ -90,17 +98,18 @@ public class BulkExecutor implements AutoCloseable {
             }
 
             if (!error) {
-                System.out.println("\n--- Committing Transaction ---");
-                handleResponse(client.executeQuery("COMMIT;"));
+                client.writer.println("\n--- Committing Transaction ---");
+                client.handleResponse(client.executeQuery("COMMIT;"));
             } else {
-                System.out.println("\n--- Rolling back Transaction ---");
-                handleResponse(client.executeQuery("ROLLBACK;"));
+                client.writer.println("\n--- Rolling back Transaction ---");
+                client.handleResponse(client.executeQuery("ROLLBACK;"));
             }
 
             long end = System.nanoTime();
             double durationMs = (end - start) / 1_000_000.0;
 
-            System.out.printf("\n(%.2f ms)%n", durationMs);
+            client.writer.printf("\n(%.2f ms)%n", durationMs);
+            client.terminal.flush();
         } catch (Exception e) {
             System.err.println("Execution error: " + e.getMessage());
         }
@@ -133,19 +142,21 @@ public class BulkExecutor implements AutoCloseable {
     }
 
     /// Different prints based on different server responses.
-    private static void handleResponse(Response response) {
+    private void handleResponse(Response response) {
         switch (response) {
-            case EmptySet emptySet -> System.out.println("Rows affected: " + emptySet.rowsAffected());
-            case ErrorResponse errorResponse -> System.out.println("Database error: " + errorResponse.error());
+            case EmptySet emptySet -> writer.println("Rows affected: " + emptySet.rowsAffected());
+            case ErrorResponse errorResponse -> writer.println("Database error: " + errorResponse.error());
             case QuerySet querySet -> {
-                System.out.print(TablePrinter.print(querySet.schema(), querySet.tuples()));
-                System.out.println(querySet.tuples().size() + " rows");
+                writer.print(TablePrinter.print(querySet.schema(), querySet.tuples()));
+                writer.println(querySet.tuples().size() + " rows");
             }
         }
+        terminal.flush();
     }
 
     @Override
     public void close() throws IOException {
         if (socket != null) socket.close();
+        if (terminal != null) terminal.close();
     }
 }

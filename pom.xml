@@ -59,6 +59,12 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>org.apache.datasketches:*</include>
+                                    <include>org.jetbrains:annotations</include>
+                                </includes>
+                            </artifactSet>
                             <outputFile>${project.build.directory}/LBDBServer.jar</outputFile>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -75,6 +81,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.luka.ldbdb:LBDB</include>
+                                    <include>org.jline:*</include>
+                                    <include>net.java.dev.jna:jna</include>
+                                </includes>
+                            </artifactSet>
                             <outputFile>${project.build.directory}/LBDBClient.jar</outputFile>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -91,6 +104,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.luka.ldbdb:LBDB</include>
+                                    <include>org.jline:*</include>
+                                    <include>net.java.dev.jna:jna</include>
+                                </includes>
+                            </artifactSet>
                             <outputFile>${project.build.directory}/BulkExecutor.jar</outputFile>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
