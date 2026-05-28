@@ -65,6 +65,7 @@ public class Planner {
                         if (!isAutoCommit) {
                             t.rollback();
                             transactionManager.clearSession(sessionId);
+                            updatePlanner.resetLastInsertion();
                             yield new EmptySet(0);
                         } else yield new ErrorResponse("Transaction not started");
                     }

@@ -60,6 +60,14 @@ public class BasicUpdatePlanner extends UpdatePlanner {
         return insertStatement.allTuplesValueInfo().newTuples().size();
     }
 
+    /// On a transaction rollback, resets all last insertions.
+    @Override
+    public void resetLastInsertion() {
+        for (String table: lastInsertions.keySet()) {
+            setLastInsertion(table, new RecordId(0, 0));
+        }
+    }
+
     /// Updates all records that match a predicate. Only provided fields' will be changed.
     ///
     /// @return The number of rows that matched the predicate.

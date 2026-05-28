@@ -54,6 +54,7 @@ public class PlanTestUtils {
             @Override protected int executeDelete(DeleteStatement d, Transaction t) { return 0; }
             @Override protected int executeCreateTable(CreateTableStatement ct, Transaction t) { return 0; }
             @Override protected int executeCreateIndex(CreateIndexStatement ci, Transaction t) { return 0; }
+            @Override public void resetLastInsertion() { }
         };
 
         Statement updateStatement = new Parser(query).parse();

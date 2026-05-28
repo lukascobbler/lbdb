@@ -167,6 +167,11 @@ public abstract class UpdatePlanner {
         );
     }
 
+    /// If the transaction rolled back, new inserts must start from the beginning because
+    /// it cannot be known how much blocks did the rolled back transaction advance the
+    /// last reset by.
+    public abstract void resetLastInsertion();
+
     /// Validates every aspect of a delete statement and folds constant expressions.
     /// Checks for:
     /// - tables and fields existing
