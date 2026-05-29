@@ -10,7 +10,7 @@ Sistem koristi _Maven_#footnote[https://maven.apache.org/] za: automatizaciju ko
 
 Za korektno funkcionisanje _Maven_ aplikacija, potrebno je definisati `pom.xml` datoteku u kojoj se nalaze sve neophone instrukcije potrebne _Maven_-u.
 
-Po instrukcijama `pom.xml` datoteke LBDB sistema, klijentske aplikacije i serverska aplikacija se grade odvojeno, u tri različita artifakta. Ovo omogućava jednostavno odvojeno pokretanje. Nakon izgradnje, artifakti se mogu pronaći unutar `target` direktorijuma pod imenima: `LBDBServer.jar`, `LBDBClient.jar` i `BulkExecutor.jar`.
+Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serverska aplikacija se grade odvojeno, u tri različita artifakta. Ovo omogućava jednostavno odvojeno pokretanje. Nakon izgradnje, artifakti se mogu pronaći unutar `target` direktorijuma pod imenima: `LBDBServer.jar`, `LBDBClient.jar` i `BulkExecutor.jar`.
 
 #figure(
   ```sh
@@ -46,7 +46,7 @@ Zavisnosti servera su sledeće:
 - `datasketches-java` za Java implementaciju _HyperLogLog_ strukture podataka#footnote[https://datasketches.apache.org/],
 - `annotations` pruža dodatne Java anotacije poput `@NotNull`#footnote[https://github.com/JetBrains/java-annotations].
 
-==== Zavisnosti klijenta
+==== Zavisnosti klijenta <zavisnosti-klijenta>
 
 Zavisnosti običnog klijenta su sledeće:
 - `jline-reader`, `jline-terminal` i `jline-terminal-jna` pružaju implementaciju terminala i omogućavaju sistemski agnostičnu podršku za _UTF-8_ ispis#footnote[https://github.com/jline/jline3],
@@ -95,8 +95,19 @@ Redom, parametri označavaju:
 
 == Integracija sa _GitHub_ platformom
 
-_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continious Integration_, _CI_) i izgradnju aplikacija (eng. _Continious Delivery_, _CD_) u okviru njihovih servera, što omogućava ljudima koji rade na softveru da imaju glavni izvor poverenja na jednom mestu. LBDB sistem iskorištava ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje, testovi se pokreću i rezultat pokretanja (da li su svi testovi prošli) stoji u `README.md` datoteci repozitorijuma.
+_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continious Integration_, _CI_) i izgradnju aplikacija (eng. _Continious Delivery_, _CD_) u okviru njihovih servera, što omogućava ljudima koji rade na softveru da imaju glavni izvor poverenja na jednom mestu. _LBDB_ sistem iskorištava ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje, testovi se pokreću i rezultat pokretanja (da li su svi testovi prošli) stoji u `README.md` datoteci repozitorijuma.
 
 == Primer funkcionisanja celokupnog sistema
 
-#todo("napraviti dijagram sekvence koji se brine o tome sta zove sta, za ceo sistem")
+Dijagram sekvence na sledećoj strani predstavlja generalno ponašanje svih slojeva _LBDB_ sistema. Opisani su slučajevi za `SELECT` naredbu, za naredbe upravljanja životnim ciklusom transakcija i za naredbe modifikacije tabela. Specifičnosti poput tačnog algoritma pravljanja stabla planova ili tačan algoritam poništavanja transakcija nisu obrađeni jer bi dijagram bio prevelik, a njihovo objašnjenje je svakako dato u poglavljima gde su definisani.
+
+#pagebreak()
+
+#figure(
+  rotate(90deg, reflow: true)[
+    #image("../dijagrami/sekvenca_celog_sistema.svg")
+  ],
+  caption: [
+    Dijagram sekvence funkcionisanja celog sistema
+  ],
+)<fig:sekvenca_ceo_sistem>

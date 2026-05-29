@@ -22,7 +22,7 @@ Svi baferi u radnoj memoriji sistema se grupišu u transakcije, tako što svaka 
 
 Sistem za oporavak je podsistem u okviru transakcija koji sadrži prvi deo logike zbog kojeg se sav pristup vrednostima radi kroz transakcije. Primarno se brine o oporavku sistema, ali se brine i o poništavanju operacija jedne transakcije (eng. _rollback_). Obuhvata _ACD_ (eng. _atomicity, consistency, durability_) osobine.
 
-LBDB sistem je softversko rešenje koje radi u kontekstu nekog hardvera i operativnog sistema. Svaki od slojeva na koje se LBDB sistem oslanja, ima mogućnost da zakaže zbog nekog faktora koji je izvan kontrole LBDB sistema. Primeri su nestajanje struje, ubijanje LBDB serverskog procesa ili neuspešno pisanje na disk. Ako se u trenutku zakazivanja izvršava neka operacija koja menja podatke u sistemu, ti podaci će biti izgubljeni, a sistem će biti ostavljen u nekonzistentnom stanju. Korišćenje sistema koji je u nekonzistentnom stanju može dovesti do lošeg tumačenja podataka, ali može biti i opasno u pojedinim situacijama. Zbog ovoga se uvodi podsistem koji oporavlja sistem od nekonzistentnog stanja.
+_LBDB_ sistem je softversko rešenje koje radi u kontekstu nekog hardvera i operativnog sistema. Svaki od slojeva na koje se _LBDB_ sistem oslanja, ima mogućnost da zakaže zbog nekog faktora koji je izvan kontrole _LBDB_ sistema. Primeri su nestajanje struje, ubijanje _LBDB_ serverskog procesa ili neuspešno pisanje na disk. Ako se u trenutku zakazivanja izvršava neka operacija koja menja podatke u sistemu, ti podaci će biti izgubljeni, a sistem će biti ostavljen u nekonzistentnom stanju. Korišćenje sistema koji je u nekonzistentnom stanju može dovesti do lošeg tumačenja podataka, ali može biti i opasno u pojedinim situacijama. Zbog ovoga se uvodi podsistem koji oporavlja sistem od nekonzistentnog stanja.
 
 Konzistentno stanje se može definisati sa sledeće dve osobine @simpledb @acid:
 - sve nedovršene transakcije su poništene,
@@ -57,7 +57,7 @@ Postoje tri generalna algoritma oporavke @simpledb:
 - samo ponovna primena uspešnih transakcija (eng. _redo only recovery_).
 Izbor algoritma oporavke utiče na to kada će sadržaj bafera biti upisan na disk.
 
-U LBDB sistemu, implementirani su _undo redo_ i _undo only_ algoritmi oporavke i moguće je postaviti koji će sistem koristiti u okviru #link(<fig:lbdbsettings>)[sistemskih podešavanja].
+U _LBDB_ sistemu, implementirani su _undo redo_ i _undo only_ algoritmi oporavke i moguće je postaviti koji će sistem koristiti u okviru #link(<fig:lbdbsettings>)[sistemskih podešavanja].
 
 ===== _Undo redo recovery_
 
@@ -93,7 +93,7 @@ Trenutak kada algoritam oporavka ne mora da čita _log_ fajl dublje se može oka
 - svi prethodni _log_ zapisi su napisani od završenih transakcija (_undo_ faza algoritma)
 - baferi tih transakcija su napisani na disk (_redo_ faza algoritma)
 
-Kontrolna tačka predstavlja zapis u _log_ fajlu posle kojeg se ne mora čitati dalje jer je sistem provereno potvrdio da obe osobine važe. Sistem trivijalno ovo može da obezbedi nakon što je završio sa oporavkom, a algoritam koji ovo obezbeđuje u ostalim situacijama se može pronaći #link(<quiescent_alg>)[ovde]. LBDB implementira samo logiku za mirnu kontrolnu tačku (eng. _quiescent checkpoint_), ali postoji i nemirna kontrolna tačka (eng _nonquiescent checkpoint_).
+Kontrolna tačka predstavlja zapis u _log_ fajlu posle kojeg se ne mora čitati dalje jer je sistem provereno potvrdio da obe osobine važe. Sistem trivijalno ovo može da obezbedi nakon što je završio sa oporavkom, a algoritam koji ovo obezbeđuje u ostalim situacijama se može pronaći #link(<quiescent_alg>)[ovde]. _LBDB_ implementira samo logiku za mirnu kontrolnu tačku (eng. _quiescent checkpoint_), ali postoji i nemirna kontrolna tačka (eng _nonquiescent checkpoint_).
 
 Nakon oporavka, umesto pisanja kontrolne tačke, sistem radi arhiviranje _log_ datoteke. Arhiviranje je ekvivalentna operacija, a omogućava preglednije održavanje sistema.
 
@@ -107,7 +107,7 @@ Sistem za bezbedan višenitni pristup je podsistem u okviru transakcija koji sad
 
 Priroda višenitnih pristupa uvodi nedeterminističan redosled operacija koji implicira konflikte. Konflikt je kada rezultat dve operacije zavisi od njihovog redosleda izvršavanja. Postoje dve vrste konflikta: _write-write_ konflikt i _read-write_ konflikt. Kod _write-write_ konflikta, jedna operacija modifikuje neku vrednost, pa druga modifikuje istu vrednost. Kod _read-write_ konflikta, jedna operacija čita neku vrednost, a druga modifikuje istu tu vrednost. Konflikti ne mogu da se dese kod _read-read_ operacija ili ako operacije rade nad vrednostima koje se nalaze u različitim blokovima @simpledb.
 
-Sprečavanje konfliktujućih operacija u sistemu se postiže preko sistema katanaca, koji omogućavaju korektan redosled pristupa vrednostima za čitanje i pisanje. Protokol zaključavanja u LBDB sistemu definiše sledeća pravila rada sa katancima:
+Sprečavanje konfliktujućih operacija u sistemu se postiže preko sistema katanaca, koji omogućavaju korektan redosled pristupa vrednostima za čitanje i pisanje. Protokol zaključavanja u _LBDB_ sistemu definiše sledeća pravila rada sa katancima:
 - pre čitanja vrednosti iz bloka, potrebno je steći _deljeni_ katanac za taj blok,
 - pre pisanja vrednosti u blok, potrebno je steći _ekskluzivni_ katanac za taj blok,
 - nakon završetka transakcije, potrebno je pustiti sve katance za sve blokove koje je ta transakcija zaključala.
@@ -147,7 +147,7 @@ Poštovanje ovakvog protokola zaključavanja uvek garantuje tačnost rada sa vre
   caption: [Različiti izolacioni nivoi transakcija],
 )<tbl:izolacioni_nivoi>
 
-Različiti izolacioni nivoi se mogu implementirati i preko _MVCC_ (eng. _multi version concurrency control_) pristupa @mvcc, ali on nije podržan u okviru LBDB sistema.
+Različiti izolacioni nivoi se mogu implementirati i preko _MVCC_ (eng. _multi version concurrency control_) pristupa @mvcc, ali on nije podržan u okviru _LBDB_ sistema.
 
 Izolacioni nivoi transakcija su koncipirani tako da svaki nivo izolacije rešava sve probleme nivoa ispod njega.
 
@@ -159,7 +159,7 @@ Pošto je nivo granularnosti zaključavanja na nivou jednog bloka, fantomska či
 
 Pomenuti izolacioni nivoa transakcija se odnose samo na operacije koje čitaju vrednosti. Operacije koje modifikuju vrednosti uvek moraju poštovati korektno dobijanje _ekskluzivnih_ katanaca. Transakcije na individualnom nivou mogu tolerisati neprecizne podatke, ali kada bi se dobijanje _ekskluzivnih_ zaobišlo, cela baza podataka bi postala neupotrebljiva.
 
-Podsistem bezbednog višenitnog pristupa LBDB sistema implementira samo serijalizujući izolacioni nivo transakcija.
+Podsistem bezbednog višenitnog pristupa _LBDB_ sistema implementira samo serijalizujući izolacioni nivo transakcija.
 
 ==== Katalog katanaca
 
@@ -175,7 +175,7 @@ Menadžer konkurentnosti (`ConcurrencyManager` klasa) sadrži skup jednostavnih 
 
 == Transakcije i klijenti <sesije>
 
-Pošto svaka operacija u sistemu mora biti izvršena u okviru neke transakcije, klijentima LBDB sistema je potrebno dodeliti korektne transakcione objekte. Menadžer transakcija upravlja životnim ciklusom transakcija i vezuje ih za klijente. Menadžer transakcija je jedan od tri glavna podsistema LBDB sistema #link(<sistem_za_obradu_upita>)[obrade upita].
+Pošto svaka operacija u sistemu mora biti izvršena u okviru neke transakcije, klijentima _LBDB_ sistema je potrebno dodeliti korektne transakcione objekte. Menadžer transakcija upravlja životnim ciklusom transakcija i vezuje ih za klijente. Menadžer transakcija je jedan od tri glavna podsistema _LBDB_ sistema #link(<sistem_za_obradu_upita>)[obrade upita].
 
 Nova transakcija počinje čim se prethodna transakcija za koju je klijent vezan završi. Prva transakcija se dodeljuje klijentu prilikom njegovog #link(<obrada-klijenta>)[povezivanja na sistem]. Podrazumevani režim završetaka transakcija je automatsko završavanje (eng. _autocommit_) u kom se svaka transakcija sastoji od tačno jedne operacije. Drugi režim završetaka transakcija je manuelni režim, u kom se transakcija može sastojati od više operacija, i u tom slučaju kraj transakcije označava operacija potvrde ili poništavanja koja se dobija od klijenta.
 

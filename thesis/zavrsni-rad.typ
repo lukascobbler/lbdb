@@ -8,7 +8,13 @@
 #pagebreak()
 #include "kljucna.typ"
 #pagebreak()
+#pagebreak()
 #include "sukob-interesa.typ"
+#pagebreak()
+#pagebreak()
+#include "posveta.typ"
+#pagebreak()
+#pagebreak()
 
 #set text(lang: "sr")
 

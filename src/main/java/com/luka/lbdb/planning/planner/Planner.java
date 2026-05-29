@@ -80,7 +80,7 @@ public class Planner {
                 case ExplainStatement e -> new ErrorResponse("Explaining of non-select statements sadly isn't supported.");
                 case SelectStatement s -> {
                     var plan = queryPlanner.createValidatedPlan(s, t);
-                    yield new QuerySet(plan.outputSchema(), queryPlanner.executePlan(plan, t));
+                    yield new QuerySet(plan.outputSchema(), queryPlanner.executePlan(plan));
                 }
             };
 

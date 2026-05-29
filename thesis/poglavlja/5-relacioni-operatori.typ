@@ -2,13 +2,13 @@
 
 = Relacioni operatori <relacioni-operatori>
 
-SQL programski jezik je jezik deklarativnog tipa. To znači da se preko njega specificira šta treba da se uradi sa podacima (dobavljanje, filtriranje, modifikacija, ...), ali za razliku od proceduralnih programskih jezika, ne specificira se i kako. Most između deklarativne prirode SQL jezika i potrebe definisanja načina pristupa podacima je rešen implementacijom _relacione algebre_ @relaciona_alg. LBDB sistem prevodi kod SQL programskog jezika u stablo operatora relacione algebre.
+_SQL_ programski jezik je jezik deklarativnog tipa. To znači da se preko njega specificira šta treba da se uradi sa podacima (dobavljanje, filtriranje, modifikacija, ...), ali za razliku od proceduralnih programskih jezika, ne specificira se i kako. Most između deklarativne prirode _SQL_ jezika i potrebe definisanja načina pristupa podacima je rešen implementacijom _relacione algebre_ @relaciona_alg. _LBDB_ sistem prevodi kod _SQL_ programskog jezika u stablo operatora relacione algebre.
 
 Relacija $R$ je skup torki oblika ($d_1, d_2, ..., d_j$) gde za svaku komponentu $d_k$ torke $d_j$ važi $d_k in D_k$, gde je $D_k$ domen koji definiše skup svih dozvoljenih vrednosti za tu komponentu. U relacionim bazama podataka, tabela se modeluje kao relacija, dok operatori relacione algebre preslikavaju jednu ili više relacija u novu relaciju kao rezultat primenjene transformacije. Torke se mapiraju na slogove tabela.
 
 == Virtuelna mašina
 
-Virtuelna mašina LBDB sistema predstavlja okruženje izvršavanja logičkih i aritmetičkih operacija i sastoji se od klasa koje modeluju komponente tih operacija.
+Virtuelna mašina _LBDB_ sistema predstavlja okruženje izvršavanja logičkih i aritmetičkih operacija i sastoji se od klasa koje modeluju komponente tih operacija.
 
 === Konstante
 
@@ -50,11 +50,11 @@ Za izraze se definišu i pomoćne metode za proveru validnosti, kvalifikovanje i
 
 === Predikati <predikati>
 
-Predikati ulančavaju članove logičkim operatorima. Koriste se za uslov filtriranja. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. LBDB sistem podržava samo `AND` logičke operatore između članova i ovo je jedna od glavnih ograničenja sistema. #todo("limitaciju podrzavanja samo AND u zakljucku")
+Predikati ulančavaju članove logičkim operatorima. Koriste se za uslov filtriranja. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. _LBDB_ sistem podržava samo `AND` logičke operatore između članova i ovo je jedna od glavnih #link(<samo-and>)[ograničenja sistema].
 
 == Struktura relacionih operatora u sistemu
 
-Za izvršavanje naredbi definisanih SQL jezikom, često je potrebno primeniti više relacionih operatora. Primena više relacionih operatora se radi njihovim ulančavanjem u stablovsku strukturu podataka i zbog ovoga se kaže da sistem izvršava "stablo" relacionih operatora.
+Za izvršavanje naredbi definisanih _SQL_ jezikom, često je potrebno primeniti više relacionih operatora. Primena više relacionih operatora se radi njihovim ulančavanjem u stablovsku strukturu podataka i zbog ovoga se kaže da sistem izvršava "stablo" relacionih operatora.
 
 === Pajplajnovano procesovanje
 
@@ -66,7 +66,7 @@ Zahtev za izvršenje neke operacije nad stablom operatora počinje od korena sta
 
 Kombinacija dve navedene osobine uz delegaciju operacija se zove pajplajnovano procesovanje (eng. _pipelined processing_). Korišćenje pajplajnovanog procesovanja u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ga je pogodno koristiti.
 
-Prednost pajplajnovanog procesovanja što ne čuva međurezultate je upravo i njegova mana za određene operacije. Materijalizovano procesovanje (eng. _materialization_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim problemima. Takođe, neke operacije poput grupisane agregacije, vraćanje samo jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovanog procesovanja. Potrebno je koristiti oba načina procesovanja u sistemu za najbolje rezultate, ali LBDB sistem implementira samo pajplajnovano procesovanje.
+Prednost pajplajnovanog procesovanja što ne čuva međurezultate je upravo i njegova mana za određene operacije. Materijalizovano procesovanje (eng. _materialization_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim problemima. Takođe, neke operacije poput grupisane agregacije, vraćanje samo jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovanog procesovanja. Potrebno je koristiti oba načina procesovanja u sistemu za najbolje rezultate, ali _LBDB_ sistem implementira samo pajplajnovano procesovanje.
 
 === Hijerarhija implementacije relacionih operatora <hijerarhija_rel_op>
 
@@ -109,7 +109,7 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 ==== `DummyTableScan` <dummy_table_sken>
 
-`DummyTableScan` nije pravi relacioni operator zato što njegova implementacija ne radi transformacije tabele, već pruža logiku za dobavljanje i navigaciju jedinog sloga virtuelne tabele koja se konstruiše u SQL upitima koji ne rade ni sa jednom fizičkom tabelom.
+`DummyTableScan` nije pravi relacioni operator zato što njegova implementacija ne radi transformacije tabele, već pruža logiku za dobavljanje i navigaciju jedinog sloga virtuelne tabele koja se konstruiše u _SQL_ upitima koji ne rade ni sa jednom fizičkom tabelom.
 
 ==== `SelectScan` <operator_selekcije>
 
@@ -129,11 +129,11 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 ==== `UnionAllScan`
 
-`UnionAllScan` implementira operaciju kreiranja relacije koje sadrži sve torke relacija $R$ i $S$. Ne briše duplikate. Zahteva da su komponente torki obe relacije istog tipa i da obe relacije imaju isti broj komponenata po torki. Po SQL standardu, kolonama druge tabele se pristupa po imenima prve. Operacija unije je aditivna. Iteracija kroz rezultujuću tabelu nakon `UnionAllScan` operatora se vrši tako što se prvo prolazi kroz sve slogove prve tabele, pa se prolazi kroz sve slogove druge tabele. Redefiniše metode dobavljanja vrednosti, provere postojanja kolone nekog imena i sve navigacione metode.
+`UnionAllScan` implementira operaciju kreiranja relacije koje sadrži sve torke relacija $R$ i $S$. Ne briše duplikate. Zahteva da su komponente torki obe relacije istog tipa i da obe relacije imaju isti broj komponenata po torki. Po _SQL_ standardu, kolonama druge tabele se pristupa po imenima prve. Operacija unije je aditivna. Iteracija kroz rezultujuću tabelu nakon `UnionAllScan` operatora se vrši tako što se prvo prolazi kroz sve slogove prve tabele, pa se prolazi kroz sve slogove druge tabele. Redefiniše metode dobavljanja vrednosti, provere postojanja kolone nekog imena i sve navigacione metode.
 
 === Primeri stabla relacionih operatora
 
-Sledeći primeri pokazuju kako pozivi metoda putuju kroz stablo relacionih operatora. Primeri ne oslikavaju stabla relacionih operatora koje bi LBDB sistem napravio, već služe da pokažu pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
+Sledeći primeri pokazuju kako pozivi metoda putuju kroz stablo relacionih operatora. Primeri ne oslikavaju stabla relacionih operatora koje bi _LBDB_ sistem napravio, već služe da pokažu pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
 
 ==== Primer poziva `getValue()` metode
 

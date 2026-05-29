@@ -65,7 +65,7 @@ public abstract class QueryPlanner {
     /// Executes a query plan, returning the list of tuples in the final query.
     ///
     /// @return The list of tuples for a given query plan.
-    public List<List<Constant>> executePlan(Plan<Scan> queryPlan, Transaction transaction)
+    public List<List<Constant>> executePlan(Plan<Scan> queryPlan)
             throws PlanValidationException {
         List<List<Constant>> tuples = new ArrayList<>();
         List<String> fields = queryPlan.outputSchema().getFields();

@@ -18,7 +18,7 @@ Karakteristike sistema u serverskom režimu rada:
 - zahteva više resursa,
 - ponaša se kao pružilac usluge baratanja relacionim modelom podataka.
 
-LBDB sistem podržava samo serveski režim rada.
+_LBDB_ sistem podržava samo serveski režim rada.
 
 == Komunikacija sa klijentima
 
@@ -129,7 +129,7 @@ Nakon što je gašenje inicirano, ulazi se u `drain` mod, gde se ne prihvataju k
 
 Klasa `LBDBClient` sadrži `main` funkciju klijentske aplikacije sistema. Čita i validira argument komandne linije: port na kojem se nalazi server na koji se klijent povezuje. Sva logika slanja naredbi se nalazi u ovoj klasi.
 
-Klijentska aplikacija pruža korisnicima terminal gde se naredbe mogu upisivati. Terminal podržava automatsko završavanje ključnih reči (eng. _auto complete_) pritiskom `TAB` dirke i navigaciju istorije komandi. Implementaciju ovih stvari podržava #todo("`jline`") zavisnost. Terminal prati i koliko vremena se izvršavala svaka naredba.
+Klijentska aplikacija pruža korisnicima terminal gde se naredbe mogu upisivati. Terminal podržava automatsko završavanje ključnih reči (eng. _auto complete_) pritiskom `TAB` dirke i navigaciju istorije komandi. Implementaciju ovih stvari podržava #link(<zavisnosti-klijenta>)[_JLine_] zavisnost. Terminal prati i koliko vremena se izvršavala svaka naredba.
 
 Paketi koje šalje serveru su serijalizovani tako da prvo stoji dužina teksta naredbe u bajtovima, a zatim i kodirani tekst naredbe. Pakete koje prima od servera deserijalizuje tako što prvo čita prva $4$ bajta koja predstavljaju dužinu paketa u bajtovima, a zatim koristi algoritam deserijalizacije koji je opisan u #link(<protokol>)[protokolu].
 
@@ -158,4 +158,4 @@ Algoritam štampanja tabela ima zadatak da lepo formatira sva imena kolona i sve
 
 === Masovno pokretanje naredbi
 
-LBDB paket pruža još jednu vrstu klijentske aplikacije: `BulkExecutor`. Ova klijentska aplikacija funkcioniše slično kao i obična klijentska aplikacija, ali umesto pružanja interakcije sa sistemom preko terminala, redom izvršava sve SQL naredbe iz neke datoteke. Ovo radi u manuelno započetoj transakciji i ako bar jedna naredba ne uspe sa izvršavanjem, javlja grešku i vrši _rollback_. Korisna je za popunjavanje tabela ili za testiranje sistema.
+_LBDB_ paket pruža još jednu vrstu klijentske aplikacije: `BulkExecutor`. Ova klijentska aplikacija funkcioniše slično kao i obična klijentska aplikacija, ali umesto pružanja interakcije sa sistemom preko terminala, redom izvršava sve _SQL_ naredbe iz neke datoteke. Ovo radi u manuelno započetoj transakciji i ako bar jedna naredba ne uspe sa izvršavanjem, javlja grešku i vrši _rollback_. Korisna je za popunjavanje tabela ili za testiranje sistema.

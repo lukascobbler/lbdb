@@ -19,7 +19,7 @@ Sistem za upravljanje blokovima je primarno zadužen za dobavljanje bloka sa dis
 
 === Interfejs ka _file_ sistemu operativnog sistema
 
-Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama LBDB sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom Java `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je #link(<bezbedan_visenitni_pristup>)[detaljno obrađen] u okviru transakcija.
+Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama _LBDB_ sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom Java `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je #link(<bezbedan_visenitni_pristup>)[detaljno obrađen] u okviru transakcija.
 
 Moguće je podesiti sistem da koristi proizvoljnu veličinu jednog bloka, zavisno od prirode podataka kojima će baza podataka biti popunjena i to je glavni #link(<fig:lbdbsettings>)[parametar] menadžera datoteka.
 
@@ -72,43 +72,31 @@ Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transak
 
 === Algoritmi izbora smene bafera <algoritmi-smene-bafera>
 
-U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen i opcije su prikazane u okviru `BufferStrategy` enumeracije (#link(<fig:lbdbsettings>)[podesivo]):
-
-#figure(
-  ```java
-  public enum BufferStrategy {
-      NAIVE, FIFO, LRU, CLOCK,
-      FIRST_UNMODIFIED, LRM
-  }
-  ```,
-  caption: [
-    Razičiti algoritmi izbora smene bafera
-  ],
-)<fig:strategije_bafera>
+U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen:
 
 ==== _Naive_
 
-Naivni algoritam, kako mu i ime kaže, ne razmišlja mnogo o baferu kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane loše performanse jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti. #todo("citirati performanse svih alg")
+Naivni algoritam, kako mu i ime kaže, ne razmišlja mnogo o baferu kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane loše performanse @simpledb jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti.
 
 ==== _FIFO_
 
-_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma ali _FIFO_ algoritam pati od toga da će zameniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
+_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma @simpledb ali _FIFO_ algoritam pati od toga da će zameniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
 
 ==== _LRU_
 
-_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišćen. Performanse su odlične jer ako bafer dugo nije korišćen, verovatno se neće još dugo ni koristiti.
+_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišćen. Performanse su odlične @simpledb jer ako bafer dugo nije korišćen, verovatno se neće još dugo ni koristiti.
 
 ==== _Clock_
 
-_Clock_ algoritam smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera, formirajući krug ili sat. Performansa je okej jer je šansa da je bitan bafer pinovan velika, pa se on preskače kada se prolazi kroz krug.
+_Clock_ algoritam smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera, formirajući krug ili sat. Performansa je okej jer je šansa da je bitan bafer pinovan velika @simpledb, pa se on preskače kada se prolazi kroz krug.
 
 ==== _First unmodified_
 
-_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova ili ako je svaki modifikovan, prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma, ali može se desiti da modifikovan bafer neće dugo biti korišćen pa je onda to bacanje bafera.
+_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova, ili ako je svaki modifikovan prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma @simpledb, ali može se desiti da modifikovan bafer neće dugo biti korišćen pa je onda to bacanje bafera.
 
 ==== _LRM_
 
-_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Predpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Performansa deluje okej, ali je algoritam dosta nepredvidiv.
+_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Predpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Performansa deluje okej, ali je algoritam dosta nepredvidiv @simpledb.
 
 == Slogovi
 
@@ -122,32 +110,16 @@ Da bi se podržalo kreiranje perzistentne strukture jednog sloga nove tabele, po
 
 Svaki slog jedne tabele se sastoji od istih metapodataka, to jest istih kolona. Svaka kolona se opisuje svojim tipom, svojom dužinom na disku i tome da li može sadržati _NULL_ vrednosti.
 
-#figure(
-  ```java
-  public record FieldInfo(
-      DatabaseType type, int runtimeLength, boolean nullable
-  ) { }
-  ```,
-  caption: [
-    Opis jedne kolone
-  ],
-)<fig:kolona>
-
-Svaki od tipova je definisan u SQL Java standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
+Svaki od tipova je definisan u _SQL_ Java standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
 
 #figure(
   ```java
   import java.sql.Types;
   public enum DatabaseType {
-      INT(Types.INTEGER, 4),
-      BOOLEAN(Types.BOOLEAN, 1),
-      VARCHAR(Types.VARCHAR, -1),
-      NULL(Types.NULL, 0);
+      INT(Types.INTEGER, 4), BOOLEAN(Types.BOOLEAN, 1),
+      VARCHAR(Types.VARCHAR, -1), NULL(Types.NULL, 0);
 
-      public final int sqlType, length;
-      DatabaseType(int sqlType, int length) {
-        this.sqlType = sqlType; this.length = length;
-      }
+      ...
   }
   ```,
   caption: [
@@ -161,25 +133,11 @@ Svaki od tipova je definisan u SQL Java standardnoj biblioteci, ali korišćenje
 
 Šema predstavlja teoretski izgled jedne tabele, ali to nije dovoljno da bi se taj izgled perzistirao i mogao ponovo rekreirati. Zbog toga je potrebno uvesti mehanizam pamćenja i fizičkih karakteristika kolona tabele (postoji samo za nevirtuelne tabele). Taj mehanizam se realizuje preko rasporeda polja (eng. _layout_).
 
-#figure(
-  ```java
-  public class Layout {
-      private final Schema schema;
-      private final Map<String, Integer> offsets;
-      private final Map<String, Integer> fieldPositions;
-      private final int recordSize;
-  }
-  ```,
-  caption: [
-    Fizičke karakteristike polja
-  ],
-)<fig:layout>
-
 Za svaku kolonu postoji se pamte sledeće fizičke karakteristike: pozicija početka vrednosti te kolone, maksimalna dužina vrednosti te kolone i pozicija te kolone u šemi. Takođe, pamti se i celokupna dužina celog sloga. Kolone se identifikuju pomoću njihovog naziva.
 
 == Primena strukture na blok <primena_strukture_na_blok>
 
-Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U LBDB sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine. Ovo je jedna od glavnih ograničenja sistema. #todo("citirati zakljucak sa limitacijom sistema, fiksni nespanovani slogovi")
+Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U _LBDB_ sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine. Ovo je jedna od #link(<slogovi-fiksne-duzine>)[ograničenja sistema].
 
 Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišćeno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji #link(<metapodaci>)[poseban podsistem] koji se nadograđuje na ovaj.
 
@@ -197,16 +155,3 @@ Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu pri
 `RecordPage` klasa enkapsulira svu logiku održavanja strukture individualnog bloka tako što pruža interfejs za postavljanje vrednosti samo na osnovu imena kolone i broja sloga u tom bloku. Takođe, pruža interfejs za postavljanje _NULL_ vrednosti i pretragu slobodnih ili zauzetih slogova u bloku za koji je povezana. Za pristup svim blokovima jedne tabele, potrebno je sukcesivno konstruisati objekte `RecordPage` klase, što je posao podsistema #link(<table_sken>)[relacionih operatora].
 
 Bitno je napomenuti da logika stranice slogova za postavljanje vrednosti ne radi sâmo postavljanje vrednosti, već samo računa gde ta vrednost treba biti postavljena. Postavljanje vrednosti #link(<pristup_vrednostima_u_transakcijama>)[delegira] sistemu transakcija.
-
-Kao što za blokove postoji #link(<fig:blok_id>)[unikatni identifikator], tako unikatni identifikator postoji i za slogove i sadrži u kom je bloku slog i na kojoj je poziciji unutar bloka:
-
-#figure(
-  ```java
-  public record RecordId(int blockNum, int record) { }
-  ```,
-  caption: [
-    Identifikator sloga
-  ],
-)<fig:slog_id>
-
-Identifikatori slogova se koriste za direktan skok na neki slog.

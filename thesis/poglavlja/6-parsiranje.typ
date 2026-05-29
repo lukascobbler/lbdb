@@ -2,9 +2,9 @@
 
 = Parsiranje <parsiranje>
 
-Klijenti šalju SQL naredbe u tekstualnom formatu, ali sistemu komad teksta nema nikakvo inherentno značenje. Podsistem za ekstrakciju informacija iz teksta naredbe se zove parser.
+Klijenti šalju _SQL_ naredbe u tekstualnom formatu, ali sistemu komad teksta nema nikakvo inherentno značenje. Podsistem za ekstrakciju informacija iz teksta naredbe se zove parser.
 
-Nije svaki komad teksta validna SQL naredba, ali njegova validnost se može podeliti na dva sloja @simpledb:
+Nije svaki komad teksta validna _SQL_ naredba, ali njegova validnost se može podeliti na dva sloja @simpledb:
 - sintaktička validnost, gde sintaksa predstavlja skup pravila koja definišu moguće operacije po nekoj gramatici,
 - semantička validnost, koja je ispunjena ako je neka operacija validna u kontekstu podataka koje koristi (imena tabela, imena kolona, ...)
 
@@ -15,7 +15,7 @@ Parsiranje konstruiše apstraktno sintaktičko stablo (eng. _abstract syntax tre
 Blokovi teksta se sastoje od individualnih karaktera. Većina individualnih karaktera sadrži jako malo značenja kada se obrađuju nezavisno i zbog toga se uvodi sistem koji grupiše povezane karaktere. Skup grupisanih karaktera koji zajedno imaju visok stepen značenja se zovu tokeni. Karakteri koji se obrađuju sami su isto opisani kao tokeni, jer je bitno da je svaki token imenovan.
 
 `Tokenizer` klasa sadrži logiku pretvaranja bloka teksta u tokene odgovarajućeg tipa i implementirana je preko Java `Iterator` interfejsa. `Token` je definisan _sealed interface_ Java konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Svi tokeni u sistemu su grupisani u sledeće kategorije:
-- ključne reči SQL jezika,
+- ključne reči _SQL_ jezika,
 - identifikatori,
 - simboli,
 - brojevi,
@@ -32,9 +32,9 @@ Vrsta parsiranja koja je implementirana se zove _recursive descent_ parsiranje. 
 
 === Iskazi <statement>
 
-Uspešno parsiranje nekog bloka teksta koji predstavlja SQL operaciju rezultuje u iskazu, koji sadrži sve neophodne podatke da se ta operacija izvrši. Iskaz (`Statement` klasa) je definisan _sealed interface_ Java konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Svaki iskaz je predstavljen Java _record_ strukturom i nasleđuje `Statement`.
+Uspešno parsiranje nekog bloka teksta koji predstavlja _SQL_ operaciju rezultuje u iskazu, koji sadrži sve neophodne podatke da se ta operacija izvrši. Iskaz (`Statement` klasa) je definisan _sealed interface_ Java konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Svaki iskaz je predstavljen Java _record_ strukturom i nasleđuje `Statement`.
 
-=== Sintaktičke kategorije SQL operacija
+=== Sintaktičke kategorije _SQL_ operacija
 
 Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg apstrakcionog nivoa i grupisane su u različite Java datoteke. Svaka datoteka sadrži sve sintaktičke kategorije nižeg apstrakcionog nivoa potrebne da se iskaz uspešno obradi.
 

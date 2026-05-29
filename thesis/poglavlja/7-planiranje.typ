@@ -2,7 +2,7 @@
 
 = Planiranje <planiranje>
 
-Planer i planovi čine podsistem planiranja koji je jedan od tri glavna podsistema LBDB sistema #link(<sistem_za_obradu_upita>)[obrade upita]. U okviru životnog ciklusa obrade jedne SQL naredbe, podsistem planiranja se nalazi između podsistema za parsiranje i stabla relacionih operatora.
+Planer i planovi čine podsistem planiranja koji je jedan od tri glavna podsistema _LBDB_ sistema #link(<sistem_za_obradu_upita>)[obrade upita]. U okviru životnog ciklusa obrade jedne _SQL_ naredbe, podsistem planiranja se nalazi između podsistema za parsiranje i stabla relacionih operatora.
 
 == Struktura planova u sistemu
 
@@ -32,7 +32,7 @@ Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_
 
 ==== `TablePlan` <table-plan>
 
-`TablePlan` opisuje konkretnu fizičku tabelu, umesto da vrši transformacije virtuelne tabele. Izlazna šema je jednaka šemi fizičke tabele. Izvlači statističke podatke direktno iz menadžera metapodataka za tabelu za koju je vezan. Statistički podaci #link(<racunanje-statistike>)[nisu ažurni], ali pružaju dovoljno dobru statistiku za potrebe LBDB sistema. Izračunati statistički metapodaci svih planova u stablu planova eventualno zavise od vrednosti statističkih metapodataka ovog plana. Može da se koristi i u kontekstima modifikujućih stabala operatora i u kontekstima _read-only_ stabala operatora i zbog toga postoji i `TableReadOnlyPlan` varijanta koja ima istu funkciju.
+`TablePlan` opisuje konkretnu fizičku tabelu, umesto da vrši transformacije virtuelne tabele. Izlazna šema je jednaka šemi fizičke tabele. Izvlači statističke podatke direktno iz menadžera metapodataka za tabelu za koju je vezan. Statistički podaci #link(<racunanje-statistike>)[nisu ažurni], ali pružaju dovoljno dobru statistiku za potrebe _LBDB_ sistema. Izračunati statistički metapodaci svih planova u stablu planova eventualno zavise od vrednosti statističkih metapodataka ovog plana. Može da se koristi i u kontekstima modifikujućih stabala operatora i u kontekstima _read-only_ stabala operatora i zbog toga postoji i `TableReadOnlyPlan` varijanta koja ima istu funkciju.
 
 ==== `DummyTablePlan` <dummy_table_plan>
 
@@ -52,10 +52,10 @@ Specijalni slučaj kada postoje prekompleksni izrazi je predstavljen konstantom 
 
 Slučaj kada se ni jedan slog ne podudara sa članom je predstavljen konstantom maksimalne vrednosti `Double` tipa i označava maksimalnu redukciju. Slučaj kada svi slogovi podudaraju neki član je predstavljen konstantom $1.0$ i predstavlja odsustvo redukcije.
 
-Izbor vrednosti ovih konstanti je opisan u _System R_ istraživačkom papiru @systemR.
+Izbor vrednosti ovih konstanti je opisan u _SystemR_ istraživačkom papiru o putanjama pristupa @systemR.
 
 #figure(
-  image("../dijagrami/racunanje_redukcionog_faktora.pdf", height: 79%),
+  image("../dijagrami/racunanje_redukcionog_faktora.pdf", height: 76%),
   caption: [
     _Flowchart_ računice redukcionog faktora člana
   ],
@@ -152,11 +152,11 @@ Broj slogova je proizvod broja slogova oba podređena plana, a broj jedinstvenih
 
 == Planer <planer>
 
-Većina naredni definisanih SQL standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke tačnosti svih naredbi.
+Većina naredni definisanih _SQL_ standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke tačnosti svih naredbi.
 
 Glavna podela tehnika planiranja u relacionim bazama podataka je na tehnike praćenja striktnih pravila pravljenja planova (eng. _rule-based optimisation_, _RBO_; _heuristics-based optimisation_, _HBO_) i tehnike planiranja koji rade sa cenama (eng. _cost-based optimisation_, _CBO_). Cena predstavlja kombinaciju statističkih metapodataka relacionih operatora sa hardverskim osobinama koji ti relacioni operatori koriste.
 
-Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ tehnike planiranja @ingres_rbo, dok moderni sistemi koriste _CBO_ tehnike planiranja #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koji su postali popularni nakon _System R_ istraživačkog papira @systemR.
+Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ tehnike planiranja @ingres_rbo, dok moderni sistemi koriste _CBO_ tehnike planiranja #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koji su postali popularni nakon _SystemR_ istraživačkog papira o putanjama pristupa @systemR.
 
 Evolucija tehnika planiranja, koja se može videti kroz ovu glavnu podelu, postoji jer je kroz istoriju bilo potrebno obezbediti sve efikasnije planere koji rade sa sve većim skupovima podataka.
 
@@ -170,12 +170,12 @@ Predikati se sastoje od članova, koji se sastoje od izraza, tako da `PartialEva
 
 === Ulazna tačka kreiranja i izvršavanja planova <planner-klasa>
 
-Svaka SQL naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
-- `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za LBDB, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
-- `execute` koja je prilagođena #link(<klijent-server>)[klijentsko serverskoj arhitekturi] LBDB sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
+Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
+- `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za _LBDB_, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
+- `execute` koja je prilagođena #link(<klijent-server>)[klijentsko serverskoj arhitekturi] _LBDB_ sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
 
 #figure(
-  image("../dijagrami/struktura_planera.pdf"),
+  image("../dijagrami/struktura_planera.pdf", height: 76%),
   caption: [
     Struktura planera
   ],
@@ -183,7 +183,7 @@ Svaka SQL naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` kla
 
 === Planiranje _read-only_ naredbi
 
-Kao što je već spominjano u tekstu, SQL naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
+Kao što je već spominjano u tekstu, _SQL_ naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
 
 Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja sâmog plana. Semantička provera se sastoji od sledećih koraka:
 - provera postojanja fizičkih tabela spomenutih u naredbi
@@ -287,24 +287,24 @@ Modifikacione naredbe su razne, a `UpdatePlanner` ima istu ulogu za njih, kao š
 Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
 
 `INSERT` naredba služi za umetanje novih slogova. Semantička provera `INSERT` naredbi se sastoji od sledećih koraka:
-- provera postojanja fizičke tabele u koju se umeću novi slogovi,
-- provera broja kolona novih slogova,
+- da li postoji fizička tabela u koju se umeću novi slogovi,
+- da li se broj kolona novih slogova podudara sa brojem definisanim u šemi tabele,
 - provera tipova kolona novih slogova sa tipovima kolona definisanih u šemi tabele,
-- provera dozvole _NULL_ vrednosti za kolone gde je vrednost novih slogova _NULL_.
+- da li su dozvoljene _NULL_ vrednosti za kolone gde je vrednost novih slogova _NULL_.
 
 `UPDATE` naredba služi za ažuriranje vrednosti postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `UPDATE` naredbi se sastoji od sledećih koraka:
-- provera postojanja fizičke tabele čiji se slogovi ažuriraju,
-- provera postojanja kolona pomenutih u predikatu i izrazima ažuriranja,
-- provera dozvole _NULL_ vrednosti za kolone gde je nova vrednost _NULL_,
+- da li postoji fizička tabela čiji se slogovi ažuriraju,
+- da li postoje kolone pomenute u predikatu i izrazima ažuriranja,
+- da li su dozvoljene _NULL_ vrednosti za kolone gde je nova vrednost _NULL_,
 - provera tipova kolona ažuriranih slogova sa tipovima kolona definisanih u šemi tabele.
 
 `DELETE` naredba služi za brisanje postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `DELETE` naredbi se sastoji od sledećih koraka:
-- provera postojanja fizičke tabele čiji se slogovi brišu,
-- provera postojanja kolona pomenutih u predikatu.
+- da li postoji fizička tabela čiji se slogovi brišu,
+- da li postoje kolone pomenute u predikatu.
 
 `CREATE TABLE` naredba služi za kreiranje novih tabela. Semantička provera `CREATE TABLE` naredbi se sastoji od sledećih koraka:
-- provera da li tabela sa tim imenom već postoji,
-- provera da li je veličina sloga prevazilazi maksimalnu veličinu sloga. #todo("citirati limitaciju unspanned sloga")
+- da li tabela sa tim imenom već postoji,
+- da li je veličina sloga prevazišla maksimum definisan #link(<slogovi-fiksne-duzine>)[ograničenjem na fiksne slogove].
 
 ==== Algoritam planiranja `INSERT` naredbe
 
@@ -312,7 +312,7 @@ Stablo planova za `INSERT` naredbe je uvek isto i sastoji se samo od jednog `Tab
 
 Algoritam umetanja novog sloga implementiran u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za nov slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek počinjati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno dobro iskorišćava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto. Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši od kraja. Prednost je konzistentno dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora baca na obrisane slogove.
 
-Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednje umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen i resetuje se prilikom gašenja sistema. Zadržava prednost brzine umetanja, a nakon restarta sistema mesta obrisanih slogova mogu ponovo biti popunjena.
+Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednje umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen i resetuje se prilikom gašenja sistema. Zadržava prednost brzine umetanja, a nakon restarta sistema mesta obrisanih slogova mogu ponovo biti popunjena. Takođe, resetuje se pri poništavanju transakcije.
 
 ==== Algoritam planiranja `UPDATE` naredbe
 

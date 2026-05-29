@@ -3,8 +3,10 @@
 = Spisak korišćenih pojmova <dodatak-2>
 
 #dodatak(
-    table(
-        [*Pojam*], [*Objašnjenje*],
-        [SQL], [Structured Query Language],
-    ),
+  table(
+    [*Pojam*],
+    [*Objašnjenje*],
+    [_SQL_],
+    [Structured Query Language],
+  ),
 )
