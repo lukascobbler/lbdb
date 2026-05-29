@@ -118,8 +118,6 @@
 #include "poglavlja/dodatak 1 - skracenice.typ"
 #include "poglavlja/dodatak 2 - pojmovi.typ"
 
-#include "biografija.typ"
-
 #show "Available at:": "Dostupno na: "
 #bibliography(title: [Literatura], "literatura.bib")
 #checkbib()

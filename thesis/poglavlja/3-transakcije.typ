@@ -155,7 +155,7 @@ Izolacioni nivoi transakcija su koncipirani tako da svaki nivo izolacije rešava
 - Problem promenjivih vrednosti je kada transakcija _A_ pročita neku vrednost, transakcija _B_ je modifikuje, transakcija _A_ ponovo pročita istu vrednost i dobije vrednost koju je transakcija _B_ modifikovala umesto vrednosti koju je transakcija _A_ prvobitno pročitala.
 - Problem fantomskih vrednosti je kada transakcija _A_ pročita sve vrednosti nekog blokovskog opsega, transakcija _B_ doda novu vrednost i proširi taj blokovski opseg sa novim blokom, i umesto da transakcija _A_ pri ponovnom čitanju svih vrednosti dobije istu listu prvobitnih vrednosti, dobije i novu vrednost iz novog bloka koju je transakcija _B_ dodala.
 
-Pošto je nivo granularnosti zaključavanja na nivou jednog bloka, fantomska čitanja se mogu desiti samo ako se na kraju neke datoteke doda nov blok. Sprečavanje ovoga se dešava specijalnim _deljenim_ katancem nad _EOF_ markerom. _EOF_ marker glumi blok koji tek treba da se doda na kraju neke datoteke, ali koji fizički ne postoji u datoteci.
+Pošto je nivo granularnosti zaključavanja na nivou jednog bloka, fantomska čitanja se mogu desiti samo ako se na kraju neke datoteke doda nov blok. Sprečavanje ovoga se dešava specijalnim _deljenim_ katancem nad _EOF_ (_end of file_) markerom. _EOF_ marker glumi blok koji tek treba da se doda na kraju neke datoteke, ali koji fizički ne postoji u datoteci.
 
 Pomenuti izolacioni nivoa transakcija se odnose samo na operacije koje čitaju vrednosti. Operacije koje modifikuju vrednosti uvek moraju poštovati korektno dobijanje _ekskluzivnih_ katanaca. Transakcije na individualnom nivou mogu tolerisati neprecizne podatke, ali kada bi se dobijanje _ekskluzivnih_ zaobišlo, cela baza podataka bi postala neupotrebljiva.
 

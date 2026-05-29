@@ -43,9 +43,9 @@ Sve vrste odgovora koje server može dati za neku naredbu koju je klijent zadao 
 
 Preko mreže je moguće slati samo niz bajtova. Pošto `Response` objekti nisu podrazumevano predstavljeni nizovima bajtova, za njih se mora definisati način serijalizacije i deserijalizacije u i iz niza bajtova.
 
-Protokol serijalizacije `Response` objekata je inspirisan _RESP_#footnote[https://redis.io/docs/latest/develop/reference/protocol-spec/] protokolom. Svakom tipu se dodeljuje jedan bajt koji ga jedinstveno predstavlja. `'*'` za `QuerySet`, `'_'` za `EmptySet` i `'-'` za `ErrorResponse`.
+Protokol serijalizacije `Response` objekata je inspirisan _RESP_ (_REdis Serialization Protocol_) #footnote[https://redis.io/docs/latest/develop/reference/protocol-spec/] protokolom. Svakom tipu se dodeljuje jedan bajt koji ga jedinstveno predstavlja. `'*'` za `QuerySet`, `'_'` za `EmptySet` i `'-'` za `ErrorResponse`.
 
-Brojčane vrednosti se pretvaraju u bajtove `byte` tipa koji se sastoji od jednog bajta, u bajtove `short` tipa koji se sastoji od $2$ bajta ili u bajtove `int` tipa koji se sastoji od $4$ bajta. `String` vrednosti se pretvaraju u bajtove preko `UTF-8` kodiranja.
+Brojčane vrednosti se pretvaraju u bajtove `byte` tipa koji se sastoji od jednog bajta, u bajtove `short` tipa koji se sastoji od $2$ bajta ili u bajtove `int` tipa koji se sastoji od $4$ bajta. `String` vrednosti se pretvaraju u bajtove preko _UTF-8_ (_Unicode Transformation Format_) kodiranja.
 
 `EmptySet` i `ErrorResponse` je trivijalno serijalizovati i deserijalizovati, jer se sastoje od samo jedne vrednosti.
 

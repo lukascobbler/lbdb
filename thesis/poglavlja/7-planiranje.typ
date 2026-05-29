@@ -170,12 +170,12 @@ Predikati se sastoje od članova, koji se sastoje od izraza, tako da `PartialEva
 
 === Ulazna tačka kreiranja i izvršavanja planova <planner-klasa>
 
-Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
+Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ (_Appication Programming Interface_) interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
 - `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za _LBDB_, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
 - `execute` koja je prilagođena #link(<klijent-server>)[klijentsko serverskoj arhitekturi] _LBDB_ sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
 
 #figure(
-  image("../dijagrami/struktura_planera.pdf", height: 76%),
+  image("../dijagrami/struktura_planera.pdf", height: 71%),
   caption: [
     Struktura planera
   ],
