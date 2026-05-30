@@ -6,7 +6,7 @@ import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanTypes.readOnly.ExtendProjectScan;
-import com.luka.lbdb.querying.virtualEntities.expression.Expression;
+import com.luka.lbdb.querying.virtualEntities.Evaluatable;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
 
@@ -16,7 +16,7 @@ import java.util.*;
 /// Read-only operations only.
 public class ExtendProjectPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan;
-    private final Map<String, Expression> fieldInfos;
+    private final Map<String, Evaluatable> fieldInfos;
     private final Schema inputSchema;
     private final Schema outputSchema = new Schema();
 
@@ -29,12 +29,12 @@ public class ExtendProjectPlan implements Plan<Scan> {
         fieldInfos = new HashMap<>();
 
         for (ProjectionFieldInfo projectionFieldInfo : projectionFieldInfoList) {
-            DatabaseType type = projectionFieldInfo.expression().type(childPlan.outputSchema());
-            int runtimeLength = projectionFieldInfo.expression().length(childPlan.outputSchema());
-            boolean isNullable = projectionFieldInfo.expression().isNullable(childPlan.outputSchema());
+            DatabaseType type = projectionFieldInfo.evaluatable().type(childPlan.outputSchema());
+            int runtimeLength = projectionFieldInfo.evaluatable().length(childPlan.outputSchema());
+            boolean isNullable = projectionFieldInfo.evaluatable().isNullable(childPlan.outputSchema());
 
             outputSchema.addField(projectionFieldInfo.name(), type, runtimeLength, isNullable);
-            fieldInfos.put(projectionFieldInfo.name(), projectionFieldInfo.expression());
+            fieldInfos.put(projectionFieldInfo.name(), projectionFieldInfo.evaluatable());
         }
     }
 
@@ -74,7 +74,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
     /// projection list.
     @Override
     public int distinctValues(String fieldName) {
-        Expression expr = fieldInfos.get(fieldName);
+        Evaluatable expr = fieldInfos.get(fieldName);
 
         if (expr == null) return 0;
 
@@ -107,7 +107,7 @@ public class ExtendProjectPlan implements Plan<Scan> {
     /// @return The null value count for a field, only if it's in the projection list.
     @Override
     public int nullValues(String fieldName) {
-        Expression expr = fieldInfos.get(fieldName);
+        Evaluatable expr = fieldInfos.get(fieldName);
 
         if (expr == null) return 0;
         if (!expr.isNullable(inputSchema)) return 0;

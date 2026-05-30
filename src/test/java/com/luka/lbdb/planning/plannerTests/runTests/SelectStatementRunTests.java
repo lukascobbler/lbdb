@@ -658,4 +658,30 @@ public class SelectStatementRunTests {
 
         assertEquals(251, totalCount);
     }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("settingsProvider")
+    public void testPredicateAsProjectionColumn(LBDBSettings settings) throws IOException {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeFullTables(tmpDir, settings);
+
+        String query = "SELECT sameint > 150 AS is_large FROM table1;";
+
+        Plan<Scan> queryPlan = PlanTestUtils.createQueryPlan(testData, query);
+
+        assertEquals(1, queryPlan.outputSchema().getFields().size());
+        assertTrue(queryPlan.outputSchema().hasField("is_large"));
+
+        int i = 0;
+        try (Scan s = queryPlan.open()) {
+            s.beforeFirst();
+            while (s.next()) {
+                boolean expected = (i + 50) > 150;
+                assertEquals(new BooleanConstant(expected), s.getValue("is_large"));
+                i++;
+            }
+        }
+
+        assertEquals(250, i);
+    }
 }

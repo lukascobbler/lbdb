@@ -49,7 +49,7 @@ public class SemijoinScan extends BinaryScan {
         while (childScan1.next()) {
             childScan2.beforeFirst();
             while (childScan2.next()) {
-                if (predicate.isSatisfied(diffSchemaJoinContextScan)) {
+                if (predicate.evaluate(diffSchemaJoinContextScan).asBoolean()) {
                     return true;
                 }
             }
@@ -69,7 +69,7 @@ public class SemijoinScan extends BinaryScan {
         while (childScan1.previous()) {
             childScan2.beforeFirst();
             while (childScan2.next()) {
-                if (predicate.isSatisfied(diffSchemaJoinContextScan)) {
+                if (predicate.evaluate(diffSchemaJoinContextScan).asBoolean()) {
                     return true;
                 }
             }

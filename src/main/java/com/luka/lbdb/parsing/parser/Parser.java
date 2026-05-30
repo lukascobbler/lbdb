@@ -40,17 +40,17 @@ public class Parser {
     /// @return A parsed statement which can be of different types.
     /// @throws ParsingException if a syntactic error was made during parsing.
     public Statement parse() {
-        Statement statement = switch (ctx.current()) {
+        Statement statement = switch (ctx.lookAhead(0)) {
             case KeywordToken.SELECT -> new ParseSelect(ctx).parse();
             case KeywordToken.INSERT -> new ParseInsert(ctx).parse();
             case KeywordToken.UPDATE -> new ParseUpdate(ctx).parse();
             case KeywordToken.DELETE -> new ParseDelete(ctx).parse();
             case KeywordToken.CREATE -> {
                 ctx.advance();
-                yield switch (ctx.current()) {
+                yield switch (ctx.lookAhead(0)) {
                     case KeywordToken.TABLE -> new ParseCreateTable(ctx).parse();
                     case KeywordToken.INDEX -> new ParseCreateIndex(ctx).parse();
-                    default -> throw new ParsingException("Invalid CREATE target: " + ctx.current());
+                    default -> throw new ParsingException("Invalid CREATE target: " + ctx.lookAhead(0));
                 };
             }
             case KeywordToken.START -> {
@@ -71,7 +71,7 @@ public class Parser {
                 yield new ExplainStatement(parse());
             }
             case EofToken() -> throw new ParsingException("Unexpected end of input");
-            default -> throw new ParsingException("Expected keyword, found: " + ctx.current());
+            default -> throw new ParsingException("Expected keyword, found: " + ctx.lookAhead(0));
         };
 
         if (!(statement instanceof ExplainStatement)) {

@@ -2,6 +2,7 @@ package com.luka.lbdb.parsing.parser.parseTypes;
 
 import com.luka.lbdb.parsing.exceptions.ParsingException;
 import com.luka.lbdb.parsing.parser.ParserContext;
+import com.luka.lbdb.planning.planner.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
 import com.luka.lbdb.querying.virtualEntities.expression.*;
@@ -159,9 +160,9 @@ public class ParsePredicateTests {
     @Test
     public void testPredicateFolding() {
         Predicate pred = parse("a = 1 + 5 - 6 AND b >= 2 + 3 - c AND d IS 14 + (-14)");
-        pred.fold();
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred); 
 
-        assertEquals("a = 0 AND b >= (5 - c) AND d IS 0", pred.toString());
+        assertEquals("a = 0 AND b >= (5 - c) AND d IS 0", foldedPredicate.toString());
     }
 
     @Test
@@ -172,58 +173,58 @@ public class ParsePredicateTests {
                         "2 * 5 > val - 0 AND " +
                         "x - x != 1"
         );
-        pred.fold();
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
 
-        assertEquals("score = 100 AND status = 'active' AND 10 > val AND 0 != 1", pred.toString());
+        assertEquals("score = 100 AND status = 'active' AND 10 > val", foldedPredicate.toString());
     }
 
     @Test
     public void testArithmeticIdentityFolding() {
         Predicate pred = parse("a + 0 = 5 AND 1 * b = 10 AND c - 0 != 0");
-        pred.fold();
-        assertEquals("a = 5 AND b = 10 AND c != 0", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("a = 5 AND b = 10 AND c != 0", foldedPredicate.toString());
     }
 
     @Test
     public void testConstantFoldingRecursion() {
         Predicate pred = parse("(1 + 2) * (10 / 5) = 6");
-        pred.fold();
-        assertEquals("6 = 6", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("", foldedPredicate.toString());
     }
 
     @Test
     public void testSignReductionFolding() {
         Predicate pred = parse("a + (-b) = 0 AND x - (-y) = 10");
-        pred.fold();
-        assertEquals("(a - b) = 0 AND (x + y) = 10", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("(a - b) = 0 AND (x + y) = 10", foldedPredicate.toString());
     }
 
     @Test
     public void testZeroFoldingIdentities() {
         Predicate pred = parse("(a + b) * 0 = 0 AND x - x = 5 AND -y + y = 0");
-        pred.fold();
-        assertEquals("0 = 0 AND 0 = 5 AND 0 = 0", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("0 = 5", foldedPredicate.toString());
     }
 
     @Test
     public void testUnaryCancellationAndRedundancy() {
         Predicate pred = parse("--x = +y AND +(-z) < 0");
-        pred.fold();
-        assertEquals("x = y AND -(z) < 0", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("x = y AND -(z) < 0", foldedPredicate.toString());
     }
 
     @Test
     public void testMultiplicationByNegativeOne() {
         Predicate pred = parse("x * -1 = -5");
-        pred.fold();
-        assertEquals("-(x) = -5", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("-(x) = -5", foldedPredicate.toString());
     }
 
     @Test
     public void testNestedPartialFolding() {
         Predicate pred = parse("(a + (5 - 5)) * 1 = b + (-0)");
-        pred.fold();
-        assertEquals("a = b", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("a = b", foldedPredicate.toString());
     }
 
     @Test
@@ -234,21 +235,21 @@ public class ParsePredicateTests {
                         "status IS 'active' AND " +
                         "0 = (x * 0)"
         );
-        pred.fold();
-        assertEquals("60 > val AND counter = other AND status IS 'active' AND 0 = 0", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("60 > val AND counter = other AND status IS 'active'", foldedPredicate.toString());
     }
 
     @Test
     public void testDeepUnaryFolding() {
         Predicate pred = parse("-(-(-(x))) = -10");
-        pred.fold();
-        assertEquals("-(x) = -10", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("-(x) = -10", foldedPredicate.toString());
     }
 
     @Test
     public void testFieldEqualityFolding() {
         Predicate pred = parse("(a * b) - (a * b) = 0");
-        pred.fold();
-        assertEquals("0 = 0", pred.toString());
+        Predicate foldedPredicate = (Predicate) PartialEvaluator.evaluate(pred);
+        assertEquals("", foldedPredicate.toString());
     }
 }

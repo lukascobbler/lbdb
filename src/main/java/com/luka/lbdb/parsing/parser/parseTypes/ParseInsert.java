@@ -103,7 +103,7 @@ public class ParseInsert {
             Expression constantExpression = new ParseExpression(ctx).parse();
 
             try {
-                Expression foldedConstantExpression = PartialEvaluator.evaluate(constantExpression);
+                Expression foldedConstantExpression = (Expression) PartialEvaluator.evaluate(constantExpression);
                 if (!foldedConstantExpression.isConstant()) {
                     throw new ParsingException("An insert statement must have constant expressions for new values");
                 }

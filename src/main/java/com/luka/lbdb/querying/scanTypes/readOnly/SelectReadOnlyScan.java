@@ -25,7 +25,7 @@ public class SelectReadOnlyScan extends UnaryScan {
     @Override
     public boolean next() {
         while (childScan.next()) {
-            if (predicate.isSatisfied(childScan)) {
+            if (predicate.evaluate(childScan).asBoolean()) {
                 return true;
             }
         }
@@ -41,7 +41,7 @@ public class SelectReadOnlyScan extends UnaryScan {
     @Override
     public boolean previous() {
         while (childScan.previous()) {
-            if (predicate.isSatisfied(childScan)) {
+            if (predicate.evaluate(childScan).asBoolean()) {
                 return true;
             }
         }

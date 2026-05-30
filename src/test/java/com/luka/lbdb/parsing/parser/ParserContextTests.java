@@ -10,29 +10,29 @@ public class ParserContextTests {
     @Test
     public void testInitializationLoadsFirstToken() {
         ParserContext ctx = new ParserContext("SELECT");
-        assertEquals(KeywordToken.SELECT , ctx.current());
+        assertEquals(KeywordToken.SELECT , ctx.lookAhead(0));
     }
 
     @Test
     public void testAdvanceMovesToNextToken() {
         ParserContext ctx = new ParserContext("SELECT id");
 
-        assertEquals(KeywordToken.SELECT, ctx.current());
+        assertEquals(KeywordToken.SELECT, ctx.lookAhead(0));
         ctx.advance();
-        assertEquals(new IdentifierToken("id"), ctx.current());
+        assertEquals(new IdentifierToken("id"), ctx.lookAhead(0));
     }
 
     @Test
     public void testEofHandling() {
         ParserContext ctx = new ParserContext("id");
 
-        assertEquals(new IdentifierToken("id"), ctx.current());
+        assertEquals(new IdentifierToken("id"), ctx.lookAhead(0));
 
         ctx.advance();
-        assertInstanceOf(EofToken.class, ctx.current());
+        assertInstanceOf(EofToken.class, ctx.lookAhead(0));
 
         ctx.advance();
-        assertInstanceOf(EofToken.class, ctx.current());
+        assertInstanceOf(EofToken.class, ctx.lookAhead(0));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ParserContextTests {
         ParserContext ctx = new ParserContext("FROM table_name");
 
         ctx.eat(KeywordToken.FROM);
-        assertEquals(new IdentifierToken("table_name"), ctx.current());
+        assertEquals(new IdentifierToken("table_name"), ctx.lookAhead(0));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ParserContextTests {
         ParserContext ctx = new ParserContext("= 5");
 
         ctx.eat(SymbolToken.EQUAL);
-        assertEquals(new IntegerToken(5), ctx.current());
+        assertEquals(new IntegerToken(5), ctx.lookAhead(0));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class ParserContextTests {
         boolean matched = ctx.eatIfMatches(KeywordToken.WHERE);
 
         assertTrue(matched);
-        assertEquals(new IdentifierToken("id"), ctx.current());
+        assertEquals(new IdentifierToken("id"), ctx.lookAhead(0));
     }
 
     @Test
@@ -84,21 +84,21 @@ public class ParserContextTests {
         boolean matched = ctx.eatIfMatches(KeywordToken.WHERE);
 
         assertFalse(matched);
-        assertEquals(new IdentifierToken("id"), ctx.current());
+        assertEquals(new IdentifierToken("id"), ctx.lookAhead(0));
     }
 
     @Test
     public void testEatIfMatchesSymbolSuccess() {
         ParserContext ctx = new ParserContext(";");
         assertTrue(ctx.eatIfMatches(SymbolToken.SEMICOLON));
-        assertInstanceOf(EofToken.class, ctx.current());
+        assertInstanceOf(EofToken.class, ctx.lookAhead(0));
     }
 
     @Test
     public void testEatIfMatchesSymbolFailure() {
         ParserContext ctx = new ParserContext(",");
         assertFalse(ctx.eatIfMatches(SymbolToken.SEMICOLON));
-        assertEquals(SymbolToken.COMMA, ctx.current());
+        assertEquals(SymbolToken.COMMA, ctx.lookAhead(0));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class ParserContextTests {
         String identifierName = ctx.eatIdentifier();
 
         assertEquals("my_table", identifierName);
-        assertEquals(SymbolToken.COMMA, ctx.current());
+        assertEquals(SymbolToken.COMMA, ctx.lookAhead(0));
     }
 
     @Test
@@ -135,6 +135,6 @@ public class ParserContextTests {
 
         ctx.eat(SymbolToken.RIGHT_PAREN);
 
-        assertInstanceOf(EofToken.class, ctx.current());
+        assertInstanceOf(EofToken.class, ctx.lookAhead(0));
     }
 }

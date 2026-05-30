@@ -55,7 +55,7 @@ public class ParseExpression {
     private Expression parseExpression(int precedence) {
         Expression left = parsePrefix();
 
-        while (precedence < getPrecedence(ctx.current())) {
+        while (precedence < getPrecedence(ctx.lookAhead(0))) {
             Token opToken = ctx.advance();
             left = parseInfix(left, opToken);
         }
@@ -98,7 +98,7 @@ public class ParseExpression {
                 }
                 default -> throw new ParsingException("Unexpected symbol: " + sym);
             };
-            default -> throw new ParsingException("Expected expression, found: " + ctx.current());
+            default -> throw new ParsingException("Expected expression, found: " + ctx.lookAhead(0));
         };
     }
 

@@ -186,7 +186,7 @@ public class ExpressionTests {
 
         Expression totalExpr = new BinaryArithmeticExpression(branch1, ArithmeticOperator.SUB, branch2);
 
-        Expression foldedExpr = PartialEvaluator.evaluate(totalExpr);
+        Expression foldedExpr = (Expression) PartialEvaluator.evaluate(totalExpr);
 
         String expectedString = "(((t1_intField1 + 15) * 2) - (t1_intField1 + 15))";
         assertEquals(expectedString, foldedExpr.toString());
@@ -245,7 +245,7 @@ public class ExpressionTests {
 
         Expression totalExpr = new BinaryArithmeticExpression(branch1, ArithmeticOperator.SUB, branch2);
 
-        Expression foldedExpr = PartialEvaluator.evaluate(totalExpr);
+        Expression foldedExpr = (Expression) PartialEvaluator.evaluate(totalExpr);
 
         String expectedString = "0";
         assertEquals(expectedString, foldedExpr.toString());
@@ -270,22 +270,22 @@ public class ExpressionTests {
         Expression const5 = new ConstantExpression(new IntConstant(5));
 
         Expression unaryMinusConst = new UnaryArithmeticExpression(ArithmeticOperator.SUB, const5);
-        Expression foldedConst = PartialEvaluator.evaluate(unaryMinusConst);
+        Expression foldedConst = (Expression) PartialEvaluator.evaluate(unaryMinusConst);
         assertEquals("-5", foldedConst.toString());
         assertInstanceOf(ConstantExpression.class, foldedConst);
 
         Expression unaryPlusField = new UnaryArithmeticExpression(ArithmeticOperator.ADD, field);
-        Expression foldedPlus = PartialEvaluator.evaluate(unaryPlusField);
+        Expression foldedPlus = (Expression) PartialEvaluator.evaluate(unaryPlusField);
         assertEquals("val", foldedPlus.toString());
         assertInstanceOf(FieldNameExpression.class, foldedPlus);
 
         Expression doubleNegation = new UnaryArithmeticExpression(ArithmeticOperator.SUB,
                 new UnaryArithmeticExpression(ArithmeticOperator.SUB, field));
-        Expression foldedDoubleNeg = PartialEvaluator.evaluate(doubleNegation);
+        Expression foldedDoubleNeg = (Expression) PartialEvaluator.evaluate(doubleNegation);
         assertEquals("val", foldedDoubleNeg.toString());
 
         Expression tripleNegation = new UnaryArithmeticExpression(ArithmeticOperator.SUB, doubleNegation);
-        Expression foldedTripleNeg = PartialEvaluator.evaluate(tripleNegation);
+        Expression foldedTripleNeg = (Expression) PartialEvaluator.evaluate(tripleNegation);
         assertEquals("-(val)", foldedTripleNeg.toString());
     }
 
@@ -324,17 +324,17 @@ public class ExpressionTests {
 
         Expression addNeg = new BinaryArithmeticExpression(x, ArithmeticOperator.ADD,
                 new UnaryArithmeticExpression(ArithmeticOperator.SUB, y));
-        Expression foldedAddNeg = PartialEvaluator.evaluate(addNeg);
+        Expression foldedAddNeg = (Expression) PartialEvaluator.evaluate(addNeg);
         assertEquals("(x - y)", foldedAddNeg.toString());
 
         Expression subNeg = new BinaryArithmeticExpression(x, ArithmeticOperator.SUB,
                 new UnaryArithmeticExpression(ArithmeticOperator.SUB, y));
-        Expression foldedSubNeg = PartialEvaluator.evaluate(subNeg);
+        Expression foldedSubNeg = (Expression) PartialEvaluator.evaluate(subNeg);
         assertEquals("(x + y)", foldedSubNeg.toString());
 
         Expression mulNegOne = new BinaryArithmeticExpression(x, ArithmeticOperator.MUL,
                 new ConstantExpression(new IntConstant(-1)));
-        Expression foldedMulNegOne = PartialEvaluator.evaluate(mulNegOne);
+        Expression foldedMulNegOne = (Expression) PartialEvaluator.evaluate(mulNegOne);
         assertEquals("-(x)", foldedMulNegOne.toString());
     }
 
@@ -344,12 +344,12 @@ public class ExpressionTests {
         Expression right = new FieldNameExpression("y");
 
         Expression diffFields = new BinaryArithmeticExpression(left, ArithmeticOperator.SUB, right);
-        Expression foldedDiff = PartialEvaluator.evaluate(diffFields);
+        Expression foldedDiff = (Expression) PartialEvaluator.evaluate(diffFields);
         assertEquals("(x - y)", foldedDiff.toString());
         assertFalse(foldedDiff instanceof ConstantExpression);
 
         Expression unaryField = new UnaryArithmeticExpression(ArithmeticOperator.SUB, left);
-        Expression foldedUnary = PartialEvaluator.evaluate(unaryField);
+        Expression foldedUnary = (Expression) PartialEvaluator.evaluate(unaryField);
         assertEquals("-(x)", foldedUnary.toString());
         assertInstanceOf(UnaryArithmeticExpression.class, foldedUnary);
     }
@@ -364,7 +364,7 @@ public class ExpressionTests {
                 ArithmeticOperator.ADD,
                 right
         );
-        Expression result = PartialEvaluator.evaluate(negXPlusY);
+        Expression result = (Expression) PartialEvaluator.evaluate(negXPlusY);
 
         assertNotEquals("0", result.toString());
         assertInstanceOf(BinaryArithmeticExpression.class, result);

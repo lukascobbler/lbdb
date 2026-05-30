@@ -11,6 +11,7 @@ import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.planning.planner.PartialEvaluator;
 import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
+import com.luka.lbdb.querying.virtualEntities.Evaluatable;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.expression.Expression;
@@ -120,7 +121,7 @@ public abstract class QueryPlanner {
             }
 
             if (singleSelection.tables().isEmpty()) {
-                if (expandedProjectionFields.stream().anyMatch(i -> !i.expression().isConstant())) {
+                if (expandedProjectionFields.stream().anyMatch(i -> !i.evaluatable().isConstant())) {
                     throw new PlanValidationException("Constant selects' fields must all be constant");
                 }
 
@@ -191,8 +192,8 @@ public abstract class QueryPlanner {
     private List<ProjectionFieldInfo> expandProjections(SingleSelection selection, ValidationContext ctx) {
         List<ProjectionFieldInfo> expanded = new ArrayList<>();
 
-        for (ProjectionFieldInfo p : selection.projectionFields()) {
-            switch (p.expression()) {
+        for (ProjectionFieldInfo projField : selection.projectionFields()) {
+            switch (projField.evaluatable()) {
                 case WildcardExpression(Optional<String> rangeVariableName) -> {
                     if (rangeVariableName.isPresent()) {
                         String qualifier = rangeVariableName.get();
@@ -217,10 +218,10 @@ public abstract class QueryPlanner {
                         }
                     }
                 }
-                case Expression e when e.hasWildCard() -> throw new PlanValidationException("Wildcard operator used in an expression.");
-                case Expression e -> {
-                    Expression qualifiedExpr = e.qualify(ctx.implicitAliases);
-                    expanded.add(new ProjectionFieldInfo(p.name(), qualifiedExpr));
+                case Evaluatable e when e.hasWildCard() -> throw new PlanValidationException("Wildcard operator used in an expression.");
+                case Evaluatable e -> {
+                    Evaluatable qualifiedExpr = e.qualify(ctx.implicitAliases);
+                    expanded.add(new ProjectionFieldInfo(projField.name(), qualifiedExpr));
 
                     for (String f : qualifiedExpr.getFields()) {
                         ctx.validateFieldExists(f, "SELECT clause");
@@ -266,7 +267,7 @@ public abstract class QueryPlanner {
     private List<DatabaseType> getProjectionTypes(List<ProjectionFieldInfo> projections, Schema unifiedSchema) {
         try {
             return projections.stream()
-                    .map(p -> p.expression().type(unifiedSchema))
+                    .map(p -> p.evaluatable().type(unifiedSchema))
                     .toList();
         } catch (RuntimeExecutionException e) {
             throw new PlanValidationException(e.getMessage());
@@ -304,18 +305,17 @@ public abstract class QueryPlanner {
 
         for (SingleSelection singleSelection : selectStatement.unionizedSelections()) {
             List<ProjectionFieldInfo> foldedProjectionFields = new ArrayList<>();
-
             Predicate foldedPredicate;
+
             try {
+                foldedPredicate = (Predicate) PartialEvaluator.evaluate(singleSelection.predicate());
                 for (ProjectionFieldInfo projectionFieldInfo : singleSelection.projectionFields()) {
                     foldedProjectionFields.add(
                             new ProjectionFieldInfo(
                                     projectionFieldInfo.name(),
-                                    PartialEvaluator.evaluate(projectionFieldInfo.expression())
+                                    PartialEvaluator.evaluate(projectionFieldInfo.evaluatable())
                             ));
                 }
-
-                singleSelection.predicate().fold();
             } catch (RuntimeExecutionException e) {
                 throw new PlanValidationException(e.getMessage());
             }
@@ -323,7 +323,7 @@ public abstract class QueryPlanner {
             expandedSingleSelections.add(new SingleSelection(
                     List.copyOf(foldedProjectionFields),
                     singleSelection.tables(),
-                    singleSelection.predicate()
+                    foldedPredicate
             ));
         }
 

@@ -44,7 +44,7 @@ public class ParsePredicate {
 
     /// A sub-predicate consists of one term.
     ///
-    /// @return The parsed term, with two expresisons and a term
+    /// @return The parsed term, with two expressions and a term
     /// operator.
     private Term parseTerm() {
         Expression lhs = exprParser.parse();
@@ -73,7 +73,7 @@ public class ParsePredicate {
 
                 yield TermOperator.IS;
             }
-            default -> throw new ParsingException("Expected comparison operator, found: " + ctx.current());
+            default -> throw new ParsingException("Expected comparison operator, found: " + ctx.lookAhead(0));
         };
     }
 }

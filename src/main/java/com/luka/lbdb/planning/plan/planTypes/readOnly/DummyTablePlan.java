@@ -25,12 +25,12 @@ public class DummyTablePlan implements Plan<Scan> {
         for (ProjectionFieldInfo info : projectionFieldInfoList) {
             outputSchema.addField(
                     info.name(),
-                    info.expression().type(null),
-                    info.expression().length(null),
-                    info.expression().isNullable(null)
+                    info.evaluatable().type(null),
+                    info.evaluatable().length(null),
+                    info.evaluatable().isNullable(null)
             );
 
-            fields.put(info.name(), info.expression().evaluate(null));
+            fields.put(info.name(), info.evaluatable().evaluate(null));
         }
     }
 

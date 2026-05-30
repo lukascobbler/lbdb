@@ -51,7 +51,7 @@ public class AntijoinScan extends BinaryScan {
             boolean foundMatch = false;
 
             while (childScan2.next()) {
-                if (predicate.isSatisfied(diffSchemaJoinContextScan)) {
+                if (predicate.evaluate(diffSchemaJoinContextScan).asBoolean()) {
                     foundMatch = true;
                     break;
                 }
@@ -79,7 +79,7 @@ public class AntijoinScan extends BinaryScan {
             boolean foundMatch = false;
 
             while (childScan2.next()) {
-                if (predicate.isSatisfied(diffSchemaJoinContextScan)) {
+                if (predicate.evaluate(diffSchemaJoinContextScan).asBoolean()) {
                     foundMatch = true;
                     break;
                 }

@@ -1,4 +1,4 @@
-package com.luka.lbdb.querying.vritualEntitiesTests;
+package com.luka.lbdb.planning.plannerTests;
 
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.scanDefinitions.Scan;

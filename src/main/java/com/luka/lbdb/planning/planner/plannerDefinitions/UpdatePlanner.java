@@ -59,7 +59,7 @@ public abstract class UpdatePlanner {
 
             Expression foldedExpr;
             try {
-                foldedExpr = PartialEvaluator.evaluate(newFieldValue.newValueExpression());
+                foldedExpr = (Expression) PartialEvaluator.evaluate(newFieldValue.newValueExpression());
             } catch (RuntimeExecutionException e) {
                 throw new PlanValidationException(e.getMessage());
             }
@@ -90,12 +90,12 @@ public abstract class UpdatePlanner {
             foldedNewExprs.add(new NewFieldExpressionAssignment(newFieldValue.fieldName(), foldedExpr));
         }
 
-        validateAndFoldPredicate(updateStatement.predicate(), tableLayout.getSchema());
+        Predicate foldedPredicate = validateAndFoldPredicate(updateStatement.predicate(), tableLayout.getSchema());
 
         UpdateStatement foldedUpdateStatement = new UpdateStatement(
                 updateStatement.tableName(),
                 foldedNewExprs,
-                updateStatement.predicate()
+                foldedPredicate
         );
 
         return executeUpdate(foldedUpdateStatement, transaction);
@@ -180,9 +180,13 @@ public abstract class UpdatePlanner {
     /// @throws PlanValidationException on various failed checks.
     public int executeDeleteValidated(DeleteStatement deleteStatement, Transaction transaction) {
         Layout tableLayout = getTableLayout(deleteStatement.tableName(), transaction);
-        validateAndFoldPredicate(deleteStatement.predicate(), tableLayout.getSchema());
 
-        return executeDelete(deleteStatement, transaction);
+        DeleteStatement foldedDeleteStatement = new DeleteStatement(
+                deleteStatement.tableName(),
+                validateAndFoldPredicate(deleteStatement.predicate(), tableLayout.getSchema())
+        );
+
+        return executeDelete(foldedDeleteStatement, transaction);
     }
 
     /// Validates every aspect of a create table statement.
@@ -293,14 +297,15 @@ public abstract class UpdatePlanner {
     /// Validates the predicate against a schema.
     ///
     /// @throws PlanValidationException if the predicate isn't valid.
-    private void validateAndFoldPredicate(Predicate predicate, Schema schema) {
+    private Predicate validateAndFoldPredicate(Predicate predicate, Schema schema) {
+        Predicate foldedPredicate;
         try {
-            predicate.fold();
+            foldedPredicate = (Predicate) PartialEvaluator.evaluate(predicate);
         } catch (RuntimeExecutionException e) {
             throw new PlanValidationException(e.getMessage());
         }
 
-        for (Term term : predicate.getTerms()) {
+        for (Term term : foldedPredicate.getTerms()) {
             Expression lhs = term.getLhs();
             Expression rhs = term.getRhs();
 
@@ -318,5 +323,7 @@ public abstract class UpdatePlanner {
                 throw new PlanValidationException("Different types are compared in the 'WHERE' predicate.");
             }
         }
+
+        return foldedPredicate;
     }
 }

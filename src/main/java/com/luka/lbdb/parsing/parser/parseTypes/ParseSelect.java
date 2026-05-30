@@ -8,8 +8,8 @@ import com.luka.lbdb.parsing.statement.select.SingleSelection;
 import com.luka.lbdb.parsing.statement.select.TableInfo;
 import com.luka.lbdb.parsing.tokenizer.token.KeywordToken;
 import com.luka.lbdb.parsing.tokenizer.token.SymbolToken;
+import com.luka.lbdb.querying.virtualEntities.Evaluatable;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
-import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 import com.luka.lbdb.querying.virtualEntities.expression.WildcardExpression;
 
 import java.util.*;
@@ -85,19 +85,18 @@ public class ParseSelect {
 
         do {
             String newFieldName;
-
-            Expression projectionExpression = new ParseExpression(ctx).parse();
+            Evaluatable evaluatable = new ParseEvaluatable(ctx).parse();
 
             if (ctx.eatIfMatches(KeywordToken.AS)) {
-                if (projectionExpression instanceof WildcardExpression) {
+                if (evaluatable instanceof WildcardExpression) {
                     throw new ParsingException("The wildcard operator can't be renamed");
                 }
                 newFieldName = fieldName();
             } else {
-                newFieldName = projectionExpression.toString();
+                newFieldName = evaluatable.toString();
             }
 
-            projectList.add(new ProjectionFieldInfo(newFieldName, projectionExpression));
+            projectList.add(new ProjectionFieldInfo(newFieldName, evaluatable));
         } while (ctx.eatIfMatches(SymbolToken.COMMA));
 
         return projectList;

@@ -1,8 +1,8 @@
 package com.luka.lbdb.querying.scanTypes.readOnly;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanDefinitions.UnaryScan;
+import com.luka.lbdb.querying.virtualEntities.Evaluatable;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
-import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 
 import java.util.Map;
 
@@ -11,13 +11,13 @@ import java.util.Map;
 /// It is a unary table read-only scan. The user specifies the list of projection expressions
 /// and the names for them.
 public class ExtendProjectScan extends UnaryScan {
-    private final Map<String, Expression> projections;
+    private final Map<String, Evaluatable> projections;
 
     /// An extend project scan requires the expressions that will be
     /// evaluated for every row, and names for them. Each expression
     /// will be treated as a field from this scan upwards, and
     /// a child scan.
-    public ExtendProjectScan(Scan childScan, Map<String, Expression> projections) {
+    public ExtendProjectScan(Scan childScan, Map<String, Evaluatable> projections) {
         super(childScan);
         this.projections = projections;
     }

@@ -124,7 +124,7 @@ public class ExtendProjectScanTests {
                     new ConstantExpression(new IntConstant(0))
             );
             Predicate pred = new Predicate(t1, t2);
-            assertTrue(pred.isSatisfied(scan));
+            assertTrue(pred.evaluate(scan).asBoolean());
         }
     }
 

@@ -112,7 +112,7 @@ public class SelectStatementCheckTests {
         Function<Integer, String> getExpressionString = (Integer pos) -> {
             assertNotNull(selectStatement);
             return selectStatement
-                    .unionizedSelections().getFirst().projectionFields().get(pos).expression().toString();
+                    .unionizedSelections().getFirst().projectionFields().get(pos).evaluatable().toString();
         };
 
         assertNotNull(selectStatement);
@@ -162,7 +162,7 @@ public class SelectStatementCheckTests {
         Function<Integer, String> getExpressionString = (Integer pos) -> {
             assertNotNull(selectStatement);
             return selectStatement
-                    .unionizedSelections().getFirst().projectionFields().get(pos).expression().toString();
+                    .unionizedSelections().getFirst().projectionFields().get(pos).evaluatable().toString();
         };
 
         assertNotNull(selectStatement);
@@ -395,7 +395,7 @@ public class SelectStatementCheckTests {
             return selectStatement
                     .unionizedSelections().getFirst().projectionFields()
                     .get(fieldNum)
-                    .expression().type(unifiedQualifiedSchema);
+                    .evaluatable().type(unifiedQualifiedSchema);
         };
 
         assertEquals(DatabaseType.INT, typeOf.apply(0));
@@ -427,7 +427,7 @@ public class SelectStatementCheckTests {
             return selectStatement
                     .unionizedSelections().getFirst().projectionFields()
                     .get(fieldNum)
-                    .expression().type(unifiedQualifiedSchema);
+                    .evaluatable().type(unifiedQualifiedSchema);
         };
 
         assertEquals(DatabaseType.INT, typeOf.apply(0));
@@ -763,5 +763,23 @@ public class SelectStatementCheckTests {
                 () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
     }
 
+    @Test
+    public void testPredicateAsProjectionColumnSuccess() throws Exception {
+        Path tmpDir = TestUtils.setUpTempDirectory();
+        var testData = PlanTestUtils.initializeThreeEmptyTables(tmpDir);
 
+        String query = "SELECT sameint > 5 AND t1_intfield1 = 2 AS p FROM table1;";
+
+        SelectStatement selectStatement = assertDoesNotThrow(
+                () -> PlanTestUtils.resultingCheckedSelectStatement(testData, query));
+        assertNotNull(selectStatement);
+
+        Schema unifiedQualifiedSchema = generateUnifiedQualifiedUniqueSchema(
+                new SchemaRename(testData.layouts().getFirst().getSchema(), "table1")
+        );
+
+        assertEquals(DatabaseType.BOOLEAN, selectStatement
+                .unionizedSelections().getFirst().projectionFields().getFirst()
+                .evaluatable().type(unifiedQualifiedSchema));
+    }
 }

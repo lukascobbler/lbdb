@@ -1,22 +1,26 @@
 package com.luka.lbdb.querying.virtualEntities;
 
+import com.luka.lbdb.querying.virtualEntities.constant.BooleanConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.expression.ConstantExpression;
+import com.luka.lbdb.querying.virtualEntities.expression.Expression;
 import com.luka.lbdb.querying.virtualEntities.expression.FieldNameExpression;
 import com.luka.lbdb.querying.virtualEntities.term.Term;
 import com.luka.lbdb.querying.virtualEntities.term.TermOperator;
+import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /// A predicate is the topmost structure that binds all terms,
 /// which hold all expressions. It defines logical operators between
 /// terms. A predicate object holds a list of terms that implicitly have an
 /// `AND` between them.
-public class Predicate {
-    private final List<Term> terms = new ArrayList<>();
+public final class Predicate implements Evaluatable {
+    private List<Term> terms = new ArrayList<>();
 
     /// Initializes a predicate with no terms, that is equivalent
     /// to a `TRUE` value that satisfies everything.
@@ -32,6 +36,11 @@ public class Predicate {
         this.terms.addAll(List.of(terms));
     }
 
+    /// Initialize a predicate with a list of terms.
+    public Predicate(List<Term> terms) {
+        this.terms = terms;
+    }
+
     /// Adds all terms of some predicate to this one.
     public void conjoinWith(Predicate predicate) {
         terms.addAll(predicate.terms);
@@ -41,9 +50,76 @@ public class Predicate {
     /// satisfy that scan.
     ///
     /// @return Whether a predicate satisfies some scan.
-    public boolean isSatisfied(Scan scan) {
+    @Override
+    public Constant evaluate(Scan scan) {
+        return new BooleanConstant(terms.stream()
+                .allMatch(t -> t.isSatisfied(scan)));
+    }
+
+    /// @return True if all expressions of all terms are constant.
+    @Override
+    public boolean isConstant() {
         return terms.stream()
-                .allMatch(t -> t.isSatisfied(scan));
+                .allMatch(t -> t.getLhs().isConstant() && t.getRhs().isConstant());
+    }
+
+    /// A predicate is always of the boolean type.
+    ///
+    /// @return The boolean database type.
+    @Override
+    public DatabaseType type(Schema schema) {
+        return DatabaseType.BOOLEAN;
+    }
+
+    /// Predicate's length is always 1 byte long, as booleans
+    /// are always one byte.
+    ///
+    /// @return 1 because booleans always have a length of 1.
+    @Override
+    public int length(Schema schema) {
+        return 1;
+    }
+
+    /// A predicate is nullable if any of the expressions in any term is nullable.
+    ///
+    /// @return True if any expression of any term is nullable.
+    @Override
+    public boolean isNullable(Schema schema) {
+        return terms.stream()
+                .anyMatch(t -> t.getLhs().isNullable(schema) || t.getLhs().isNullable(schema));
+    }
+
+    /// @return The set of all fields of every term's expression.
+    @Override
+    public Set<String> getFields() {
+        return terms.stream()
+                .flatMap(t -> Stream.concat(
+                        t.getLhs().getFields().stream(),
+                        t.getRhs().getFields().stream()
+                ))
+                .collect(Collectors.toSet());
+    }
+
+    /// @return True if any expression of any term has a wildcard.
+    @Override
+    public boolean hasWildCard() {
+        return terms.stream().anyMatch(t -> t.getRhs().hasWildCard() || t.getLhs().hasWildCard());
+    }
+
+    /// @return The predicate where each expression of each term is qualified.
+    @Override
+    public Predicate qualify(Map<String, String> aliases) {
+        Predicate qualifiedPredicate = new Predicate();
+
+        for (Term t : terms) {
+            Expression qualifiedLhs = t.getLhs().qualify(aliases);
+            Expression qualifiedRhs = t.getRhs().qualify(aliases);
+            Term qualifiedTerm = new Term(qualifiedLhs, t.getTermOperator(), qualifiedRhs);
+
+            qualifiedPredicate.terms.add(qualifiedTerm);
+        }
+
+        return qualifiedPredicate;
     }
 
     // todo add docs once heuristic table planner is complete
@@ -137,11 +213,6 @@ public class Predicate {
                     t.getRhs() instanceof FieldNameExpression f2 && f2.qualifiedName().equals(fieldName)
                 )
         );
-    }
-
-    /// Folds every term in the predicate. Uses `PartialEvaluator` internally.
-    public void fold() {
-        terms.forEach(Term::foldExpressions);
     }
 
     public List<Term> getTerms() {

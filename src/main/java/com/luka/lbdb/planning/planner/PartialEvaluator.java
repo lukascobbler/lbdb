@@ -1,33 +1,63 @@
 package com.luka.lbdb.planning.planner;
 
 import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
+import com.luka.lbdb.querying.virtualEntities.Evaluatable;
+import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
 import com.luka.lbdb.querying.virtualEntities.expression.*;
+import com.luka.lbdb.querying.virtualEntities.term.Term;
 
-/// A set of algorithms that performs obvious calculations on arithmetic
-/// expressions thus reducing the need for them to be calculated on the
+import java.util.ArrayList;
+import java.util.List;
+
+/// A set of algorithms that performs obvious calculations on evaluatables
+/// thus reducing the need for them to be calculated on the
 /// database virtual machine.
 public class PartialEvaluator {
-    /// Reduces the number of steps for a given expression.
+    /// Reduces the number of steps for a given evaluatable.
     /// For example: `3 + 5` is a trivial operation that can
     /// be calculated before the expression goes further down the
     /// pipeline where it's more expensive to calculate it.
-    /// On encountering a non-arithmetic expression,
-    /// it stops the folding process.
     ///
-    /// @return The evaluated arithmetic expression.
+    /// @return The partially evaluated evaluatable.
     /// @throws RuntimeExecutionException if division by zero is performed
     /// or if overflowing occurs.
-    public static Expression evaluate(Expression expr) {
-        return switch (expr) {
+    public static Evaluatable evaluate(Evaluatable evaluatable) {
+        return switch (evaluatable) {
             case BinaryArithmeticExpression(Expression left, ArithmeticOperator op, Expression right) ->
-                    foldBinary(evaluate(left), op, evaluate(right));
+                    foldBinary((Expression) evaluate(left), op, (Expression) evaluate(right));
             case UnaryArithmeticExpression(ArithmeticOperator op, Expression operand) ->
-                    foldUnary(op, evaluate(operand));
-            default -> expr;
+                    foldUnary(op, (Expression) evaluate(operand));
+            case Predicate predicate -> foldPredicate(predicate);
+            default -> evaluatable;
         };
+    }
+
+    /// Simple predicate folding, with short-circuiting if an obvious false term
+    /// is found.
+    ///
+    /// @return The possibly short-circuited evaluatable.
+    private static Predicate foldPredicate(Predicate predicate) {
+        List<Term> foldedTerms = new ArrayList<>();
+
+        for (Term term : predicate.getTerms()) {
+            Expression lhs = (Expression) evaluate(term.getLhs());
+            Expression rhs = (Expression) evaluate(term.getRhs());
+
+            if (lhs instanceof ConstantExpression && rhs instanceof ConstantExpression) {
+                Term foldedTerm = new Term(lhs, term.getTermOperator(), rhs);
+                
+                if (!foldedTerm.isSatisfied(null)) {
+                    return new Predicate(foldedTerm);
+                }
+            } else {
+                foldedTerms.add(new Term(lhs, term.getTermOperator(), rhs));
+            }
+        }
+
+        return new Predicate(foldedTerms);
     }
 
     /// Performs checks if both expressions are constant, does the
