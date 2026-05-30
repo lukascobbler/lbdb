@@ -61,6 +61,4 @@ _Database Design And Implementation_ @simpledb poglavlja 14 i 15 opisuju impleme
 
 === Ulančavanje članova predikata je moguće samo konjukcijom <samo-and>
 
-Predikati se mogu sastojati samo od članova ulančanih logičkom operacijom konjukcije (`AND`). Negacija izraza (`NOT`) i ulančavanje operacijom disjunkcije (`OR`) nisu podržani jer, iako je lako dodati obradu sâmih logičkih operacija, nisam bio siguran kako se uklapaju u napredne tehnike planiranja. Kada završim istraživanje naprednog planera, biće mi mnogo lakše da ubacim i nedostajuće logičke operacije. Uz njih, potrebno je ubaciti i prateći `PartialEvaluator` koji vrši njihovu redukciju.
-
-#todo("mozda uraditi u select kolonama implementaciju")
+Predikati se mogu sastojati samo od članova ulančanih logičkom operacijom konjukcije (`AND`). Negacija izraza (`NOT`) i ulančavanje operacijom disjunkcije (`OR`) nisu podržani jer, iako je lako dodati obradu sâmih logičkih operacija, nisam bio siguran kako se uklapaju u napredne tehnike planiranja. Kada završim istraživanje naprednog planera, biće mi mnogo lakše da ubacim i nedostajuće logičke operacije. Uz njih, potrebno je i proširiti `PartialEvaluator` koji vrši njihovu redukciju.

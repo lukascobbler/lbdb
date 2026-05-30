@@ -78,14 +78,16 @@ Može da se koristi i u kontekstima modifikujućih stabala operatora i u konteks
 
 `ExtendProjectPlan` opisuje virtuelnu tabelu sa svim projektovanim kolonama. Izlazna šema ima sve dodate kolone, a iz nje su izbrisane neprojektovane kolone. S obzirom da operacija projekcije ne dodaje nove slogove, broj blokova i broj slogova ostaju nepromenjeni i direktno se preuzimaju od podređenog plana.
 
-Procena broja jedinstvenih vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza koji tu kolonu definiše i on je jednak:
+Procena broja jedinstvenih vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza ili predikata koji tu kolonu definiše i on je jednak:
 - $0$, ukoliko se traži procena za kolonu koja se ne nalazi u projekciji,
-- $1$, ukoliko je izraz konstanta (ne referencira ni jednu kolonu),
+- $1$, ukoliko je izraz ili predikat konstanta (ne referencira ni jednu kolonu),
+- $2$, ukoliko je u pitanju predikat, koji će najverovatnije imati obe moguće vrednosti,
 - broju jedinstvenih vrednosti te kolone iz podređenog plana, ukoliko izraz referencira tačno jednu kolonu. Pretpostavka je da većina transformacija nad jednom kolonom (npr. aritmetičke operacije) zadržava sličnu distribuciju vrednosti,
 - ukupnom broju slogova, ukoliko izraz referencira više od jedne kolone. U ovom slučaju, pretpostavlja se da kombinacija više polja rezultuje jedinstvenom vrednošću za svaki slog.
 
-Procena broja _NULL_ vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza koji tu kolonu definiše i on je jednak:
+Procena broja _NULL_ vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza ili predikata koji tu kolonu definiše i on je jednak:
 - $0$, ukoliko se traži procena za kolonu koja se ne nalazi u projekciji,
+- $0$, ukoliko je u pitanju predikat, jer se predikat može evaluirati samo na tačno i netačno,
 - $0$, ukoliko šema garantuje da izraz ne može imati _NULL_ vrednosti (nije _nullable_),
 - $0$ ukoliko je izraz jednak bilo kojoj konstanti sem _NULL_ konstante,
 - $1$ ukoliko je izraz jednak _NULL_ konstanti,
@@ -96,13 +98,11 @@ Procena broja _NULL_ vrednosti za svaku izlaznu kolonu vrši se na osnovu slože
 
 `RenamePlan` opisuje virtuelnu tabelu sa svim primenjenim preimenovanjima kolona. Izlazna šema sadrži sve kolone sa novim imenom i ni jednu kolonu sa starim imenom.
 S obzirom da operacija preimenovanja ne dodaje nove slogove, broj blokova i broj slogova ostaju nepromenjeni i direktno se preuzimaju od podređenog plana.
-Procena broja jedinstvenih vrednosti kolone je jednaka podređenom planu ukoliko se traži novo ime stare kolone ili ukoliko je kolona nepreimenovana, a jednaka je `0` ako se traži staro ime preimenovane kolone. Procena broja _NULL_ vrednosti funkcioniše isto.
+Procena broja jedinstvenih vrednosti kolone je jednaka podređenom planu ukoliko se traži novo ime stare kolone ili ukoliko je kolona nepreimenovana, a jednaka je $0$ ako se traži staro ime preimenovane kolone. Procena broja _NULL_ vrednosti funkcioniše isto.
 
 ==== `ProductPlan`
 
-`ProductPlan` opisuje virtuelnu tabelu koja je proizvod dve tabele. Izlazna šema sadrži sve kolone od obe tabele.
-
-Za demonstaciju računice broja blokova kod proizvoda dve tabele, definišemo $T_1$ i $T_2$:
+`ProductPlan` opisuje virtuelnu tabelu koja je proizvod dve tabele. Izlazna šema sadrži sve kolone od obe tabele. Za demonstaciju računice broja blokova kod proizvoda dve tabele, definišemo $T_1$ i $T_2$:
 
 #figure(
   {
@@ -110,7 +110,7 @@ Za demonstaciju računice broja blokova kod proizvoda dve tabele, definišemo $T
     table(
       columns: (0.2fr, 0.4fr, 0.4fr, 0.4fr),
       align: (center, center),
-      inset: 8pt,
+      inset: 6pt,
       [$T_i$], [$text("B")(T_i)$], [$text("R")(T_i)$], [$text("RPB")(T_i)$],
       //
       [$T_1$], [$5$], [$1000$], [$frac(1000, 5) = 200$],
@@ -125,7 +125,7 @@ Za demonstaciju računice broja blokova kod proizvoda dve tabele, definišemo $T
 - $text("R")(T_i)$ predstavlja broj slogova neke tabele,
 - $text("RPB")(T_i)$ predstavlja koliko slogova može da stane po jednom bloku za neku tabelu.
 
-Ovaj primer se odnosi na rad sa konkretnim fizičkim tabelama, ali u generalnom slučaju, tabele nisu fizičke, već su predstavljene podređenim planovima sa kojima plan proizvoda barata.
+Ovaj primer se odnosi na rad sa konkretnim fizičkim tabelama, ali u generalnom slučaju, tabele nisu fizičke, već su predstavljene planovima sa kojima plan proizvoda barata.
 
 Da bi se prošlo kroz svaki slog rezultujuće tabele, potrebno je da za se svaki slog leve tabele prođe kroz svaki slog desne tabele. Formula koja opisuje broj blokova potreban da se ovo izvrši je sledeća @simpledb:
 
@@ -152,7 +152,7 @@ Broj slogova je proizvod broja slogova oba podređena plana, a broj jedinstvenih
 
 == Planer <planer>
 
-Većina naredni definisanih _SQL_ standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke tačnosti svih naredbi.
+Većina naredni definisanih _SQL_ standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke validnosti svih naredbi.
 
 Glavna podela tehnika planiranja u relacionim bazama podataka je na tehnike praćenja striktnih pravila pravljenja planova (eng. _rule-based optimisation_, _RBO_; _heuristics-based optimisation_, _HBO_) i tehnike planiranja koji rade sa cenama (eng. _cost-based optimisation_, _CBO_). Cena predstavlja kombinaciju statističkih metapodataka relacionih operatora sa hardverskim osobinama koji ti relacioni operatori koriste.
 
@@ -162,11 +162,9 @@ Evolucija tehnika planiranja, koja se može videti kroz ovu glavnu podelu, posto
 
 === Evaluacija izraza tokom planiranja
 
-Evaluacija izraza u stablu relacionih operatora je najskuplje mesto evaluacije, jer se operacije izvršavaju u okviru virtuelne mašine sistema, gde se ne koriste procesorske instrukcije direktno. `PartialEvaluator` omogućava da se izrazi sa trivijalnim operacijama redukuju na čistu konstantu čija evaluacija ne zahteva obradu na virtuelnoj mašini.
+Evaluacija izraza i predikata u stablu relacionih operatora je najskuplje mesto evaluacije, jer se operacije izvršavaju u okviru virtuelne mašine sistema, gde se ne koriste procesorske instrukcije direktno. `PartialEvaluator` pruža obradu operacija u trenutku planiranja, što znatno povećava performansu upita jer se trivijalne operacije ne izvršavaju za svaki slog.
 
-Trivijalna operacija se definiše kao aritmetička operacija koja ne transformiše podatke ili kao aritmetička operacija između dve konstante.
-
-Predikati se sastoje od članova, koji se sastoje od izraza, tako da `PartialEvaluator` može da redukuje i njih. Nije podržana redukcija trivijalnih logičkih operacija.
+Trivijalne operacije koje se redukuju su: aritmetičke operacije koje ne transformišu podatke, aritmetičke operacije između dve konstante, operacije poređenja koje su uvek tačne i u slučaju da postoji kontradiktorna operacija poređenja ona skraćuje (eng. _short-circuit_) ceo predikat, čineći ga uvek netačnim bez obzira na njegove ostale komponente.
 
 === Ulazna tačka kreiranja i izvršavanja planova <planner-klasa>
 
@@ -175,7 +173,7 @@ Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` k
 - `execute` koja je prilagođena #link(<klijent-server>)[klijentsko serverskoj arhitekturi] _LBDB_ sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
 
 #figure(
-  image("../dijagrami/struktura_planera.pdf", height: 71%),
+  image("../dijagrami/struktura_planera.pdf"),
   caption: [
     Struktura planera
   ],
@@ -189,7 +187,7 @@ Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja sâmo
 - provera postojanja fizičkih tabela spomenutih u naredbi
 - proširenje zamenskih članova na konkretne kolone
 - provera da se zamenski članovi ne koriste u izrazima
-- provera postojanja kolona pomenutih u izrazima i predikatu
+- provera postojanja kolona pomenutih u projekcijama i predikatu
 - provera dvosmislenih imena kolona (u slučaju da dve tabele imaju isti naziv kolone i ne može da se trivijalno skonta koja se koristi)
 - provera da li aritmetičke operacije mogu da se izvrše za tip kolone
 - provera da li kolone u unijama imaju iste tipove

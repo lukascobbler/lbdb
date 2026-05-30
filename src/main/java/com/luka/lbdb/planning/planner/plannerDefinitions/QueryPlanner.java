@@ -57,8 +57,8 @@ public abstract class QueryPlanner {
     public Plan<Scan> createValidatedPlan(SelectStatement selectStatement, Transaction transaction)
         throws PlanValidationException {
 
-        SelectStatement foldedExpressionsStatement = foldAllExpressions(selectStatement);
-        SelectStatement checkedStatement = checkStatement(foldedExpressionsStatement, transaction);
+        SelectStatement foldedStatement = foldAll(selectStatement);
+        SelectStatement checkedStatement = checkStatement(foldedStatement, transaction);
 
         return createPlan(checkedStatement, transaction);
     }
@@ -300,7 +300,7 @@ public abstract class QueryPlanner {
 
     /// Folds all projection expressions and the predicate, thus saving CPU cycles on
     /// the system virtual machine.
-    private SelectStatement foldAllExpressions(SelectStatement selectStatement) {
+    private SelectStatement foldAll(SelectStatement selectStatement) {
         List<SingleSelection> expandedSingleSelections = new ArrayList<>();
 
         for (SingleSelection singleSelection : selectStatement.unionizedSelections()) {

@@ -69,7 +69,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_select>
 
-`ParseSelect` predstavlja naredbu upita (eng. _query_) podataka. Može sadržati proizvoljan broj projektovanih kolona, gde je svaka kolona predstavljena izrazom kome se može dodeliti neko ime (uz `AS` ključnu reč). Podržava filtriranje na osnovu uslova pretrage. Upit može biti nad pravim tabelama ili nad #link(<dummy_table_sken>)[virtuelnom tabelom koja sadrži jedan slog]. Ulančavanje tabela se može raditi na dva načina: samo navođenje tabela odvojene zarezom ili preko `JOIN` ključne reči gde se uslov ulančavanja upisuje odmah. Uslov ulančavanja napisan u `JOIN` sekciji se samo dodaje na uslov pretrage, umesto da predstavlja neki specijalan način ulančavanja. #todo("Jedno od glavnih ograničenja sistema je da projektovane kolone ne mogu da sadrže logička računanja"), već samo aritmetička. Vraća `SelectStatement` objekat.
+`ParseSelect` predstavlja naredbu upita (eng. _query_) podataka. Može sadržati proizvoljan broj projektovanih kolona, gde je svaka kolona predstavljena kao bilo šta što može da se evaluira i kojoj se može dodeliti novo ime (uz `AS` ključnu reč). Podržava filtriranje na osnovu uslova pretrage. Upit može biti nad pravim tabelama ili nad #link(<dummy_table_sken>)[virtuelnom tabelom koja sadrži jedan slog]. Ulančavanje tabela se može raditi na dva načina: samo navođenje tabela odvojene zarezom ili preko `JOIN` ključne reči gde se uslov ulančavanja upisuje odmah. Uslov ulančavanja napisan u `JOIN` sekciji se samo dodaje na uslov pretrage, umesto da predstavlja neki specijalan način ulančavanja. Vraća `SelectStatement` objekat.
 
 ==== `ParseInsert`
 
@@ -122,7 +122,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   caption: [
     Gramatika `ParseExpression` sintaktičke kategorije
   ],
-)<fig:parse_predicate>
+)<fig:parse_expression>
 
 `ParseExpression` je specijalna vrsta sintaktičke kategorije koja ne proizvodi iskaz, već služi za kreiranje sintaktičkih stabala #link(<izrazi>)[izraza]. Parsiranje izraza je urađeno specijalnom tehnikom _recursive descent_ parsiranja koja se zove _Pratt parsing_ @pratt_parsing. _Pratt parsing_ definiše tehnike obrade prioriteta operacija, zagrada, prepoznavanja identifikatora i zamenskih članova. Vraća `Expression` objekat.
 
@@ -131,6 +131,7 @@ Prvo se parsira prefiksni izraz, koji može biti literal različitog tipa, ident
 Unutar petlje, operator se konzumira, a desni operand se dobija rekurzivnim pozivom funkcije za parsiranje izraza kojoj se prosleđuje prioritet tog novog operatora (ili prioritet umanjen za jedan, ukoliko je operacija desno-asocijativna, poput stepenovanja). Od levog operanda, operatora i desnog operanda kreira se novo stablo binarnog izraza, koje zatim postaje novi levi operand za narednu iteraciju petlje.
 
 U isečku koda ispod se mogu videti različiti prioriteti operacija na osnovu tokena koji ih opisuju. Token `STAR` predstavlja i operator zamenskog člana, pa se zove `STAR` umesto `MULTIPLY`. Prefiksne operacije imaju najveći prioritet.
+
 #figure(
   ```java
   private static final int PREFIX_PRECEDENCE = 100;
@@ -147,4 +148,15 @@ U isečku koda ispod se mogu videti različiti prioriteti operacija na osnovu to
   caption: [
     Prioriteti aritmetičkih operacija u sistemu
   ],
-)<fig:prioriteti_operacija>
+)<fig:prioriteti_pratt>
+
+==== `ParseEvaluatable`
+
+#figure(
+  image("../dijagrami/parsiranje/parse_evaluatable.svg", height: 46%),
+  caption: [
+    Gramatika `ParseEvaluatable` sintaktičke kategorije
+  ],
+)<fig:parse_evaluatable>
+
+`ParseEvaluatable` je specijalna vrsta sintaktičke kategorije koja ne proizvodi iskaz, već služi za agnostično kreiranje objekata koji se mogu evaluirati na vrednost. Liči na `ParsePredicate`, ali sa dodatnom mogućnošću da prepozna kada izraz nije deo člana ni predikata, pa može da vrati samo njega. Vraća objekat koji implementira #link(<evaluatable-interfejs>)[`Evaluatable`] interfejs. Ne podržava članove bez operatora poređenja.

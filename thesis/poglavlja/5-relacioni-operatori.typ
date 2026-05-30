@@ -42,15 +42,35 @@ Evaluacija izraza predstavlja proces računanja konstante koja predstavlja vredn
 
 `FieldNameExpression` je izraz koji identifikuje virtuelnu kolonu neke tabele upita, sa opcionim preimenovanjem tabele i evaluira se na vrednost te kolone. `ConstantExpression` se evaluira direktno na konstantu za koju je vezan i nezavisan je od tabela.
 
-Za izraze se definišu i pomoćne metode za proveru validnosti, kvalifikovanje i dobijanje opisnih atributa (tip, dužina, mogućnost sadržavanja _NULL_ vrednosti).
-
 === Članovi
 
 Član (eng. _term_) enkapsulira logiku za poređenje konstanti dva evaluirana izraza. Poređenje dve konstante zavisi od operatora poređenja koji mogu biti `=`, `!=`, `>`, `>=`, `<`, `<=`, `IS`, `IS NOT`. Razlika između `=` i `IS` (isto tako i između `!=` i `IS NOT`) je u tome kako se ponašaju sa _NULL_ vrednostima. `IS` omogućava poređenje sa _NULL_ vrednostima, dok `=` to ne podržava. Evaluacija člana nad nekim relacionim operatorom, za razliku od evaluacije izraza, vraća samo da li član važi ili ne.
 
 === Predikati <predikati>
 
-Predikati ulančavaju članove logičkim operatorima. Koriste se za uslov filtriranja. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. _LBDB_ sistem podržava samo `AND` logičke operatore između članova i ovo je jedna od glavnih #link(<samo-and>)[ograničenja sistema].
+Predikati ulančavaju članove logičkim operatorima. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. _LBDB_ sistem podržava samo `AND` logičke operatore između članova i ovo je jedna od glavnih #link(<samo-and>)[ograničenja sistema].
+
+=== Generalizacija evaluacije <evaluatable-interfejs>
+
+Izrazi i predikati implementiraju `Evaluatable` interfejs koji definiše sve operacije potrebne za njihovu evaluaciju i kasniju #link(<planer>)[proveru validnosti]. Ovaj interfejs omogućava sistemu da se ne brine o tome šta se evaluira, već samo o konstanti koju će dobiti, što dalje omogućava da se vrednosti #link(<operator_projekcije>)[projektovanih kolona] dobijaju i preko evaluacije izraza i preko evaluacije predikata.
+
+#figure(
+  ```java
+  public interface Evaluatable {
+      Constant evaluate(Scan scan);
+      boolean isConstant();
+      DatabaseType type(Schema schema);
+      int length(Schema schema);
+      boolean isNullable(Schema schema);
+      Set<String> getFields();
+      boolean hasWildCard();
+      Evaluatable qualify(Map<String, String> aliases);
+  }
+  ```,
+  caption: [
+    `Evaluatable` interfejs
+  ],
+)<fig:evaluatable>
 
 == Struktura relacionih operatora u sistemu
 

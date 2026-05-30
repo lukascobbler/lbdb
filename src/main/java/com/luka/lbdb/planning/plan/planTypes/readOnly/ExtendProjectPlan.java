@@ -7,6 +7,7 @@ import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanTypes.readOnly.ExtendProjectScan;
 import com.luka.lbdb.querying.virtualEntities.Evaluatable;
+import com.luka.lbdb.querying.virtualEntities.Predicate;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
 
@@ -59,28 +60,35 @@ public class ExtendProjectPlan implements Plan<Scan> {
         return childPlan.recordsOutput();
     }
 
-    /// If the expression isn't in the projection, it has 0 distinct values.
+    /// If the evaluatable isn't in the projection, it has 0 distinct values.
     ///
-    /// If the expression has no fields, it has 1 distinct value because it's
+    /// If the evaluatable has no fields, it has 1 distinct value because it's
     /// constant.
     ///
-    /// If the expression has a single field, return that field's distinct values
+    /// If the evaluatable is a predicate, return 2 because it most likely has
+    /// both true and false values.
+    ///
+    /// If the evaluatable has a single field, return that field's distinct values
     /// since most transformations on a single field will not change the distribution.
     ///
-    /// If there is more than one field, the expression is probably unique for
+    /// If there is more than one field, the evaluatable is probably unique for
     /// every row.
     ///
     /// @return The distinct number of values for a field, only if it's in the
     /// projection list.
     @Override
     public int distinctValues(String fieldName) {
-        Evaluatable expr = fieldInfos.get(fieldName);
+        Evaluatable eval = fieldInfos.get(fieldName);
 
-        if (expr == null) return 0;
+        if (eval == null) return 0;
 
-        Set<String> referencedFields = expr.getFields();
+        Set<String> referencedFields = eval.getFields();
 
         if (referencedFields.isEmpty()) return 1;
+
+        if (eval instanceof Predicate) {
+            return 2;
+        }
 
         if (referencedFields.size() == 1) {
             String childField = referencedFields.iterator().next();
@@ -90,33 +98,39 @@ public class ExtendProjectPlan implements Plan<Scan> {
         return childPlan.recordsOutput();
     }
 
-    /// If the expression isn't in the projection, it has 0 NULL values.
+    /// If the evaluatable isn't in the projection, it has 0 NULL values.
     ///
-    /// If the expression isn't nullable, it has 0 NULL values.
+    /// If the evaluatable isn't nullable, it has 0 NULL values.
     ///
-    /// If the expression is equal to the NULL constant, it has a null value
+    /// If the evaluatable is equal to the NULL constant, it has a null value
     /// for every row, and if its equal to some other constant, it has 0 NULL
     /// values.
     ///
-    /// If the expression has a single field, return that field's null value count
+    /// If the evaluatable is a predicate, it has zero NULL values.
+    ///
+    /// If the evaluatable has a single field, return that field's null value count
     /// since most transformations on a single field will not change the distribution.
     ///
-    /// If there is more than one field, the expression probably has a NULL value
+    /// If there is more than one field, the evaluatable probably has a NULL value
     /// for at least the maximum null value count of all of its fields.
     ///
     /// @return The null value count for a field, only if it's in the projection list.
     @Override
     public int nullValues(String fieldName) {
-        Evaluatable expr = fieldInfos.get(fieldName);
+        Evaluatable eval = fieldInfos.get(fieldName);
 
-        if (expr == null) return 0;
-        if (!expr.isNullable(inputSchema)) return 0;
+        if (eval == null) return 0;
+        if (!eval.isNullable(inputSchema)) return 0;
 
-        Set<String> referencedFields = expr.getFields();
+        if (eval instanceof Predicate) {
+            return 0;
+        }
+
+        Set<String> referencedFields = eval.getFields();
 
         if (referencedFields.isEmpty()) {
             try {
-                return (expr.evaluate(null).isNull()) ? childPlan.recordsOutput() : 0;
+                return (eval.evaluate(null).isNull()) ? childPlan.recordsOutput() : 0;
             } catch (RuntimeExecutionException e) {
                 return 0;
             }

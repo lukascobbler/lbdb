@@ -89,7 +89,7 @@
                         <path d="M240 143h0"></path>
                         <path d="M396 143h0"></path>
                         <rect x="240" y="132" width="156" height="22"></rect>
-                        <text x="318" y="147">PredicateOperator</text>
+                        <text x="318" y="147">TermOperator</text>
                     </g>
                     <path d="M396 143h10"></path>
                     <path d="M406 143h10"></path>
