@@ -27,7 +27,7 @@ Da bi se postiglo korektno i unifikovano testiranje svih funkcionalnosti, potreb
 
 `TestUtils` je pomoćna klasa koja pruža implementaciju ove izolacije, ali pruža i dodatne pomoćne metode koje olakšavaju testiranje:
 - provera postojanja datoteka,
-- dobavljanje privatnih polja putem Java refleksije.
+- dobavljanje privatnih polja putem _Java_ refleksije.
 
 Za podsistem relacionih operatora, postoji pomoćna klasa `QueryTestUtils` koja pruža dodatne pomoćne metode za testiranje ovog podsistema:
 - inicijalizacija i popunjavanje jedne tabele sa $250$ slogova, koja ima tri _Integer_, tri _String_ i tri _Boolean_ kolone,

@@ -17,7 +17,7 @@ Izračunati statistički podaci #link(<table-plan>)[nisu 100% precizni], ali bez
 
 === Hijerarhija implementacije planova
 
-Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke, po #link(<hijerarhija_rel_op>)[hijerarhiji relacionih operatora]. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione planove je odrađena preko _generics_ Java konstrukta, umesto deljenja glavnog interfejsa na dva podtipa.
+Najopštija podela planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke, po #link(<hijerarhija_rel_op>)[hijerarhiji relacionih operatora]. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione planove je odrađena preko _generics_ _Java_ konstrukta, umesto deljenja glavnog interfejsa na dva podtipa.
 
 #figure(
   image("../dijagrami/hijerarhija_planova.pdf"),

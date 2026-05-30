@@ -21,11 +21,11 @@ Sve vrednosti sa kojima relacioni operatori barataju predstavljene su `Constant`
   ],
 )<fig:hijerarhija_konstanti>
 
-Interfejs konstante je definisan _sealed interface_ Java konstruktom, zbog njegove odlične kompatibilnosti sa `swtich` sintaksom. Konkretne konstante su predstavljene Java _record_ strukturom. `NullConstant` nema nikakve podatke instance, jer su sve `NULL` vrednosti identične u sistemu, pa se svugde koristi ista instanca.
+Interfejs konstante je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `swtich` sintaksom. Konkretne konstante su predstavljene _Java_ _record_ strukturom. `NullConstant` nema nikakve podatke instance, jer su sve `NULL` vrednosti identične u sistemu, pa se svugde koristi ista instanca.
 
 === Izrazi <izrazi>
 
-Sve aritmetičke operacije koje sistem evaluira su predstavljene `Expression` klasom. Evaluacija izraza uvek proizvodi `Constant` objekte. Izrazi se sastoje od proizvoljne kombinacije aritmetičkih operatora (`+`, `-`, `*`, `/`, `^`), zagrada, konstanti i identifikatora kolona tabele. Interfejs izraza je definisan _sealed interface_ Java konstruktom, zbog njegove odlične kompatibilnosti sa `swtich` sintaksom. Konkretni izrazi su predstavljeni Java _record_ strukturom.
+Sve aritmetičke operacije koje sistem evaluira su predstavljene `Expression` klasom. Evaluacija izraza uvek proizvodi `Constant` objekte. Izrazi se sastoje od proizvoljne kombinacije aritmetičkih operatora (`+`, `-`, `*`, `/`, `^`), zagrada, konstanti i identifikatora kolona tabele. Interfejs izraza je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `swtich` sintaksom. Konkretni izrazi su predstavljeni _Java_ _record_ strukturom.
 
 #figure(
   image("../dijagrami/izrazi.pdf", height: 52%),

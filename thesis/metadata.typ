@@ -17,19 +17,19 @@
 
 #let kljucne_reci = "Релационе базе података, трансакције, датотеке, слогови, упити"
 #let apstrakt = [
-     Имплементација једног система за управљање релационим 
-     базама података у програмском језику Java
+  Имплементација једног система за управљање релационим
+  базама података у програмском језику _Java_
 ]
 
 #let kljucne_reci_eng = "Relational databases, transactions, files, records, queries"
 #let apstrakt_eng = [
-     Implementation of a system for relational
-     database management written in Java
+  Implementation of a system for relational
+  database management written in Java
 ]
 
 // TODO: Текст задатка добијате од ментора. Заменити доле #lorem(100) са текстом задатка.
 #let zadatak = [
-     #lorem(100)
+  #lorem(100)
 ]
 
 // TODO: Датум одбране и чланове комисије добијате од ментора
@@ -45,9 +45,9 @@
 #let mentor_eng = "Igor Dejanović"
 
 #let zvanje_eng = (
-     "редовни професор": "full professor",
-     "ванредни професор": "assoc. professor",
-     "доцент": "asist. professor",
+  "редовни професор": "full professor",
+  "ванредни професор": "assoc. professor",
+  "доцент": "asist. professor",
 )
 #let komisija_predsednik_zvanje_eng = zvanje_eng.at(komisija_predsednik_zvanje)
 #let komisija_clan_zvanje_eng = zvanje_eng.at(komisija_clan_zvanje)
@@ -55,9 +55,9 @@
 
 
 #let vrsta_rada = if stepen == "Мастер академске студије" {
-    "Дипломски - мастер рад"
+  "Дипломски - мастер рад"
 } else {
-    "Дипломски - бечелор рад"
+  "Дипломски - бечелор рад"
 }
 
 #let oblast = "Електротехничко и рачунарско инжењерство"

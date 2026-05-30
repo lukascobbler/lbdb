@@ -43,8 +43,8 @@ Sav ostali kod nije deljen, uključujući i zavisnosti koje isto nisu deljene.
 ==== Zavisnosti servera
 
 Zavisnosti servera su sledeće:
-- `datasketches-java` za Java implementaciju _HyperLogLog_ strukture podataka#footnote[https://datasketches.apache.org/],
-- `annotations` pruža dodatne Java anotacije poput `@NotNull`#footnote[https://github.com/JetBrains/java-annotations].
+- `datasketches-java` za _Java_ implementaciju _HyperLogLog_ strukture podataka#footnote[https://datasketches.apache.org/],
+- `annotations` pruža dodatne _Java_ anotacije poput `@NotNull`#footnote[https://github.com/JetBrains/java-annotations].
 
 ==== Zavisnosti klijenta <zavisnosti-klijenta>
 

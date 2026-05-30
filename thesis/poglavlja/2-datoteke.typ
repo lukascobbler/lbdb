@@ -6,7 +6,7 @@ Upravljanje datotekama se vrši kroz više slojeva u sistemu, gde je svaki sloj 
 
 == Upravljanje blokovima
 
-Sistem za upravljanje blokovima je primarno zadužen za dobavljanje bloka sa diska gde se nalaze traženi podaci i za korektno zapisivanje _log_ podataka. Svaki blok ima svoj unikatni identifikator, koji je predstavljen Java _record_ strukturom. Svaki blok je vezan za datoteku i ima svoju blok poziciju u toj datoteci.
+Sistem za upravljanje blokovima je primarno zadužen za dobavljanje bloka sa diska gde se nalaze traženi podaci i za korektno zapisivanje _log_ podataka. Svaki blok ima svoj unikatni identifikator, koji je predstavljen _Java_ _record_ strukturom. Svaki blok je vezan za datoteku i ima svoju blok poziciju u toj datoteci.
 
 #figure(
   ```java
@@ -19,15 +19,15 @@ Sistem za upravljanje blokovima je primarno zadužen za dobavljanje bloka sa dis
 
 === Interfejs ka _file_ sistemu operativnog sistema
 
-Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama _LBDB_ sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom Java `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je #link(<bezbedan_visenitni_pristup>)[detaljno obrađen] u okviru transakcija.
+Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama _LBDB_ sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom _Java_ `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je #link(<bezbedan_visenitni_pristup>)[detaljno obrađen] u okviru transakcija.
 
 Moguće je podesiti sistem da koristi proizvoljnu veličinu jednog bloka, zavisno od prirode podataka kojima će baza podataka biti popunjena i to je glavni #link(<fig:lbdbsettings>)[parametar] menadžera datoteka.
 
 === Stranice
 
-Stranica (eng. _page_) predstavlja sirove bajtove jednog bloka učitane u radnu memoriju. Iako nije nužno potrebno, sve vrednosti iz stranice zajedno sa njihovim tipom se pretvaraju u ekvivalentne Java objekte (koristeći `ByteBuffer` standardnu Java klasu) da bi se omogućio pristup operacijama iz Java standardne biblioteke za te tipove. Kada menadžer datoteka dobavlja određeni blok, bajtovi tog bloka se smeštaju u radnu memoriju u objekat stranice. Stranice su na apstrakcionom nivou ispod sistema baferovanja i koriste se kao potpora tog sistema.
+Stranica (eng. _page_) predstavlja sirove bajtove jednog bloka učitane u radnu memoriju. Iako nije nužno potrebno, sve vrednosti iz stranice zajedno sa njihovim tipom se pretvaraju u ekvivalentne _Java_ objekte (koristeći `ByteBuffer` standardnu _Java_ klasu) da bi se omogućio pristup operacijama iz _Java_ standardne biblioteke za te tipove. Kada menadžer datoteka dobavlja određeni blok, bajtovi tog bloka se smeštaju u radnu memoriju u objekat stranice. Stranice su na apstrakcionom nivou ispod sistema baferovanja i koriste se kao potpora tog sistema.
 
-Sistem podržava sledeće proste i kompozitne tipove podataka: _String_, _Boolean_ i _Integer_. Kod prostih tipova, iz stranice se samo čitaju njihovi bajtovi i pretvaraju u određeni Java objekat tog tipa, dok kod kompozitnih tipova kao što je _String_ potrebno je znati dužinu, same bajtove i kodiranje da bi se konstruisao Java objekat _String_ tipa.
+Sistem podržava sledeće proste i kompozitne tipove podataka: _String_, _Boolean_ i _Integer_. Kod prostih tipova, iz stranice se samo čitaju njihovi bajtovi i pretvaraju u određeni _Java_ objekat tog tipa, dok kod kompozitnih tipova kao što je _String_ potrebno je znati dužinu, same bajtove i kodiranje da bi se konstruisao _Java_ objekat _String_ tipa.
 
 === Upravljanje _log_ datotekom
 
@@ -39,7 +39,7 @@ _Log_ datoteka je struktuirana tako da se noviji _log_-ovi nalaze u blokovima bl
 
 Menadžer _log_-ova obezbeđuje algoritme upravljanja _log_ datotekom tako što čuva stranicu poslednjeg bloka _log_ fajla. Upravljanje _log_ datotekom podrazumeva dodavanje novih _log_-ova, upis _log_-ova na disk i arhiviranje _log_ datoteke.
 
-Iterator _log_-ova obezbeđuje čitanje _log_ datoteke u korektnom redosledu i implementiran je pomoću Java `Iterator` interfejsa.
+Iterator _log_-ova obezbeđuje čitanje _log_ datoteke u korektnom redosledu i implementiran je pomoću _Java_ `Iterator` interfejsa.
 
 #figure(
   image("../dijagrami/log_fajl_izgled.pdf", width: 91%),
@@ -110,7 +110,7 @@ Da bi se podržalo kreiranje perzistentne strukture jednog sloga nove tabele, po
 
 Svaki slog jedne tabele se sastoji od istih metapodataka, to jest istih kolona. Svaka kolona se opisuje svojim tipom, svojom dužinom na disku i tome da li može sadržati _NULL_ vrednosti.
 
-Svaki od tipova je definisan u _SQL_ Java standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
+Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
 
 #figure(
   ```java

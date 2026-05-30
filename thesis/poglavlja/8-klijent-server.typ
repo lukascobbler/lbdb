@@ -26,7 +26,7 @@ Kod serverskog režima rada, predpostavlja se da je klijent na udaljenom računa
 
 === Odgovori sistema <response>
 
-Sve vrste odgovora koje server može dati za neku naredbu koju je klijent zadao predstavljene su Java _record_ konstruktom i implementiraju `Response` _sealed interface_.
+Sve vrste odgovora koje server može dati za neku naredbu koju je klijent zadao predstavljene su _Java_ _record_ konstruktom i implementiraju `Response` _sealed interface_.
 
 - `QuerySet` predstavlja odgovor na _read-only_ naredbe, čiji je rezultat skup slogova. Jedan slog je predstavljen listom konstanti. Da bi sistem znao kako da pošalje slogove preko mreže, a kasnije i kako da napravi tabelarni prikaz, potrebno je poslati i propratnu šemu koja opisuje poslate slogove.
 - `EmptySet` predstavlja odgovor na modifikacione naredbe. Sadrži samo podatak o tome na koliko slogova je uticano.
