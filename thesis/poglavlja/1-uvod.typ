@@ -14,7 +14,7 @@ Moduli ovog sistema su raspoređeni tako da se svaki brine o jednoj grupi algori
   ],
 )<fig:arh_sistema>
 
-Svaki sloj iz uprošćene arhitekture sistema je posebno detaljno objašnjena u nastavku, a uz te slojeve se dodatno objašnjavaju i transakcije, koje su isprepletene kroz ceo sistem. Sličan dijagram koji opisuje celu arhitekturu sistema, ali mnogo detaljnije, se može pronaći u #link(<fig:sekvenca_ceo_sistem>)[pregledu sistema].
+Svaki sloj iz uprošćene arhitekture sistema je posebno detaljno objašnjen u nastavku, a uz te slojeve se dodatno objašnjavaju i transakcije, koje su isprepletene kroz ceo sistem. Sličan dijagram koji opisuje celu arhitekturu sistema, ali mnogo detaljnije, se može pronaći u #link(<fig:sekvenca_ceo_sistem>)[pregledu sistema].
 
 Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #footnote[https://github.com/lukascobbler/lbdb].
 

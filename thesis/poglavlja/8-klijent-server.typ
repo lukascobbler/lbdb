@@ -2,7 +2,7 @@
 
 = Klijentsko serverska arhitektura <klijent-server>
 
-Postoje dva glavna načina kako sistem upravljanja sistema relacionih baza podataka može raditi: lokalno, bez mrežne infrastrukture (eng. _embedded connection_) i kao server.
+Postoje dva glavna načina kako sistem upravljanja relacionim bazama podataka može raditi: lokalno, bez mrežne infrastrukture (eng. _embedded connection_) i kao server.
 
 Karakteristike sistema u lokalnom režimu rada:
 - radi u istom procesu operativnog sistema kao i aplikacija koja ga koristi,

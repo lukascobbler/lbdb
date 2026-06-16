@@ -133,7 +133,7 @@ Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišć
 
 Šema predstavlja teoretski izgled jedne tabele, ali to nije dovoljno da bi se taj izgled perzistirao i mogao ponovo rekreirati. Zbog toga je potrebno uvesti mehanizam pamćenja i fizičkih karakteristika kolona tabele (postoji samo za nevirtuelne tabele). Taj mehanizam se realizuje preko rasporeda polja (eng. _layout_).
 
-Za svaku kolonu postoji se pamte sledeće fizičke karakteristike: pozicija početka vrednosti te kolone, maksimalna dužina vrednosti te kolone i pozicija te kolone u šemi. Takođe, pamti se i celokupna dužina celog sloga. Kolone se identifikuju pomoću njihovog naziva.
+Za svaku kolonu pamte se sledeće fizičke karakteristike: pozicija početka vrednosti te kolone, maksimalna dužina vrednosti te kolone i pozicija te kolone u šemi. Takođe, pamti se i celokupna dužina celog sloga. Kolone se identifikuju pomoću njihovog naziva.
 
 == Primena strukture na blok <primena_strukture_na_blok>
 

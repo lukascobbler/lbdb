@@ -99,7 +99,7 @@ _GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (
 
 == Primer funkcionisanja celokupnog sistema
 
-Dijagram sekvence na sledećoj strani predstavlja generalno ponašanje svih slojeva _LBDB_ sistema. Opisani su slučajevi za `SELECT` naredbu, za naredbe upravljanja životnim ciklusom transakcija i za naredbe modifikacije tabela. Specifičnosti poput tačnog algoritma pravljenja stabla planova ili tačan algoritam poništavanja transakcija nisu obrađeni jer bi dijagram bio prevelik, a njihovo objašnjenje je svakako dato u poglavljima gde su definisani.
+Dijagram sekvence na sledećoj strani predstavlja generalno ponašanje svih slojeva _LBDB_ sistema. Opisani su slučajevi za `SELECT` naredbu, za naredbe upravljanja životnim ciklusom transakcija i za naredbe modifikacije tabela. Specifičnosti poput algoritma pravljenja stabla planova ili algoritma poništavanja transakcija nisu obrađeni jer bi dijagram bio prevelik, a njihovo objašnjenje je svakako dato u poglavljima gde su definisani.
 
 #pagebreak()
 

@@ -152,11 +152,11 @@ Broj slogova je proizvod broja slogova oba podređena plana, a broj jedinstvenih
 
 == Planer <planer>
 
-Većina naredni definisanih _SQL_ standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke validnosti svih naredbi.
+Većina naredbi definisanih _SQL_ standardom zahteva propratno stablo relacionih operatora. Konstrukcija i analiza stabala je posao planera, ali pored toga planer vrši i proveru semantičke validnosti svih naredbi.
 
 Glavna podela tehnika planiranja u relacionim bazama podataka je na tehnike praćenja striktnih pravila pravljenja planova (eng. _rule-based optimisation_, _RBO_; _heuristics-based optimisation_, _HBO_) i tehnike planiranja koji rade sa cenama (eng. _cost-based optimisation_, _CBO_). Cena predstavlja kombinaciju statističkih metapodataka relacionih operatora sa hardverskim osobinama koji ti relacioni operatori koriste.
 
-Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ tehnike planiranja @ingres_rbo, dok moderni sistemi koriste _CBO_ tehnike planiranja #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koji su postali popularni nakon _SystemR_ istraživačkog papira o putanjama pristupa @systemR.
+Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ tehnike planiranja @ingres_rbo, dok moderni sistemi koriste _CBO_ tehnike planiranja #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koje su postale popularne nakon _SystemR_ istraživačkog papira o putanjama pristupa @systemR.
 
 Evolucija tehnika planiranja, koja se može videti kroz ovu glavnu podelu, postoji jer je kroz istoriju bilo potrebno obezbediti sve efikasnije planere koji rade sa sve većim skupovima podataka.
 

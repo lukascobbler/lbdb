@@ -47,7 +47,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse>
 
-`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaktičke kategorije. Omogućava i #link(<explain>)[`EXPLAIN`] naredbu, koja generiše opis naredbe koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaktička kategorija. Vraća `Statement` objekat.
+`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaktičke kategorije. Omogućava i #link(<explain>)[`EXPLAIN`] naredbu, koja generiše opis naredbe koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaktička kategorija za njih. Vraća `Statement` objekat.
 
 ==== `ParseUpdate`
 
