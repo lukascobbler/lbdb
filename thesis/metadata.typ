@@ -2,8 +2,8 @@
 #let naslov = "Управљање датотекама, трансакцијама и интерпретација упита у релационим базама података"
 #let autor = "Лука Бурсаћ"
 
-#let naslov_eng = "Management of files, records and transactions and query interpretation in relational databases"
-#let autor_eng = "Upisati ime i prezime na latinici"
+#let naslov_eng = "Management of files, transactions and query interpretation in relational databases"
+#let autor_eng = "Luka Bursać"
 
 #let indeks = "SV 22/2022"
 
@@ -24,7 +24,7 @@
 #let kljucne_reci_eng = "Relational databases, transactions, files, records, queries"
 #let apstrakt_eng = [
   Implementation of a system for relational
-  database management written in Java
+  database management written in _Java_
 ]
 
 // TODO: Текст задатка добијате од ментора. Заменити доле #lorem(100) са текстом задатка.
@@ -42,7 +42,7 @@
 // На енглеском уписати чланове на латиници
 #let komisija_predsednik_eng = "Petar Petrović"
 #let komisija_clan_eng = "Marko Marković"
-#let mentor_eng = "Igor Dejanović"
+#let mentor_eng = "Branko Milosavljević"
 
 #let zvanje_eng = (
   "редовни професор": "full professor",

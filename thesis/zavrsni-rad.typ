@@ -30,9 +30,9 @@
 #show figure.where(
   kind: table,
 ): set figure.caption(position: top)
-#show figure.where(kind: raw): set figure(supplement: [Listing])
-#show figure.where(kind: image): set figure(supplement: [Slika])
-#show figure.where(kind: table): set figure(supplement: [Tabela])
+#show figure.where(kind: raw): set figure(supplement: [Листинг])
+#show figure.where(kind: image): set figure(supplement: [Слика])
+#show figure.where(kind: table): set figure(supplement: [Табела])
 #set ref(supplement: none)
 
 #import "@preview/hydra:0.6.2": hydra
@@ -41,7 +41,7 @@
   pagebreak(to: "odd", weak: true)
   set block(spacing: 8pt)
   if heading.numbering != none {
-    text("Glava " + counter(heading).display(), size: 22pt)
+    text("Глава " + counter(heading).display(), size: 22pt)
   }
   set par(justify: false)
   line(length: 100%)
@@ -118,8 +118,8 @@
 #include "poglavlja/dodatak 1 - skracenice.typ"
 #include "poglavlja/dodatak 2 - pojmovi.typ"
 
-#show "Available at:": "Dostupno na: "
-#bibliography(title: [Literatura], "literatura.bib")
+#show "Available at:": "Доступно на: "
+#bibliography(title: [Литература], "literatura.bib")
 #checkbib()
 
 #todos()

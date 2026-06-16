@@ -88,7 +88,7 @@ Pošto su klijenti nezavisni, ne bi trebalo da čekaju jedni na druge i zbog tog
 
 Obrada zahteva klijenata se vrši kroz `handleClient()` funkciju. Svaki klijentski soket se kodira u jedinstveni broj sesije, tako što se uzme heš vrednost njegove konekcije. Ovime se omogućava mapiranje klijenta na njegovu trenutnu transakciju. Ako broj sesije klijenta ne postoji u sistemu, dodeljuje se nova (prva) transakcija za tog klijenta.
 
-#link(<sesije>)[Kao što je već spomenuto], klijentske transakcije mogu da rade u režimu gde se sastoje od jedne naredbe (_autocommit_) ili u režimu gde se sastoje od više naredbi. U režimu gde se transakcije sastoje od više naredbi, potrebno je početi ih sa `START TRANSACTION` naredbom, a završiti sa `COMMIT` ili `ROLLBACK` naredbama. Ovo je glavni razlog zašto je potrebno jedinstveno identifikovati sesije klijenata, da bi njhova transakcija mogla da perzistira kroz više naredbi.
+#link(<sesije>)[Kao što je već spomenuto], klijentske transakcije mogu da rade u režimu gde se sastoje od jedne naredbe (_autocommit_) ili u režimu gde se sastoje od više naredbi. U režimu gde se transakcije sastoje od više naredbi, potrebno je početi ih sa `START TRANSACTION` naredbom, a završiti sa `COMMIT` ili `ROLLBACK` naredbama. Ovo je glavni razlog zašto je potrebno jedinstveno identifikovati sesije klijenata, da bi njihova transakcija mogla da perzistira kroz više naredbi.
 
 U slučaju prekida konekcije, server će izvršiti `ROLLBACK` trenutne transakcije klijenta.
 

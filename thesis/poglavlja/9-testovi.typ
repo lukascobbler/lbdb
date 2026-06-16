@@ -2,7 +2,7 @@
 
 = Testovi <testovi>
 
-Pošto je za korektno funkcionisanje sistema potrebno mnogo kompleksnih funkcionalnosti i algoritama, potrebno je izvršiti intezivno testiranje istih da bi se dokazala pravilna implementacija. Slojevi od kojih se sistem sastoji su testirani izolovano, sa time da se slojevi na višim apstrakcionim nivoima oslanjaju na slojeve na nižim apstrakcionim nivoima.
+Pošto je za korektno funkcionisanje sistema potrebno mnogo kompleksnih funkcionalnosti i algoritama, potrebno je izvršiti intenzivno testiranje istih da bi se dokazala pravilna implementacija. Slojevi od kojih se sistem sastoji su testirani izolovano, sa time da se slojevi na višim apstrakcionim nivoima oslanjaju na slojeve na nižim apstrakcionim nivoima.
 
 == Organizacija testova
 

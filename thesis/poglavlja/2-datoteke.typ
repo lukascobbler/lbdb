@@ -110,7 +110,7 @@ Da bi se podržalo kreiranje perzistentne strukture jednog sloga nove tabele, po
 
 Svaki slog jedne tabele se sastoji od istih metapodataka, to jest istih kolona. Svaka kolona se opisuje svojim tipom, svojom dužinom na disku i tome da li može sadržati _NULL_ vrednosti.
 
-Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava nemanje vrednosti za to polje.
+Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava odsustvo vrednosti za to polje.
 
 #figure(
   ```java

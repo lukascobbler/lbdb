@@ -102,7 +102,7 @@ Funkcije koje generišu iskaze predstavljaju sintaktičke kategorije najvišeg a
   ],
 )<fig:parse_create_table>
 
-`ParseCreateTable` predstavlja naredbu kreiranja nove tabele. Tabela može sadržati maksimalno #link(<primena_strukture_na_blok>)[31 polje]. Polje može biti jedno od tipova #link(<fig:tip>)[podržanih u sistemu], a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTabeStatement` objekat.
+`ParseCreateTable` predstavlja naredbu kreiranja nove tabele. Tabela može sadržati maksimalno #link(<primena_strukture_na_blok>)[31 polje]. Polje može biti jedno od tipova #link(<fig:tip>)[podržanih u sistemu], a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTableStatement` objekat.
 
 ==== `ParsePredicate`
 

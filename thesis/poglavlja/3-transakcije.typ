@@ -4,11 +4,11 @@
 
 Transakcije su osnovni mehanizam za garantovanje različitih osobina otpornosti sistema za upravljanje relacionim bazama podataka. Omogućavaju sistemu da vrši atomične operacije, da se uvek održi u konzistentnom stanju, da izoluje nezavisne konkurentne operacije i da garantuje perzistentnost podataka. Generalno, ove osobine se zovu _ACID_ osobine (eng. _atomicity, consistency, isolation, durability_) @acid.
 
-Svaka operacija u sistemu mora biti izvršena u okviru jedne transakcije, ali se jedna transakcija može sastojati i od više operacija koje se sve moraju ili uspešno izvšiti ili se moraju sve poništiti. Svaka transakcija ima početak i kraj. Kraj može biti potvrda (eng. _commit_) ili poništavanje (eng. _rollback_). Ako je transakcija uspešno potvrđena, od tog trenutka pa na dalje sve izvršene promene moraju biti odmah vidljive drugim transakcijama.
+Svaka operacija u sistemu mora biti izvršena u okviru jedne transakcije, ali se jedna transakcija može sastojati i od više operacija koje se sve moraju ili uspešno izvršiti ili se moraju sve poništiti. Svaka transakcija ima početak i kraj. Kraj može biti potvrda (eng. _commit_) ili poništavanje (eng. _rollback_). Ako je transakcija uspešno potvrđena, od tog trenutka pa na dalje sve izvršene promene moraju biti odmah vidljive drugim transakcijama.
 
 == Realizacija transakcionih mehanizama u sistemu
 
-Vrednost je niz bajtova (određenog tipa), koja dobija semantilki značaj tek na apstrakcionim nivoima iznad nivoa transakcija, naime na nivou struktuiranja blokova u slogove. Na nivou transakcija, vrednosti nemaju semantičko značenje, ali da bi sistem obezbedio visok stepen usklađenosti sa _ACID_ osobinama, operacije nad vrednostima se obavljaju isključivo kroz transakcije koje enkapsuliraju svu potrebnu logiku tih osobina.
+Vrednost je niz bajtova (određenog tipa), koja dobija semantički značaj tek na apstrakcionim nivoima iznad nivoa transakcija, naime na nivou struktuiranja blokova u slogove. Na nivou transakcija, vrednosti nemaju semantičko značenje, ali da bi sistem obezbedio visok stepen usklađenosti sa _ACID_ osobinama, operacije nad vrednostima se obavljaju isključivo kroz transakcije koje enkapsuliraju svu potrebnu logiku tih osobina.
 
 === Transakcije kao glavno mesto pristupa vrednostima <pristup_vrednostima_u_transakcijama>
 
@@ -36,7 +36,7 @@ U sistemu postoji dve glavne grupe operacija: operacije modifikacije vrednosti i
 
 Pošto u _log_-ovima operacija modifikacije vrednosti uvek stoje i stara i nova vrednost, poništavanje ili ponova primena operacije je trivijalna. Specijalna operacija modifikacije je operacija umetanja novog bloka na kraju datoteke, koja ne menja nikakvu vrednost ali je i dalje potrebno pratiti njene pozive zbog održavanja korektne veličine datoteka. Algoritam poništavanja umetanja novog bloka nije trivijalan jer nije samo zamena vrednosti, već je potrebno označiti bafer tog bloka kao nemodifikovan i skratiti datoteku za jedan blok. U _log_ datoteku se uvek zapisuje nov _log_ za pozvanu operaciju modifikacije pre sâme obrade te operacije.
 
-Operacije životnog ciklusa transakcija je potrebno pratiti da bi sistem oporavke znao koje transakcije su se uspešno i neuspešno izvršile i na osnovu toga reagovati na operacije modifikacije. Marker kontrolne tačke je specijalni zapis koji označava kada nije potrebno dalje prolaziti kroz _log_ datoteku. Više o njemu u #link(<alg_oporavka>)[algoritmima oporavke sistemma].
+Operacije životnog ciklusa transakcija je potrebno pratiti da bi sistem oporavke znao koje transakcije su se uspešno i neuspešno izvršile i na osnovu toga reagovati na operacije modifikacije. Marker kontrolne tačke je specijalni zapis koji označava kada nije potrebno dalje prolaziti kroz _log_ datoteku. Više o njemu u #link(<alg_oporavka>)[algoritmima oporavke sistema].
 
 Hijerarhija _log_ zapisa počinje od glavnog interfejsa _LogRecord_ koji definiše neophodne operacije koje će zvati algoritmi oporavke sistema. Operacije životnog ciklusa transakcija ostavljaju praznu implementaciju _undo_ i _redo_ metoda jer ne modifikuju podatke. Dodatno, svaki tip _log_ zapisa ima prateću statičku metodu _writeToLog_ koja enkapsulira logiku pisanja same strukture konkretnog _log_-a preko menadžera _log_-ova za neki identifikator transakcije.
 
