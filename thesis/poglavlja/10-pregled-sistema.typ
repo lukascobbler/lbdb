@@ -2,7 +2,7 @@
 
 = Pregled sistema <pregled-sistema>
 
-U okviru ovog poglavlja su objašnjeni raznovrsni detalji sistema koji nisu vezani za sâme funkcionalnosti sistema.
+U okviru ovog poglavlja su objašnjeni raznovrsni detalji sistema koji nisu vezani za same funkcionalnosti sistema.
 
 == Izgradnja i pokretanje <buildsystem>
 
@@ -95,7 +95,7 @@ Redom, parametri označavaju:
 
 == Integracija sa _GitHub_ platformom
 
-_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continuous Integration_, _CI_) i izgradnju aplikacija (eng. _Continuous Delivery_, _CD_) u okviru njihovih servera, što omogućava ljudima koji rade na softveru da imaju glavni izvor poverenja na jednom mestu. _LBDB_ sistem iskorištava ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje, testovi se pokreću i rezultat pokretanja (da li su svi testovi prošli) stoji u `README.md` datoteci repozitorijuma.
+_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continuous Integration_, _CI_) i izgradnju aplikacija (eng. _Continuous Delivery_, _CD_) u okviru njihovih servera, što omogućava ljudima koji rade na softveru da imaju glavni izvor poverenja na jednom mestu. _LBDB_ sistem iskorišćava ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje, testovi se pokreću i rezultat pokretanja (da li su svi testovi prošli) stoji u `README.md` datoteci repozitorijuma.
 
 == Primer funkcionisanja celokupnog sistema
 

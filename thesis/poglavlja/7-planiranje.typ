@@ -50,7 +50,7 @@ Specijalni slučaj nejednakosti je predstavljen konstantom _NEJEDNAKOSTI_ koja i
 
 Specijalni slučaj kada postoje prekompleksni izrazi je predstavljen konstantom _KOMPLEKSNO_ koja ima vrednost $10.0$ i označava procenjenu vrednost redukcije u slučaju postojanja izraza koji ima ili više od dve kolone ili izraza koji kombinuje kolone sa operacijama poređenja na netrivijalan način.
 
-Slučaj kada se ni jedan slog ne podudara sa članom je predstavljen konstantom maksimalne vrednosti `Double` tipa i označava maksimalnu redukciju. Slučaj kada svi slogovi podudaraju neki član je predstavljen konstantom $1.0$ i predstavlja odsustvo redukcije.
+Slučaj kada se nijedan slog ne podudara sa članom je predstavljen konstantom maksimalne vrednosti `Double` tipa i označava maksimalnu redukciju. Slučaj kada svi slogovi podudaraju neki član je predstavljen konstantom $1.0$ i predstavlja odsustvo redukcije.
 
 Izbor vrednosti ovih konstanti je opisan u _SystemR_ istraživačkom papiru o putanjama pristupa @systemR.
 
@@ -62,7 +62,7 @@ Izbor vrednosti ovih konstanti je opisan u _SystemR_ istraživačkom papiru o pu
 )<fig:racunanje_redukcionog_faktora>
 
 Procena broja jedinstvenih vrednosti za izlaznu kolonu vrši se analizom predikata i pronalaženjem uslova jednakosti i on je jednak:
-- $0$, ukoliko predikat izjednačava traženu kolonu sa dve ili više različitih konstanti. U ovom slučaju, uslov je kontradiktoran i ni jedan slog neće zadovoljiti filter, pa samim tim neće biti ni jedinstvenih vrednosti,
+- $0$, ukoliko predikat izjednačava traženu kolonu sa dve ili više različitih konstanti. U ovom slučaju, uslov je kontradiktoran i nijedan slog neće zadovoljiti filter, pa samim tim neće biti ni jedinstvenih vrednosti,
 - $1$, ukoliko predikat izjednačava traženu kolonu sa tačno jednom konstantom. Svi slogovi koji prođu filter imaće istu vrednost za tu kolonu,
 - minimumu između broja jedinstvenih vrednosti te kolone i svih kolona sa kojima je izjednačena, ukoliko kolona nije izjednačena ni sa jednom konstantom, ali jeste sa jednom ili više drugih kolona. U ovom slučaju, broj jedinstvenih vrednosti tražene kolone ne može biti veći od njenog originalnog broja jedinstvenih vrednosti iz podređenog plana, ali ne može biti veći ni od broja jedinstvenih vrednosti najrestriktivnije kolone sa kojom je izjednačena.
 
@@ -80,7 +80,7 @@ Može da se koristi i u kontekstima modifikujućih stabala operatora i u konteks
 
 Procena broja jedinstvenih vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza ili predikata koji tu kolonu definiše i on je jednak:
 - $0$, ukoliko se traži procena za kolonu koja se ne nalazi u projekciji,
-- $1$, ukoliko je izraz ili predikat konstanta (ne referencira ni jednu kolonu),
+- $1$, ukoliko je izraz ili predikat konstanta (ne referencira nijednu kolonu),
 - $2$, ukoliko je u pitanju predikat, koji će najverovatnije imati obe moguće vrednosti,
 - broju jedinstvenih vrednosti te kolone iz podređenog plana, ukoliko izraz referencira tačno jednu kolonu. Pretpostavka je da većina transformacija nad jednom kolonom (npr. aritmetičke operacije) zadržava sličnu distribuciju vrednosti,
 - ukupnom broju slogova, ukoliko izraz referencira više od jedne kolone. U ovom slučaju, pretpostavlja se da kombinacija više polja rezultuje jedinstvenom vrednošću za svaki slog.
@@ -96,7 +96,7 @@ Procena broja _NULL_ vrednosti za svaku izlaznu kolonu vrši se na osnovu slože
 
 ==== `RenamePlan`
 
-`RenamePlan` opisuje virtuelnu tabelu sa svim primenjenim preimenovanjima kolona. Izlazna šema sadrži sve kolone sa novim imenom i ni jednu kolonu sa starim imenom.
+`RenamePlan` opisuje virtuelnu tabelu sa svim primenjenim preimenovanjima kolona. Izlazna šema sadrži sve kolone sa novim imenom i nijednu kolonu sa starim imenom.
 S obzirom da operacija preimenovanja ne dodaje nove slogove, broj blokova i broj slogova ostaju nepromenjeni i direktno se preuzimaju od podređenog plana.
 Procena broja jedinstvenih vrednosti kolone je jednaka podređenom planu ukoliko se traži novo ime stare kolone ili ukoliko je kolona nepreimenovana, a jednaka je $0$ ako se traži staro ime preimenovane kolone. Procena broja _NULL_ vrednosti funkcioniše isto.
 
@@ -136,7 +136,7 @@ Ako stavimo konkretne vrednosti tabela $T_1$ i $T_2$ u ovu formulu, dobijamo raz
 - ($T_l = T_1$, $T_d = T_2$) $=>$ $text("B")(T_r) = 5 + (1000 * 100) = 100005$
 - ($T_l = T_2$, $T_d = T_1$) $=>$ $text("B")(T_r) = 100 + (500 * 5) = 2600$
 
-Vidi se da ako stavimo da tabela $T_1$ bude desna, a $T_2$ leva, dobijamo manji  broj blokova rezultujuće tabele, a sa time i efikasniju operaciju proizvoda. Ekvivalentna formula @simpledb:
+Vidi se da ako stavimo da tabela $T_1$ bude desna, a $T_2$ leva, dobijamo manji broj blokova rezultujuće tabele, a sa time i efikasniju operaciju proizvoda. Ekvivalentna formula @simpledb:
 
 $text("B")(T_r) = text("B")(T_l) + (text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d))$
 
@@ -170,7 +170,7 @@ Trivijalne operacije koje se redukuju su: aritmetičke operacije koje ne transfo
 
 Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja je dalje obrađuje. Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ (_Application Programming Interface_) interfejsima. Obe grupe funkcija znaju da barataju sa podsistemom parsiranja, koji pretvara niz karaktera u #link(<statement>)[`Statement` objekat]. Grupe se sastoje od funkcija:
 - `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za _LBDB_, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
-- `execute` koja je prilagođena #link(<klijent-server>)[klijentsko serverskoj arhitekturi] _LBDB_ sistema, u okviru koje se brine o automatskom ili manuelnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
+- `execute` koja je prilagođena #link(<klijent-server>)[klijentsko-serverskoj arhitekturi] _LBDB_ sistema, u okviru koje se brine o automatskom ili ručnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća neki #link(<response>)[`Response`] objekat, koji enkapsulira sve moguće vrste odgovora na neku naredbu.
 
 #figure(
   image("../dijagrami/struktura_planera.pdf"),
@@ -183,11 +183,11 @@ Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` k
 
 Kao što je već spominjano u tekstu, _SQL_ naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
 
-Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja sâmog plana. Semantička provera se sastoji od sledećih koraka:
+Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja samog plana. Semantička provera se sastoji od sledećih koraka:
 - provera postojanja fizičkih tabela spomenutih u naredbi
 - proširenje zamenskih članova na konkretne kolone
 - provera da se zamenski članovi ne koriste u izrazima
-- provera postojanja kolona pomenutih u projekcijama i predikatu
+- provera postojanja kolona spomenutih u projekcijama i predikatu
 - provera dvosmislenih imena kolona (u slučaju da dve tabele imaju isti naziv kolone i ne može da se trivijalno skonta koja se koristi)
 - provera da li aritmetičke operacije mogu da se izvrše za tip kolone
 - provera da li kolone u unijama imaju iste tipove
@@ -232,9 +232,9 @@ Kreira finalno stablo planova kroz četiri funkcije koje zovu jedne druge, imaju
 
 - `getDataSourcePlan` funkcija se brine o tome odakle će doći slogovi i ima dve putanje izvršavanja.
 
-  Prva putanja izvršavanja se dešava kada se u `SELECT` naredbi ne spominje ni jedna fizička tabela, već se radi upit virtuelne tabele koja ima jedan slog koji se sastoji samo od konstanti. U tom slučaju, samo vraća jedan jedini #link(<dummy_table_plan>)[`DummyTablePlan`] plan čvor.
+  Prva putanja izvršavanja se dešava kada se u `SELECT` naredbi ne spominje nijedna fizička tabela, već se radi upit virtuelne tabele koja ima jedan slog koji se sastoji samo od konstanti. U tom slučaju, samo vraća jedan jedini #link(<dummy_table_plan>)[`DummyTablePlan`] plan čvor.
 
-  Druga putanja izvršavanja se dešava kada se spominje jedna ili više fizičkih tabela. Ako se spominje jedna fizička tabela, njen plan biva vraćen. Ako se spominje više od jedne fizičke tabele, potrebno je uraditi operaciju proizvoda. Proizvod tabela se vrši tako što se prva spomenuta tabela proglasi da bude početna, pa se prolazi kroz sve ostale spomenute tabele i ponavlja se postupak: kreiraju se dva proizvod plana, jedan gde je dosadašnje podstablo planova na levom mestu, a plan sledeće tabele na desnom i jedan gde je redosled obrnut; plan koji ima manje pristupa blokovima se uzima kao sledeći koren podstabla planova i postupak se izvršava dok se ne prođe kroz sve pomenute tabele. Time se dobija oformljeno podstablo planova gde su proizvodi tabela zadovoljeni. Ovakva provera broja pristupanih blokova nije optimalna, ali može pomoći u otklanjanju veoma neefikasnih stabala planova i predstavlja jedino mesto gde se primenjuje _RBO_ tehnika planiranja.
+  Druga putanja izvršavanja se dešava kada se spominje jedna ili više fizičkih tabela. Ako se spominje jedna fizička tabela, njen plan biva vraćen. Ako se spominje više od jedne fizičke tabele, potrebno je uraditi operaciju proizvoda. Proizvod tabela se vrši tako što se prva spomenuta tabela proglasi da bude početna, pa se prolazi kroz sve ostale spomenute tabele i ponavlja se postupak: kreiraju se dva proizvod plana, jedan gde je dosadašnje podstablo planova na levom mestu, a plan sledeće tabele na desnom i jedan gde je redosled obrnut; plan koji ima manje pristupa blokovima se uzima kao sledeći koren podstabla planova i postupak se izvršava dok se ne prođe kroz sve spomenute tabele. Time se dobija oformljeno podstablo planova gde su proizvodi tabela zadovoljeni. Ovakva provera broja pristupanih blokova nije optimalna, ali može pomoći u otklanjanju veoma neefikasnih stabala planova i predstavlja jedino mesto gde se primenjuje _RBO_ tehnika planiranja.
 
   #figure(
     image("../dijagrami/primeri_stabla_planova/proizvod.pdf", width: 66%),
@@ -292,13 +292,13 @@ Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
 
 `UPDATE` naredba služi za ažuriranje vrednosti postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `UPDATE` naredbi se sastoji od sledećih koraka:
 - da li postoji fizička tabela čiji se slogovi ažuriraju,
-- da li postoje kolone pomenute u predikatu i izrazima ažuriranja,
+- da li postoje kolone spomenute u predikatu i izrazima ažuriranja,
 - da li su dozvoljene _NULL_ vrednosti za kolone gde je nova vrednost _NULL_,
 - provera tipova kolona ažuriranih slogova sa tipovima kolona definisanih u šemi tabele.
 
 `DELETE` naredba služi za brisanje postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `DELETE` naredbi se sastoji od sledećih koraka:
 - da li postoji fizička tabela čiji se slogovi brišu,
-- da li postoje kolone pomenute u predikatu.
+- da li postoje kolone spomenute u predikatu.
 
 `CREATE TABLE` naredba služi za kreiranje novih tabela. Semantička provera `CREATE TABLE` naredbi se sastoji od sledećih koraka:
 - da li tabela sa tim imenom već postoji,
@@ -308,7 +308,7 @@ Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
 
 Stablo planova za `INSERT` naredbe je uvek isto i sastoji se samo od jednog `TablePlan` čvora. Taj čvor se pretvara u svoj prateći relacioni operator nad kojim se vrše umetanja novih slogova. Vraća broj dodatih slogova.
 
-Algoritam umetanja novog sloga implementiran u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za nov slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek počinjati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno dobro iskorišćava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto. Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši od kraja. Prednost je konzistentno dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora baca na obrisane slogove.
+Algoritam umetanja novog sloga implementiran u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za novi slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek počinjati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno dobro iskorišćava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto. Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši od kraja. Prednost je konzistentno dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora baca na obrisane slogove.
 
 Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednje umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen i resetuje se prilikom gašenja sistema. Zadržava prednost brzine umetanja, a nakon restarta sistema mesta obrisanih slogova mogu ponovo biti popunjena. Takođe, resetuje se pri poništavanju transakcije.
 
@@ -316,7 +316,7 @@ Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu p
 
 Stablo planova za `UPDATE` naredbe se može sastojati samo od jednog `TablePlan` čvora, ali ispred njega može stojati i `SelectReadOnlyPlan` čvor u slučaju da slogovi koji trebaju biti ažurirani moraju da ispune neki uslov filtriranja. Ova dva (ili jedan) čvora se pretvaraju u svoje prateće relacione operatore koji znaju da postave nove vrednosti. Vraća broj ažuriranih slogova.
 
-Za razliku od `INSERT` naredbe, `UPDATE` naredba može da sadrži izraze koji nisu konstantni, to jest koji pominju kolone tabele koja se ažurira.
+Za razliku od `INSERT` naredbe, `UPDATE` naredba može da sadrži izraze koji nisu konstantni, to jest koji spominju kolone tabele koja se ažurira.
 
 ==== Algoritam planiranja `DELETE` naredbe
 

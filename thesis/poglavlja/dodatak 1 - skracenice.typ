@@ -45,7 +45,7 @@
     [_API_],
     [_Application Programming Interface_],
     [_EOF_],
-    [End Of File],
+    [_End Of File_],
     [_UTF-8_],
     [_Unicode Transformation Format_],
     [_RESP_],

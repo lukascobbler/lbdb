@@ -43,7 +43,7 @@ Za podsistem planiranja, postoji pomoćna klasa `PlanTestUtils` koja pruža doda
 
 === Sistem izolacije direktorijuma na disku <disk-filesystem>
 
-Prvi od od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze na fizičkom disku. Prednosti ovog načina pokretanja su laki pregled generisanih datoteka zarad otklanjanja grešaka i nezahtevno pokretanje. Mana ovog načina pokretanja je brzina jer je pristup fizičkom disku spor.
+Prvi od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze na fizičkom disku. Prednosti ovog načina pokretanja su laki pregled generisanih datoteka zarad otklanjanja grešaka i nezahtevno pokretanje. Mana ovog načina pokretanja je brzina jer je pristup fizičkom disku spor.
 
 Da bi se postigla izolacija testova i kroz iteracije pokretanja istih testova, potrebno je očistiti stare direktorijume. _JUnit_ omogućava konfiguraciju čistača, to jest funkcije koja se izvršava pre svih testova. `GlobalCleanup` klasa sadrži ovu logiku.
 

@@ -1,6 +1,6 @@
 #import "../funkcije.typ": todo
 
-= Klijentsko serverska arhitektura <klijent-server>
+= Klijentsko-serverska arhitektura <klijent-server>
 
 Postoje dva glavna načina kako sistem upravljanja relacionim bazama podataka može raditi: lokalno, bez mrežne infrastrukture (eng. _embedded connection_) i kao server.
 
@@ -9,16 +9,16 @@ Karakteristike sistema u lokalnom režimu rada:
 - samo jedna aplikacija može da koristi tu instancu sistema,
 - ne zahteva mrežnu konekciju,
 - zahteva manje resursa,
-- ponaša se kao biblioteka koja ponzaje unutrašnjosti relacionog modela podataka.
+- ponaša se kao biblioteka koja poznaje unutrašnjosti relacionog modela podataka.
 
 Karakteristike sistema u serverskom režimu rada:
 - radi kao zaseban proces operativnog sistema,
-- više različitih aplikacija i korisnika može da pristupi toj instaci sistema,
+- više različitih aplikacija i korisnika može da pristupi toj instanci sistema,
 - zahteva mrežnu konekciju,
 - zahteva više resursa,
 - ponaša se kao pružilac usluge baratanja relacionim modelom podataka.
 
-_LBDB_ sistem podržava samo serveski režim rada.
+_LBDB_ sistem podržava samo serverski režim rada.
 
 == Komunikacija sa klijentima
 
@@ -92,7 +92,7 @@ Obrada zahteva klijenata se vrši kroz `handleClient()` funkciju. Svaki klijents
 
 U slučaju prekida konekcije, server će izvršiti `ROLLBACK` trenutne transakcije klijenta.
 
-U slučaju da se server gasi, povezani klijenti mogu da pošalju samo naredbe koje završavaju transackije, ali više o tome u opisu gašenja servera.
+U slučaju da se server gasi, povezani klijenti mogu da pošalju samo naredbe koje završavaju transakcije, ali više o tome u opisu gašenja servera.
 
 #figure(
   image("../dijagrami/sekvenca_obrade_klijenta.svg"),
@@ -103,13 +103,13 @@ U slučaju da se server gasi, povezani klijenti mogu da pošalju samo naredbe ko
 
 === Pisanje kontrolnih tačaka
 
-Druga funkcionalnost servera je određivanje kada (ali ne i kako) će mirna kontrolna tačka biti pisana. Prilikom pokretanja servera se startuje i nit koja na svakih $10$ minuta započinje pisanje mirne kontrolne tačke. #link(<quiescent_alg>)[Kao što je već napomenuto], da bi se mirna kontrolna tačka zapisala, ni jedna transakcija ne sme biti aktivna u sistemu.
+Druga funkcionalnost servera je određivanje kada (ali ne i kako) će mirna kontrolna tačka biti pisana. Prilikom pokretanja servera se startuje i nit koja na svakih $10$ minuta započinje pisanje mirne kontrolne tačke. #link(<quiescent_alg>)[Kao što je već napomenuto], da bi se mirna kontrolna tačka zapisala, nijedna transakcija ne sme biti aktivna u sistemu.
 
 Kada prođe $10$ minuta od poslednjeg zapisa mirne kontrolne tačke, server poziva algoritam zapisa koji interno čeka da se sve transakcije završe i zaustavlja obradu novih.
 
 === Gašenje sistema
 
-Treća funkcionalnost je bezbedno gasšnje sistema. Bezbedno gašenje se inicira slanjem `SIGINT` signala na `Unix` operativnim sistemima ili slanjem `CTRL_C` (ili sličnog) signala na `Windows` operativnom sistemu. Najčešće, ovo se mapira na gašenje prozora gde je server pokrenut, ili rađenjem `CTRL + C` prečice.
+Treća funkcionalnost je bezbedno gašenje sistema. Bezbedno gašenje se inicira slanjem `SIGINT` signala na `Unix` operativnim sistemima ili slanjem `CTRL_C` (ili sličnog) signala na `Windows` operativnom sistemu. Najčešće, ovo se mapira na gašenje prozora gde je server pokrenut, ili rađenjem `CTRL + C` prečice.
 
 Bezbedno gašenje se sastoji iz tri koraka:
 - prestajanje prihvatanja novih naredbi, sem naredbi završetka transakcije,
@@ -129,7 +129,7 @@ Nakon što je gašenje inicirano, ulazi se u `drain` mod, gde se ne prihvataju k
 
 Klasa `LBDBClient` sadrži `main` funkciju klijentske aplikacije sistema. Čita i validira argument komandne linije: port na kojem se nalazi server na koji se klijent povezuje. Sva logika slanja naredbi se nalazi u ovoj klasi.
 
-Klijentska aplikacija pruža korisnicima terminal gde se naredbe mogu upisivati. Terminal podržava automatsko završavanje ključnih reči (eng. _auto complete_) pritiskom `TAB` dirke i navigaciju istorije komandi. Implementaciju ovih stvari podržava #link(<zavisnosti-klijenta>)[_JLine_] zavisnost. Terminal prati i koliko vremena se izvršavala svaka naredba.
+Klijentska aplikacija pruža korisnicima terminal gde se naredbe mogu upisivati. Terminal podržava automatsko završavanje ključnih reči (eng. _auto complete_) pritiskom `TAB` tastera i navigaciju istorije komandi. Implementaciju ovih stvari podržava #link(<zavisnosti-klijenta>)[_JLine_] zavisnost. Terminal prati i koliko vremena se izvršavala svaka naredba.
 
 Paketi koje šalje serveru su serijalizovani tako da prvo stoji dužina teksta naredbe u bajtovima, a zatim i kodirani tekst naredbe. Pakete koje prima od servera deserijalizuje tako što prvo čita prva $4$ bajta koja predstavljaju dužinu paketa u bajtovima, a zatim koristi algoritam deserijalizacije koji je opisan u #link(<protokol>)[protokolu].
 
@@ -158,4 +158,4 @@ Algoritam štampanja tabela ima zadatak da lepo formatira sva imena kolona i sve
 
 === Masovno pokretanje naredbi
 
-_LBDB_ paket pruža još jednu vrstu klijentske aplikacije: `BulkExecutor`. Ova klijentska aplikacija funkcioniše slično kao i obična klijentska aplikacija, ali umesto pružanja interakcije sa sistemom preko terminala, redom izvršava sve _SQL_ naredbe iz neke datoteke. Ovo radi u manuelno započetoj transakciji i ako bar jedna naredba ne uspe sa izvršavanjem, javlja grešku i vrši _rollback_. Korisna je za popunjavanje tabela ili za testiranje sistema.
+_LBDB_ paket pruža još jednu vrstu klijentske aplikacije: `BulkExecutor`. Ova klijentska aplikacija funkcioniše slično kao i obična klijentska aplikacija, ali umesto pružanja interakcije sa sistemom preko terminala, redom izvršava sve _SQL_ naredbe iz neke datoteke. Ovo radi u ručno započetoj transakciji i ako bar jedna naredba ne uspe sa izvršavanjem, javlja grešku i vrši _rollback_. Korisna je za popunjavanje tabela ili za testiranje sistema.

@@ -52,13 +52,13 @@ Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o posto
   caption: [Šema _fieldcatalog_ tabele],
 )<tbl:fieldcatalog>
 
-Kataloške tabele se kreiraju prilikom inicijalizacije sistema. Bitno je napomenuti da se kataloške tabele perzistiraju na isti način kao i sve ostale tabele u sistemu, što znači da će one sadržati i slogove koje opisuju njih sâme. Time što se kataloške tabele perzistiraju isto kao i korisničke, sistemskim tabelama se može pristupiti putem standardnih mehanizama #link(<relacioni-operatori>)[relacionih operatora].
+Kataloške tabele se kreiraju prilikom inicijalizacije sistema. Bitno je napomenuti da se kataloške tabele perzistiraju na isti način kao i sve ostale tabele u sistemu, što znači da će one sadržati i slogove koje opisuju njih same. Time što se kataloške tabele perzistiraju isto kao i korisničke, sistemskim tabelama se može pristupiti putem standardnih mehanizama #link(<relacioni-operatori>)[relacionih operatora].
 
 Svi identifikatori u sistemu (imena kolona, tabela, ...) se implicitno konvertuju tako da sadrže samo mala slova.
 
 == Statistički podaci <statisticki-metapodaci>
 
-Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji pomažu pri proceni vremena izvršavanja određenih načina pristupa. Sâm posao konstruisanja efikasnog načina pristupa je briga #link(<planiranje>)[podsistema planiranja].
+Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji pomažu pri proceni vremena izvršavanja određenih načina pristupa. Sam posao konstruisanja efikasnog načina pristupa je briga #link(<planiranje>)[podsistema planiranja].
 
 Statistički metapodaci neke tabele uključuju:
 - broj blokova tabele

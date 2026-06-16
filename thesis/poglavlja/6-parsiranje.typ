@@ -28,7 +28,7 @@ Svaka kategorija tokena implementira `Token` interfejs i predstavljena je _recor
 
 Gramatika nekog jezika predstavlja skup pravila koje opisuju sve legalne komade teksta, koje neki sistem podržava. Sintaktičke kategorije su koncepti sa kojima gramatika barata. Predstavljaju čvorove sintaktičkog stabla i sadrže se od drugih sintaktičkih kategorija i tokena.
 
-Vrsta parsiranja koja je implementirana se zove _recursive descent_ parsiranje. U _recurisive descent_ parsiranju, gramatika se proverava od gore ka dole. Ulazna tačka je koren sintaktičkog stabla i za svako podstablo, to jest gramatičko pravilo, postoji funkcija obrađuje to pravilo. Funkcije se često pozivaju rekurzivno da bi obradili veće celine, otud i ime ovog načina parsiranja. Svaka funkcija obrade pravila, na bilo kom nivou, se mapira na jednu sintaktičku kategoriju.
+Vrsta parsiranja koja je implementirana se zove _recursive descent_ parsiranje. U _recursive descent_ parsiranju, gramatika se proverava od gore ka dole. Ulazna tačka je koren sintaktičkog stabla i za svako podstablo, to jest gramatičko pravilo, postoji funkcija obrađuje to pravilo. Funkcije se često pozivaju rekurzivno da bi obradili veće celine, otud i ime ovog načina parsiranja. Svaka funkcija obrade pravila, na bilo kom nivou, se mapira na jednu sintaktičku kategoriju.
 
 === Iskazi <statement>
 

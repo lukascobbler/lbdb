@@ -82,7 +82,7 @@ Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
 - generišu slogove jedan po jedan
 - ne čuvaju generisane slogove i ne čuvaju nikakve međurezultate
 
-Zahtev za izvršenje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko ni jedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
+Zahtev za izvršenje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko nijedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
 
 Kombinacija dve navedene osobine uz delegaciju operacija se zove pajplajnovano procesovanje (eng. _pipelined processing_). Korišćenje pajplajnovanog procesovanja u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ga je pogodno koristiti.
 
@@ -101,11 +101,11 @@ Najopštija podela relacionih operatora je na one koji samo čitaju podatke (eng
 
 ==== `Scan`
 
-`Scan` apstraktna klasa definiše operacije neophodne za prolazak kroz sve vrednosti rezultujuće virtuelne tabele. Svaki relacioni operator implementira bar ove operacije. Vraćanje vrednosti se radi isključivo kroz `Constant` objekte. `Scan` se može, ali ne mora, mapirati na fizičku tabelu. Implementira `AutoCloseable` interfejs koji omogućava _RAII_ (eng. _Resource Acquisition Is Initialization_) šablon, ali ne pruža sâmu logiku oslobađanja resursa.
+`Scan` apstraktna klasa definiše operacije neophodne za prolazak kroz sve vrednosti rezultujuće virtuelne tabele. Svaki relacioni operator implementira bar ove operacije. Vraćanje vrednosti se radi isključivo kroz `Constant` objekte. `Scan` se može, ali ne mora, mapirati na fizičku tabelu. Implementira `AutoCloseable` interfejs koji omogućava _RAII_ (eng. _Resource Acquisition Is Initialization_) šablon, ali ne pruža samu logiku oslobađanja resursa.
 
 ==== `UpdateScan`
 
-Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikaciju vrednosti se moraju mapirati na fizičke tabele, jer nema smisla menjati virtuelne vrednosti. To znači da za svaki virtuelni slog $r$ u stablu  modifikujućih operatora, mora da postoji $r'$ koji ima identičnu strukturu, poziciju i vrednosti u datoteci tabele. `UpdateScan` klasa definiše operacije promene vrednosti kolona nekog sloga, umetanja novog sloga i brisanja sloga.
+Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikaciju vrednosti se moraju mapirati na fizičke tabele, jer nema smisla menjati virtuelne vrednosti. To znači da za svaki virtuelni slog $r$ u stablu modifikujućih operatora, mora da postoji $r'$ koji ima identičnu strukturu, poziciju i vrednosti u datoteci tabele. `UpdateScan` klasa definiše operacije promene vrednosti kolona nekog sloga, umetanja novog sloga i brisanja sloga.
 
 ==== `UnaryScan`
 
@@ -137,11 +137,11 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 ==== `ExtendProjectScan` <operator_projekcije>
 
-`ExtendProjectScan` implementira operator projekcije $Pi_(a_1, ..., a_n) (R)$ iz relacione algebre, gde je $Pi$ ime projekcionog operatora, a $a_n$ predstavlja izraz čija evaluacija proizvodi vrednost komponente $n$. Operator projekcije koji klasa implementira nije striktno operator projekcije formalno definisan u relacionoj algebri, zato što dozvoljava kreiranje novih kolona sa izrazima koji će biti izražunati u trenutku izvršavanja stabla, a ne povučene direktno iz fizičke tabele. Dozvoljava i dodeljivanje proizvoljnog imena izrazima kolona, ali se to ne treba pomešati sa operatorom preimenovanja. Redefiniše metode dobavljanja vrednosti i provere postojanja kolone nekog imena.
+`ExtendProjectScan` implementira operator projekcije $Pi_(a_1, ..., a_n) (R)$ iz relacione algebre, gde je $Pi$ ime projekcionog operatora, a $a_n$ predstavlja izraz čija evaluacija proizvodi vrednost komponente $n$. Operator projekcije koji klasa implementira nije striktno operator projekcije formalno definisan u relacionoj algebri, zato što dozvoljava kreiranje novih kolona sa izrazima koji će biti izračunati u trenutku izvršavanja stabla, a ne povučene direktno iz fizičke tabele. Dozvoljava i dodeljivanje proizvoljnog imena izrazima kolona, ali se to ne treba pomešati sa operatorom preimenovanja. Redefiniše metode dobavljanja vrednosti i provere postojanja kolone nekog imena.
 
 ==== `RenameScan`
 
-`RenameScan` implementira operator preimenovanja $rho_(a_n slash b_n) (R)$ iz relacione algebre, gde je $rho$ ime operatora preimenovanja, a $b_n$ predstavlja novo ime komponente $a_n$. Razlikuje se od formalne definicije operatora preimenovanja iz relacione algebre jer dozvoljava $n$ preimenovanja od jednom da bi se izbeglo ulančavanje istih operatora. Bitno je napomenuti da operator preimenovanja omogućava pristup koloni sa imenom $a$ kroz ime $b$, za razliku od operatora projekcije koji samo dodeljuje ime nekom izrazu. Redefiniše metode dobavljanja vrednosti i provere postojanja kolone nekog imena.
+`RenameScan` implementira operator preimenovanja $rho_(a_n slash b_n) (R)$ iz relacione algebre, gde je $rho$ ime operatora preimenovanja, a $b_n$ predstavlja novo ime komponente $a_n$. Razlikuje se od formalne definicije operatora preimenovanja iz relacione algebre jer dozvoljava $n$ preimenovanja odjednom da bi se izbeglo ulančavanje istih operatora. Bitno je napomenuti da operator preimenovanja omogućava pristup koloni sa imenom $a$ kroz ime $b$, za razliku od operatora projekcije koji samo dodeljuje ime nekom izrazu. Redefiniše metode dobavljanja vrednosti i provere postojanja kolone nekog imena.
 
 ==== `ProductScan`
 
