@@ -6,18 +6,18 @@ U okviru ovog poglavlja su objašnjeni raznovrsni detalji sistema koji nisu veza
 
 == Izgradnja i pokretanje <buildsystem>
 
-Sistem koristi _Maven_#footnote[https://maven.apache.org/] za: automatizaciju kompilacije, izgradnju artifakata (aplikacija koje se pokreću) i za rukovođenje zavisnostima. U _Maven_ ekosistemu, izvorni kod prati striktno definisanu strukturu i nalazi se unutar `src/main` direktorijuma.
+Sistem koristi _Maven_ za: automatizaciju kompilacije, izgradnju artefakata (aplikacija koje se pokreću) i za rukovođenje zavisnostima. U _Maven_ ekosistemu, izvorni kod prati striktno definisanu strukturu i nalazi se unutar `src/main` direktorijuma.
 
 Za korektno funkcionisanje _Maven_ aplikacija, potrebno je definisati `pom.xml` datoteku u kojoj se nalaze sve neophodne instrukcije potrebne _Maven_-u.
 
-Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serverska aplikacija se grade odvojeno, u tri različita artifakta. Ovo omogućava jednostavno odvojeno pokretanje. Nakon izgradnje, artifakti se mogu pronaći unutar `target` direktorijuma pod imenima: `LBDBServer.jar`, `LBDBClient.jar` i `BulkExecutor.jar`.
+Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serverska aplikacija se grade odvojeno, u tri različita artefakta. Ovo omogućava jednostavno odvojeno pokretanje. Nakon izgradnje, artefakti se mogu pronaći unutar `target` direktorijuma pod imenima: `LBDBServer.jar`, `LBDBClient.jar` i `BulkExecutor.jar`.
 
 #figure(
   ```sh
   mvn clean package -Dmaven.test.skip=true
   ```,
   caption: [
-    Izgradnja svih artifakata sistema, bez pokretanja testova
+    Izgradnja svih artefakata sistema, bez pokretanja testova
   ],
 )<fig:build>
 
@@ -35,10 +35,10 @@ Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serv
 Klijentske aplikacije i serverska aplikacija dele kod za:
 - protokol komunikacije,
 - definiciju svih ključnih reči (zbog _auto complete_ funkcionalnosti klijentske aplikacije)
-- definiciju konstante zbog dobijanja njene _String_ vrednosti zarad ispisa,
+- definiciju konstanti,
 - definiciju šeme i tipa vrednosti zbog korektnog ispisa.
 
-Sav ostali kod nije deljen, uključujući i zavisnosti koje isto nisu deljene.
+Preostale zavisnosti i kod nisu deljeni.
 
 ==== Zavisnosti servera
 
@@ -50,14 +50,14 @@ Zavisnosti servera su sledeće:
 
 Zavisnosti običnog klijenta su sledeće:
 - `jline-reader`, `jline-terminal` i `jline-terminal-jna` pružaju implementaciju terminala i omogućavaju sistemski agnostičnu podršku za _UTF-8_ ispis#footnote[https://github.com/jline/jline3],
-- `net.java.dev.jna:jna` za pristup nativnim instrukcijama operativnog sistema (isto za lepo formatiranje)#footnote[https://github.com/java-native-access/jna].
+- `net.java.dev.jna:jna` za pristup _native_ instrukcijama operativnog sistema#footnote[https://github.com/java-native-access/jna].
 
 Zavisnosti `BulkExecutor` klijenta su iste kao i zavisnosti običnog klijenta, sa time da `jline` terminal nije iskorišćen.
 
 ==== Zavisnosti testnog okruženja
 
-Ove zavisnosti se koriste u testnom okruženju i ne ulaze u artifakte:
-- `junit-jupiter-engine` i `junit-jupiter-params` za pokretanje i definisanje testova#footnote[https://junit.org/],
+Ove zavisnosti se koriste u testnom okruženju i nisu deo artefakta:
+- `junit-jupiter-engine` i `junit-jupiter-params` za pokretanje i definisanje testova,
 - `jimfs` je implementacija sistema datoteka u radnoj memoriji#footnote[https://github.com/google/jimfs],
 - `mockito-core` i `mockito-junit-jupiter` za pravljenje objekata koji imaju praznu implementaciju a neophodni su za pozivanje funkcija i metoda#footnote[https://github.com/mockito/mockito].
 
@@ -85,21 +85,21 @@ U okviru sistema postoji i konfiguraciona klasa `LBDBSettings` preko koje je mog
 #pagebreak()
 
 Redom, parametri označavaju:
-1. #link(<alg_oporavka>)[algoritam oporavke] sistema,
+1. algoritam oporavka sistema,
 2. veličina jednog bloka u bajtovima gde jedan blok predstavlja najmanju jedinicu interakcije sa diskom,
 3. količina bafera sa kojim sistem raspolaže,
-4. #link(<algoritmi-smene-bafera>)[algoritam izbora] bafera koji će biti smenjen,
+4. algoritam izbora bafera koji će biti smenjen,
 5. putanja do datoteke gde se čuvaju podaci potrebni za oporavak sistema i poništavanje transakcija,
 6. implementacija planera za operacije upita; podržana samo `BETTER` implementacija,
 7. implementacija planera za operacije modifikacije; podržana samo `BASIC` implementacija.
 
 == Integracija sa _GitHub_ platformom
 
-_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continuous Integration_, _CI_) i izgradnju aplikacija (eng. _Continuous Delivery_, _CD_) u okviru njihovih servera, što omogućava ljudima koji rade na softveru da imaju glavni izvor poverenja na jednom mestu. _LBDB_ sistem iskorišćava ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje, testovi se pokreću i rezultat pokretanja (da li su svi testovi prošli) stoji u `README.md` datoteci repozitorijuma.
+_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continuous Integration_, _CI_) i izgradnju i objavljivanje aplikacija (eng. _Continuous Delivery_, _CD_) u okviru njenih servera. _LBDB_ sistem koristi ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje. Rezultat testova stoji u okviru bedža u `README.md` datoteci koja se nalazi u _LBDB_ repozitorijumu.
 
 == Primer funkcionisanja celokupnog sistema
 
-Dijagram sekvence na sledećoj strani predstavlja generalno ponašanje svih slojeva _LBDB_ sistema. Opisani su slučajevi za `SELECT` naredbu, za naredbe upravljanja životnim ciklusom transakcija i za naredbe modifikacije tabela. Specifičnosti poput algoritma pravljenja stabla planova ili algoritma poništavanja transakcija nisu obrađeni jer bi dijagram bio prevelik, a njihovo objašnjenje je svakako dato u poglavljima gde su definisani.
+Dijagram sekvence (slika @fig:sekvenca_ceo_sistem) predstavlja generalno ponašanje svih slojeva _LBDB_ sistema. Opisani su slučajevi za `SELECT` naredbu, za naredbe upravljanja životnim ciklusom transakcija i za naredbe modifikacije tabela. Specifičnosti poput algoritma pravljenja stabla planova ili algoritma poništavanja transakcija nisu obrađeni jer bi dijagram bio prevelik, a njihovo objašnjenje je svakako dato u poglavljima gde su definisani.
 
 #pagebreak()
 

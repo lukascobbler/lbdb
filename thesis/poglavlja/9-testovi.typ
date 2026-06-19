@@ -2,11 +2,11 @@
 
 = Testovi <testovi>
 
-Pošto je za korektno funkcionisanje sistema potrebno mnogo kompleksnih funkcionalnosti i algoritama, potrebno je izvršiti intenzivno testiranje istih da bi se dokazala pravilna implementacija. Slojevi od kojih se sistem sastoji su testirani izolovano, sa time da se slojevi na višim apstrakcionim nivoima oslanjaju na slojeve na nižim apstrakcionim nivoima.
+Pošto je za korektno funkcionisanje sistema potrebno mnogo kompleksnih funkcionalnosti i algoritama, potrebno je izvršiti intenzivno testiranje istih da bi se dokazala pravilna implementacija. Slojevi od kojih se sistem sastoji su testirani izolovano, s tim da se slojevi višeg apstrakcionog nivoa ne testiraju odvojeno od slojeva nižeg apstrakcionog nivoa.
 
 == Organizacija testova
 
-Sve testove u sistemu podržava _JUnit_ biblioteka. _JUnit_ sadrži razne konfiguracione parametre, a za _LBDB_ sistem testiranja su najbitniji parametri koji omogućavaju #link(<disk-filesystem>)[definisanje čistača] i parametri koji omogućavaju paralelno pokretanje testova.
+Sve testove u sistemu podržava _JUnit_#footnote[https://junit.org/] biblioteka. _JUnit_ sadrži razne konfiguracione parametre, a za testiranje _LBDB_ sistema su najbitniji parametri koji omogućavaju definisanje čistača i parametri koji omogućavaju paralelno pokretanje testova.
 
 #figure(
   ```properties
@@ -19,11 +19,11 @@ Sve testove u sistemu podržava _JUnit_ biblioteka. _JUnit_ sadrži razne konfig
   ],
 )<fig:junit_konfiguracija>
 
-Sistem prati standardnu definiciju strukture direktorijuma izvornog koda _Maven_ sistema za upravljanje zavisnostima. Više o njemu u #link(<buildsystem>)[pregledu sistema]. Po _Maven_-u, testovi se nalaze unutar `src/test/java` direktorijuma, a konfiguracioni parametri _JUnit_ biblioteke se nalaze unutar `src/test/resources` direktorijuma. Testovi su grupisani po istim modulima kao i glavni izvorni kod.
+Sistem prati standardnu definiciju strukture direktorijuma izvornog koda _Maven_#footnote[https://maven.apache.org/] sistema za upravljanje zavisnostima. Više o njemu u o pregledu sistema (sekcija @buildsystem). Po _Maven_-u, testovi se nalaze unutar `src/test/java` direktorijuma, a konfiguracioni parametri _JUnit_ biblioteke se nalaze unutar `src/test/resources` direktorijuma. Testovi su grupisani po istim modulima kao i glavni izvorni kod.
 
 === Testno okruženje
 
-Da bi se postiglo korektno i unifikovano testiranje svih funkcionalnosti, potrebno je pružiti im odgovarajuće testno okruženje. Pošto većina funkcionalnosti zahteva rad sa datotekama, glavna dužnost testnog okruženja je da izoluje direktorijume gde će se ove datoteke nalaziti. Time se postiže da test _A_ koji kreira na primer tri tabele ne može da utiče na test _B_ koji kreira dve tabele gde se imena tabela poklapaju.
+Da bi se postiglo korektno i uniformno testiranje svih funkcionalnosti, potrebno je pružiti im odgovarajuće testno okruženje. Pošto većina funkcionalnosti zahteva rad sa datotekama, glavna dužnost testnog okruženja je da izoluje direktorijume gde će se ove datoteke nalaziti. Time se postiže da test _A_ koji kreira na primer tri tabele ne može da utiče na test _B_ koji kreira dve tabele gde se imena tabela poklapaju.
 
 `TestUtils` je pomoćna klasa koja pruža implementaciju ove izolacije, ali pruža i dodatne pomoćne metode koje olakšavaju testiranje:
 - provera postojanja datoteka,
@@ -45,7 +45,7 @@ Za podsistem planiranja, postoji pomoćna klasa `PlanTestUtils` koja pruža doda
 
 Prvi od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze na fizičkom disku. Prednosti ovog načina pokretanja su laki pregled generisanih datoteka zarad otklanjanja grešaka i nezahtevno pokretanje. Mana ovog načina pokretanja je brzina jer je pristup fizičkom disku spor.
 
-Da bi se postigla izolacija testova i kroz iteracije pokretanja istih testova, potrebno je očistiti stare direktorijume. _JUnit_ omogućava konfiguraciju čistača, to jest funkcije koja se izvršava pre svih testova. `GlobalCleanup` klasa sadrži ovu logiku.
+Da bi se postigla izolacija i kroz iteracije pokretanja istih testova, potrebno je očistiti stare direktorijume. _JUnit_ omogućava konfiguraciju čistača, to jest funkcije koja se izvršava pre svih testova. `GlobalCleanup` klasa sadrži ovu logiku.
 
 === Sistem izolacije direktorijuma u radnoj memoriji
 

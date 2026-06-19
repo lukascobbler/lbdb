@@ -2,26 +2,17 @@
 
 = Upravljanje datotekama <datoteke>
 
-Upravljanje datotekama se vrši kroz više slojeva u sistemu, gde je svaki sloj odgovoran za organizaciju datoteka na različitom apstrakcionom nivou. Osnovna premisa je da sve operacije sa datotekama to jest diskom moraju da se izvršavaju u jedinicama blokova, jer je operativni sistem, a i hardver (disk) optimizovan za rad sa njima @simpledb. Zbog toga što je blok najmanja jedinica interakcije sa diskom i datotekama, sva čitanja, pisanja i modifikacije podataka se rade zajedno sa celim blokom gde se ti podaci nalaze, a ne direktno.
+Upravljanje datotekama se vrši kroz više slojeva u sistemu, gde je svaki sloj odgovoran za organizaciju datoteka na različitom apstrakcionom nivou. Osnovna premisa je da sve operacije sa datotekama, to jest diskom moraju da se izvršavaju u jedinicama blokova, jer je operativni sistem, a i hardver (disk) optimizovan za rad sa njima @simpledb. Zbog toga što je blok najmanja jedinica interakcije sa diskom i datotekama, sva čitanja, pisanja i modifikacije podataka se rade zajedno sa celim blokom gde se ti podaci nalaze, a ne direktno.
 
 == Upravljanje blokovima
 
 Sistem za upravljanje blokovima je primarno zadužen za dobavljanje bloka sa diska gde se nalaze traženi podaci i za korektno zapisivanje _log_ podataka. Svaki blok ima svoj unikatni identifikator, koji je predstavljen _Java_ _record_ strukturom. Svaki blok je vezan za datoteku i ima svoju blok poziciju u toj datoteci.
 
-#figure(
-  ```java
-  public record BlockId(String filename, int blockNum) { }
-  ```,
-  caption: [
-    Identifikator bloka
-  ],
-)<fig:blok_id>
-
 === Interfejs ka _file_ sistemu operativnog sistema
 
-Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama _LBDB_ sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom _Java_ `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je #link(<bezbedan_visenitni_pristup>)[detaljno obrađen] u okviru transakcija.
+Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama _LBDB_ sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom _Java_ `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je detaljno obrađen u okviru transakcija (sekcija @bezbedan_visenitni_pristup).
 
-Moguće je podesiti sistem da koristi proizvoljnu veličinu jednog bloka, zavisno od prirode podataka kojima će baza podataka biti popunjena i to je glavni #link(<fig:lbdbsettings>)[parametar] menadžera datoteka.
+Moguće je podesiti sistem da koristi proizvoljnu veličinu jednog bloka, zavisno od prirode podataka kojima će baza podataka biti popunjena i to je glavni parametar menadžera datoteka.
 
 === Stranice
 
@@ -33,7 +24,7 @@ Sistem podržava sledeće proste i kompozitne tipove podataka: _String_, _Boolea
 
 Jedan _log_ je niz bajtova čije interpretiranje ukazuje na to kako se promenila neka vrednost u nekom bloku.
 
-_Log_ datoteka (čija je lokacija #link(<fig:lbdbsettings>)[podesiva]) je specijalna vrsta datoteke u kojoj se čuva niz _log_-ova. Na apstrakcionom nivou upravljanja blokovima, nije bitan sadržaj ove datoteke, već samo algoritmi neophodni za korektno prolaženje kroz nju i algoritmi za dodavanje novih _log_-ova. Ovi algoritmi se nalaze u menadžeru _log_-ova (`LogManager` klasa) i _log_ iteratoru (`LogIterator` klasa).
+_Log_ datoteka je specijalna vrsta datoteke u kojoj se čuva niz _log_-ova. Na apstrakcionom nivou upravljanja blokovima, nije bitan sadržaj ove datoteke, već samo algoritmi neophodni za korektno prolaženje kroz nju i algoritmi za dodavanje novih _log_-ova. Ovi algoritmi se nalaze u menadžeru _log_-ova (`LogManager` klasa) i _log_ iteratoru (`LogIterator` klasa).
 
 _Log_ datoteka je struktuirana tako da se noviji _log_-ovi nalaze u blokovima bližim kraju datoteke, a unutar jednog bloka _log_ datoteke noviji _log_-ovi se nalaze pri početku bloka. Ako nema mesta da se upiše novi _log_, prelazi se u sledeći blok _log_ datoteke.
 
@@ -42,7 +33,7 @@ Menadžer _log_-ova obezbeđuje algoritme upravljanja _log_ datotekom tako što 
 Iterator _log_-ova obezbeđuje čitanje _log_ datoteke u korektnom redosledu i implementiran je pomoću _Java_ `Iterator` interfejsa.
 
 #figure(
-  image("../dijagrami/log_fajl_izgled.pdf", width: 91%),
+  image("../dijagrami/log_fajl_izgled.pdf"),
   caption: [
     Izgled _log_ datoteke i smer iteracije
   ],
@@ -56,14 +47,14 @@ Prilikom dodavanja novog _log_-a, sistem izračunava _log_ sekvencu novog _log_-
 
 Čišćenje stranice iz memorije nakon završetka operacije koja ju je koristila može biti jako neefikasno jer se za ponovni pristup tom bloku mora odlaziti do diska, pogotovo u višekorisniškim kontekstima i situacijama kada se istim blokovima često pristupa. Zbog toga se uvodi koncept bafera (eng. _buffer_) koji, uz algoritme u menadžeru bafera (`BufferManager` klasa), omogućava stranicama da ostanu u memoriji prilagodljivu količinu vremena. Posledica ovog sistema je da direktan pristup podacima sa diska više nije moguć, već se sve operacije obavljaju kroz bafere.
 
-Bafer je omotač oko stranice koji sadrži dodatne podatke koji se mogu iskoristiti za implementaciju raznih algoritama ubrzanja sistema:
-- kada je učitan
-- kada je bilo poslednje pristupanje
-- koji je njegov redni broj u listi bafera
-- koja transakcija ga je poslednji put modifikovala i _log_ sekvenca njene poslednje operacije
-- koliko transakcija ga trenutno upotrebljavaju, kraće rečeno broj pinova
+`Buffer` klasa enkapsulira učitanu stranicu i sadrži dodatne podatke koji se mogu iskoristiti za implementaciju raznih algoritama ubrzanja sistema:
+- kada je stranica učitana
+- kada je bilo poslednje pristupanje stranici
+- koji je redni broj bafera u listi bafera
+- koja transakcija je poslednja modifikovala tu stranicu i _log_ sekvenca poslednje operacije
+- koliko transakcija trenutno upotrebljava tu stranicu, kraće rečeno broj pinova bafera
 
-Pošto je količina radne memorije ograničena, i količina bafera u sistemu isto mora biti ograničena. Menadžer bafera ima listu (#link(<fig:lbdbsettings>)[određene veličine]) bafera sa kojima raspolaže i potrebno je da poveća stepen iskorišćenosti bafera iz te liste što je više moguće. U idealnom, hipotetičkom scenariju, menadžer bafera bi predvideo budućnost i znao kojim baferima bi se sledeće pristupalo i izbacio iz memorije one koji su vremenski najdalje od pristupa. Ovaj scenario je očigledno nemoguć, pa je potrebno iskoristiti algoritme koji najbolje "predviđaju budućnost" na osnovu realnih podataka. Kada se bafer izbaci iz memorije, njegov sadržaj se piše u blok za koji je vezan i na taj način se podaci perzistiraju. Postoje i #link(<undo_only_recovery>)[druge situacije] kada se sadržaj bafera odmah zapisuje na disk.
+Pošto je količina radne memorije ograničena, i količina bafera u sistemu isto mora biti ograničena. Menadžer bafera ima listu bafera sa kojima raspolaže i potrebno je da poveća stepen iskorišćenosti bafera iz te liste što je više moguće. U idealnom, hipotetičkom scenariju, menadžer bafera bi predvideo budućnost i znao kojim baferima bi se sledeće pristupalo i izbacio iz memorije one koji su vremenski najdalje od pristupa. Ovaj scenario je očigledno nemoguć, pa je potrebno iskoristiti algoritme koji najbolje "predviđaju budućnost" na osnovu realnih podataka. Kada se bafer izbaci iz memorije, njegov sadržaj se piše u blok za koji je vezan i na taj način se podaci perzistiraju. Postoje i druge situacije (sekcija @undo_only_recovery) kada se sadržaj bafera odmah zapisuje na disk.
 
 Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transakcije, to jest broj pinova mu mora biti nula. Postoje dva scenarija kada stranica koja do sada nije bila u memoriji treba da se mapira na bafer:
 
@@ -72,15 +63,15 @@ Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transak
 
 === Algoritmi izbora smene bafera <algoritmi-smene-bafera>
 
-U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen:
+U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen.
 
 ==== _Naive_
 
-Naivni algoritam, kako mu i ime kaže, ne razmišlja mnogo o baferu kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane loše performanse @simpledb jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti.
+Naivni algoritam, kako mu i ime kaže, nema nikakvu logiku izbora bafera kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane su loše performanse @simpledb jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti.
 
 ==== _FIFO_
 
-_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma @simpledb ali _FIFO_ algoritam pati od toga da će zameniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
+_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma @simpledb ali _FIFO_ algoritam će smeniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
 
 ==== _LRU_
 
@@ -88,19 +79,19 @@ _LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije k
 
 ==== _Clock_
 
-_Clock_ algoritam smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera, formirajući krug ili sat. Performansa je okej jer je šansa da je bitan bafer pinovan velika @simpledb, pa se on preskače kada se prolazi kroz krug.
+_Clock_ algoritam pretpostavlja da baferi imaju fiksne pozicije u listi bafera i smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera. Performanse su dobre jer je šansa da je bitan bafer pinovan velika @simpledb.
 
 ==== _First unmodified_
 
-_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova, ili ako je svaki modifikovan prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma @simpledb, ali može se desiti da modifikovan bafer neće dugo biti korišćen pa je onda to bacanje bafera.
+_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova, ili ako je svaki modifikovan prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma @simpledb, ali može se desiti da modifikovan bafer neće dugo biti korišćen što znači da nije izabran optimalan bafer za smenu.
 
 ==== _LRM_
 
-_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Predpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Performansa deluje okej, ali je algoritam dosta nepredvidiv @simpledb.
+_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Pretpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Performansa deluje zadovoljavajuća, ali je algoritam dosta nepredvidiv @simpledb.
 
 == Slogovi
 
-Podsistem za upravljanje baferima je generalan i ne pruža nikakvu strukturu podataka unutar samih bafera, to jest blokova. Na nivou relacione baze podataka, najmanja jedinica interakcije nije jedan blok, već jedan slog neke tabele i potrebno je blokove organizovati tako da se to omogući.
+Podsistem za upravljanje baferima je generalan i ne pruža nikakvu strukturu podataka unutar samih bafera, odnosno blokova. Na nivou relacione baze podataka, najmanja jedinica interakcije nije jedan blok, već jedan slog neke tabele i potrebno je blokove organizovati tako da se to omogući. Jedan slog neke tabele je isto što i jedan red te tabele što je objašnjeno detaljnije u sekciji @relacioni-operatori.
 
 === Struktuiranje
 
@@ -127,7 +118,7 @@ Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišć
   ],
 )<fig:tip>
 
-Šema jedne tabele je skup podataka o kolonama te tabele zajedno sa imenima tih kolona. Bitno je napomenuti da tabele u svojoj osnovnoj definiciji predstavljaju podatke koje se nalaze u datotekama, ali to nije uvek slučaj. Postoje i virtuelne tabele koje su rezultati upita i mogu, ali ne moraju da se direktno mapiraju na tabele koje se nalaze u datotekama. Moguće je kombinovati više tabela u jednu tabelu i #link(<operator_projekcije>)[dodati virtuelne kolone] koje se ne nalaze u datoteci već su njihove vrednosti izvedene na osnovu neke kalkulacije.
+Šema jedne tabele je skup podataka o kolonama te tabele zajedno sa imenima tih kolona. Bitno je napomenuti da tabele u svojoj osnovnoj definiciji predstavljaju podatke koje se nalaze u datotekama, ali to nije uvek slučaj. Postoje i virtuelne tabele koje su rezultati upita i mogu, ali ne moraju da se direktno mapiraju na tabele koje se nalaze u datotekama. Moguće je kombinovati više tabela u jednu tabelu i dodati virtuelne kolone (sekcija @operator_projekcije) koje se ne nalaze u datoteci već su njihove vrednosti izvedene na osnovu neke kalkulacije.
 
 ==== Raspored polja <raspored_polja>
 
@@ -137,9 +128,9 @@ Za svaku kolonu pamte se sledeće fizičke karakteristike: pozicija početka vre
 
 == Primena strukture na blok <primena_strukture_na_blok>
 
-Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U _LBDB_ sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine. Ovo je jedna od #link(<slogovi-fiksne-duzine>)[ograničenja sistema].
+Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U _LBDB_ sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine (više o ovom ograničenju u sekciji @slogovi-fiksne-duzine).
 
-Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišćeno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji #link(<metapodaci>)[poseban podsistem] koji se nadograđuje na ovaj.
+Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišćeno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji poseban podsistem (sekcija @metapodaci).
 
 Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu prisutne, to jest imaju _NULL_ vrednost i to da li je slog obrisan. Rezerviše se četvorobajtno zaglavlje na početku svakog sloga i njegovi bitovi predstavljaju ove metapodatke. Da li je slog označen kao obrisan se predstavlja prvim bitom (O), dok ostalih 31 bitova (N#sub[i]) označavaju da li polje na toj poziciji ima _NULL_ vrednost. Zbog ovoga postoji ograničenje na broj polja po tabeli, maksimalno 31 polje.
 
@@ -152,6 +143,6 @@ Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu pri
 
 === Stranica slogova
 
-`RecordPage` klasa enkapsulira svu logiku održavanja strukture individualnog bloka tako što pruža interfejs za postavljanje vrednosti samo na osnovu imena kolone i broja sloga u tom bloku. Takođe, pruža interfejs za postavljanje _NULL_ vrednosti i pretragu slobodnih ili zauzetih slogova u bloku za koji je povezana. Za pristup svim blokovima jedne tabele, potrebno je sukcesivno konstruisati objekte `RecordPage` klase, što je posao podsistema #link(<table_sken>)[relacionih operatora].
+`RecordPage` klasa enkapsulira svu logiku održavanja strukture individualnog bloka tako što pruža interfejs za postavljanje vrednosti samo na osnovu imena kolone i broja sloga u tom bloku. Takođe, pruža interfejs za postavljanje _NULL_ vrednosti i pretragu slobodnih ili zauzetih slogova u bloku za koji je povezana. Za pristup svim blokovima jedne tabele, potrebno je sukcesivno konstruisati objekte `RecordPage` klase, što je posao podsistema relacionih operatora (sekcija @table_sken).
 
-Bitno je napomenuti da logika stranice slogova za postavljanje vrednosti ne radi samo postavljanje vrednosti, već samo računa gde ta vrednost treba biti postavljena. Postavljanje vrednosti #link(<pristup_vrednostima_u_transakcijama>)[delegira] sistemu transakcija.
+Bitno je napomenuti da logika stranice slogova za postavljanje vrednosti ne radi samo postavljanje vrednosti, već računa gde ta vrednost treba biti postavljena. Postavljanje vrednosti delegira sistemu transakcija.

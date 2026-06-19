@@ -50,7 +50,7 @@
   v(1em)
 }
 
-#outline(title: [Sadržaj], depth: 3)
+#outline(title: [Sadržaj], depth: 4)
 
 #set page(header: context {
   if not (query(heading.where(level: 1)).any(h => h.location().page() == here().page())) {

@@ -21,7 +21,7 @@ Sve vrednosti sa kojima relacioni operatori barataju predstavljene su `Constant`
   ],
 )<fig:hijerarhija_konstanti>
 
-Interfejs konstante je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Konkretne konstante su predstavljene _Java_ _record_ strukturom. `NullConstant` nema nikakve podatke instance, jer su sve `NULL` vrednosti identične u sistemu, pa se svugde koristi ista instanca.
+Interfejs konstante je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Konkretne konstante su predstavljene _Java_ _record_ strukturom. `NullConstant` nema nikakve podatke instance, jer su sve `NULL` vrednosti identične u sistemu, pa se na svim mestima koristi ista instanca.
 
 === Izrazi <izrazi>
 
@@ -38,7 +38,7 @@ Evaluacija izraza predstavlja proces računanja konstante koja predstavlja vredn
 
 `BinaryArithmeticExpression` je izraz koji u sebi sadrži izraze i omogućava kreiranje stabla izraza, gde se prvo evaluiraju njegovi članovi, pa onda on. `UnaryArithmeticExpression` ima istu funkciju, ali za prefiksne operatore (`+`, `-`) i ima samo jedan član.
 
-`WildcardExpression` suštinski ne predstavlja izraz, ali zbog načina #link(<parsiranje_izraza>)[parsiranja izraza], tretira se kao jedan. Služi kao zamenski član (eng. _placeholder_) svih kolona upitanih tabela. Evaluacija je zabranjena operacija i baca izuzetak.
+`WildcardExpression` suštinski ne predstavlja izraz, ali zbog načina parsiranja izraza (sekcija @parsiranje_izraza), tretira se kao jedan. Služi kao zamenski član (eng. _placeholder_) svih kolona upitanih tabela. Evaluacija je zabranjena operacija i onemogućena je izuzetkom.
 
 `FieldNameExpression` je izraz koji identifikuje virtuelnu kolonu neke tabele upita, sa opcionim preimenovanjem tabele i evaluira se na vrednost te kolone. `ConstantExpression` se evaluira direktno na konstantu za koju je vezan i nezavisan je od tabela.
 
@@ -48,11 +48,11 @@ Evaluacija izraza predstavlja proces računanja konstante koja predstavlja vredn
 
 === Predikati <predikati>
 
-Predikati ulančavaju članove logičkim operatorima. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. _LBDB_ sistem podržava samo `AND` logičke operatore između članova i ovo je jedna od glavnih #link(<samo-and>)[ograničenja sistema].
+Predikati ulančavaju članove logičkim operatorima. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. _LBDB_ sistem podržava samo `AND` logičke operatore između članova i ovo ograničenje je detaljnije opisano u sekciji @samo-and.
 
 === Generalizacija evaluacije <evaluatable-interfejs>
 
-Izrazi i predikati implementiraju `Evaluatable` interfejs koji definiše sve operacije potrebne za njihovu evaluaciju i kasniju #link(<planer>)[proveru validnosti]. Ovaj interfejs omogućava sistemu da se ne brine o tome šta se evaluira, već samo o konstanti koju će dobiti, što dalje omogućava da se vrednosti #link(<operator_projekcije>)[projektovanih kolona] dobijaju i preko evaluacije izraza i preko evaluacije predikata.
+Izrazi i predikati implementiraju `Evaluatable` interfejs koji definiše sve operacije potrebne za njihovu evaluaciju i kasniju proveru validnosti. Ovaj interfejs omogućava sistemu da se ne brine o tome šta se evaluira, već samo o konstanti koju će dobiti, što dalje omogućava da se vrednosti projektovanih kolona (sekcija @operator_projekcije) dobijaju i preko evaluacije izraza i preko evaluacije predikata.
 
 #figure(
   ```java
@@ -82,7 +82,7 @@ Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
 - generišu slogove jedan po jedan
 - ne čuvaju generisane slogove i ne čuvaju nikakve međurezultate
 
-Zahtev za izvršenje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko nijedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
+Zahtev za izvršavanje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko barem jedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
 
 Kombinacija dve navedene osobine uz delegaciju operacija se zove pajplajnovano procesovanje (eng. _pipelined processing_). Korišćenje pajplajnovanog procesovanja u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ga je pogodno koristiti.
 
@@ -101,7 +101,7 @@ Najopštija podela relacionih operatora je na one koji samo čitaju podatke (eng
 
 ==== `Scan`
 
-`Scan` apstraktna klasa definiše operacije neophodne za prolazak kroz sve vrednosti rezultujuće virtuelne tabele. Svaki relacioni operator implementira bar ove operacije. Vraćanje vrednosti se radi isključivo kroz `Constant` objekte. `Scan` se može, ali ne mora, mapirati na fizičku tabelu. Implementira `AutoCloseable` interfejs koji omogućava _RAII_ (eng. _Resource Acquisition Is Initialization_) šablon, ali ne pruža samu logiku oslobađanja resursa.
+`Scan` apstraktna klasa definiše operacije neophodne za prolazak kroz sve vrednosti rezultujuće virtuelne tabele. Svaki relacioni operator implementira bar ove operacije. Vraćanje vrednosti se radi isključivo kroz `Constant` objekte. `Scan` se može, ali ne mora, mapirati na fizičku tabelu. Implementira `AutoCloseable` interfejs koji omogućava _RAII_ (eng. _Resource Acquisition Is Initialization_) šablon, ali ne pruža implementaciju logike oslobađanja resursa.
 
 ==== `UpdateScan`
 
@@ -113,7 +113,7 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 ==== `UnaryUpdateScan`
 
-`UnaryUpdateScan` sadrži podrazumevane implementacije proizvoljnog relacionog operatora koji može da modifikuje vrednosti fizičke tabele. Funkcioniše isto kao i `UnaryScan` i ima i sve podrazumevane implementacije iz njega.
+`UnaryUpdateScan` sadrži podrazumevane implementacije proizvoljnog relacionog operatora koji može da modifikuje vrednosti fizičke tabele. Funkcioniše isto kao i `UnaryScan` i ima sve podrazumevane implementacije iz njega.
 
 ==== `BinaryScan`
 
@@ -125,7 +125,7 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 ==== `TableScan` <table_sken>
 
-`TableScan` nije pravi relacioni operator zato što njegova implementacija ne radi transformacije tabele, već pruža logiku za dobavljanje i modifikaciju fizičkih vrednosti. Služi kao omotač oko objekata stranice slogova i zadužena za konstruisanje novih povezanih objekata stranice slogova. Pošto pruža inicijalne vrednosti koje će dalje biti transformisane, uvek se nalazi na dnu stabla relacionih operatora.
+`TableScan` nije pravi relacioni operator zato što njegova implementacija ne radi transformacije tabele, već pruža logiku za dobavljanje i modifikaciju fizičkih vrednosti. Služi kao omotač oko objekata stranice slogova i zadužen je za konstruisanje novih povezanih objekata stranice slogova. Pošto pruža inicijalne vrednosti koje će dalje biti transformisane, uvek se nalazi na dnu stabla relacionih operatora.
 
 ==== `DummyTableScan` <dummy_table_sken>
 
@@ -151,16 +151,29 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 
 `UnionAllScan` implementira operaciju kreiranja relacije koje sadrži sve torke relacija $R$ i $S$. Ne briše duplikate. Zahteva da su komponente torki obe relacije istog tipa i da obe relacije imaju isti broj komponenata po torki. Po _SQL_ standardu, kolonama druge tabele se pristupa po imenima prve. Operacija unije je aditivna. Iteracija kroz rezultujuću tabelu nakon `UnionAllScan` operatora se vrši tako što se prvo prolazi kroz sve slogove prve tabele, pa se prolazi kroz sve slogove druge tabele. Redefiniše metode dobavljanja vrednosti, provere postojanja kolone nekog imena i sve navigacione metode.
 
-=== Primeri stabla relacionih operatora
+=== Primeri
 
-Sledeći primeri pokazuju kako pozivi metoda putuju kroz stablo relacionih operatora. Primeri ne oslikavaju stabla relacionih operatora koje bi _LBDB_ sistem napravio, već služe da pokažu pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
+Sledeći primeri vizuelno pokazuju različite delove stabla relacionih operatora i kako se neke funkcionalnosti ponašaju.
+Primeri ne oslikavaju stabla relacionih operatora koje bi _LBDB_ sistem napravio, već služe da pokažu uklapanje komponenata virtuelne mašine, pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
+
+==== Primer izgleda komponenti virtuelne mašine
+
+Za datu naredbu _SQL_ jezika se mogu videti jednostavni primeri svake komponente virtuelne mašine.
+
+#figure(
+  image("../dijagrami/primer_virt_masina.pdf"),
+  caption: [
+    Primer naredbe u _SQL_ jeziku gde se pokazuju sve komponente virtuelne mašine
+  ],
+)<fig:virt_masina_primer>
+
 
 ==== Primer poziva `getValue()` metode
 
 Prate se koraci poziva `getValue()` metode, za virtuelnu kolonu `"StudentId"`. Union operator, koji je skroz na vrhu, spaja dve tabele: tabelu koja modeluje zastareli način vođenja evidencije i virtuelnu tabelu koja je rezultat podstabla operatora koji projektuju iste kolone kao i u tabeli zastarele evidencije. `ExtendProjectScan` je preimenovao `"SSId"` u `"StudentId"`. Uz `TableScan` i `ProductScan` operatore stoji i uprošćena šema.
 
 #figure(
-  image("../dijagrami/primer_stabla_relacionih_operatora.pdf", height: 54%),
+  image("../dijagrami/primer_stabla_relacionih_operatora.pdf", height: 81%),
   caption: [
     Primer poziva `getValue()` metode u konkretnom stablu relacionih operatora
   ],

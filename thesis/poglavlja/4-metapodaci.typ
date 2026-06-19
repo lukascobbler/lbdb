@@ -2,11 +2,11 @@
 
 = Metapodaci <metapodaci>
 
-Metapodaci su podaci koji opisuju druge podatke. Iako su podaci struktuirani u okviru slogova (glava @datoteke), sistem im ne može pristupiti ako se ne pobrine o perzistiranju te strukture. Praćenje distribucije vrednosti je korisno prilikom pravljenja efikasnog načina dobavljanja slogova. Podaci koji definišu strukturu slogova i podaci o distribuciji vrednosti su primeri metapodataka kojima sistem barata.
+Metapodaci su podaci koji opisuju druge podatke. Iako su podaci struktuirani u okviru slogova (poglavlje @datoteke), sistem im ne može pristupiti ako se ne pobrine o perzistiranju te strukture. Praćenje distribucije vrednosti je korisno prilikom pravljenja efikasnog načina dobavljanja slogova. Podaci koji definišu strukturu slogova i podaci o distribuciji vrednosti su primeri metapodataka kojima sistem barata.
 
 == Kataloške tabele <kataloske-tabele>
 
-Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o postojećim tabelama i kako kolone tih tabela izgledaju. Ti podaci se čuvaju u okviru sistemskih tabela i one se nazivaju kataloške tabele. Kataloška tabela _tablecatalog_ čuva podatke o postojećim tabelama, dok kataloška tabela _fieldcatalog_ čuva podatke o fizičkoj strukturi sloga neke tabele. Vrednosti ovih tabela su pohranjene iz #link(<raspored_polja>)[rasporeda polja] i #link(<sema>)[šeme] koju on sadrži.
+Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o postojećim tabelama i kako kolone tih tabela izgledaju. Ti podaci se čuvaju u okviru sistemskih tabela i one se nazivaju kataloške tabele. Kataloška tabela _tablecatalog_ čuva podatke o postojećim tabelama, dok kataloška tabela _fieldcatalog_ čuva podatke o fizičkoj strukturi sloga neke tabele.
 
 #figure(
   {
@@ -52,13 +52,13 @@ Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o posto
   caption: [Šema _fieldcatalog_ tabele],
 )<tbl:fieldcatalog>
 
-Kataloške tabele se kreiraju prilikom inicijalizacije sistema. Bitno je napomenuti da se kataloške tabele perzistiraju na isti način kao i sve ostale tabele u sistemu, što znači da će one sadržati i slogove koje opisuju njih same. Time što se kataloške tabele perzistiraju isto kao i korisničke, sistemskim tabelama se može pristupiti putem standardnih mehanizama #link(<relacioni-operatori>)[relacionih operatora].
+Kataloške tabele se kreiraju prilikom inicijalizacije sistema. Bitno je napomenuti da se kataloške tabele perzistiraju na isti način kao i sve ostale tabele u sistemu, što znači da će one sadržati i slogove koje opisuju njih same. Time što se kataloške tabele perzistiraju isto kao i korisničke, sistemskim tabelama se može pristupiti putem standardnih mehanizama relacionih operatora (sekcija @relacioni-operatori).
 
 Svi identifikatori u sistemu (imena kolona, tabela, ...) se implicitno konvertuju tako da sadrže samo mala slova.
 
 == Statistički podaci <statisticki-metapodaci>
 
-Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji pomažu pri proceni vremena izvršavanja određenih načina pristupa. Sam posao konstruisanja efikasnog načina pristupa je briga #link(<planiranje>)[podsistema planiranja].
+Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji pomažu pri proceni vremena izvršavanja određenih načina pristupa. Sam posao konstruisanja efikasnog načina pristupa je briga podsistema planiranja (sekcija @planiranje).
 
 Statistički metapodaci neke tabele uključuju:
 - broj blokova tabele
@@ -68,7 +68,7 @@ Statistički metapodaci neke tabele uključuju:
 
 === Računanje statističkih podataka <racunanje-statistike>
 
-Prilikom inicijalizacije sistema, računaju se statistički metapodaci za svaku tabelu u sistemu, a svakih 100 poziva dobavljanja metapodataka za bilo koju tabelu se osvežavaju statistički metapodaci za sve tabele. Ovaj način osvežavanja nije idealan jer pauzira sistem dok se računanje statističkih metapodataka ne završi i predstavlja jedno od #link(<ogranicenje-stat-podataka>)[ograničenja sistema].
+Prilikom inicijalizacije sistema, računaju se statistički metapodaci za svaku tabelu u sistemu, a svakih 100 poziva dobavljanja metapodataka za bilo koju tabelu se osvežavaju statistički metapodaci za sve tabele. Ovaj način osvežavanja nije idealan jer pauzira sistem dok se računanje statističkih metapodataka ne završi i ovo ograničenje je detaljnije opisano u sekciji @ogranicenje-stat-podataka.
 
 Broj blokova tabele i broj slogova u tabeli se trivijalno dobijaju iteracijom kroz svaki slog.
 
@@ -78,4 +78,4 @@ Brojanje _NULL_ vrednosti kolona tabele se svodi na čuvanje prostog brojača za
 
 == Pristup metapodacima <metadata-menadzer>
 
-Menadžer metapodataka je glavno mesto pristupa svim ostalim metapodacima. Sastoji se iz menadžera metapodataka tabela i menadžera statističkih metapodataka. Menadžer metapodataka je jedan od tri glavna podsistema _LBDB_ sistema #link(<sistem_za_obradu_upita>)[obrade upita].
+Menadžer metapodataka je glavno mesto pristupa svim ostalim metapodacima. Sastoji se iz menadžera metapodataka tabela i menadžera statističkih metapodataka. Menadžer metapodataka je jedan od tri glavna podsistema _LBDB_ sistema obrade upita.
