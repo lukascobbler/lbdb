@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Parsiranje <parsiranje>
 
@@ -102,7 +102,7 @@ Funkcije koje generišu iskaze predstavljaju sintaksičke kategorije najvišeg a
   ],
 )<fig:parse_create_table>
 
-`ParseCreateTable` predstavlja naredbu kreiranja nove tabele. Tabela može sadržati maksimalno 31 polje (sekcija @primena_strukture_na_blok). Polje može biti jedno od tipova podržanih u sistemu (figura @fig:tip), a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTableStatement` objekat.
+`ParseCreateTable` predstavlja naredbu kreiranja nove tabele. Tabela može sadržati maksimalno 31 polje (sekcija @primena_strukture_na_blok). Polje može biti jedno od tipova podržanih u sistemu (listing @fig:tip), a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTableStatement` objekat.
 
 ==== `ParsePredicate`
 

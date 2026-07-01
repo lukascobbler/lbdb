@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Planiranje <planiranje>
 
@@ -26,7 +26,7 @@ Postoje dva ograničenja vezana za ove statističke metapodatke:
 Najopštija podela klasa planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione klase planova je odrađena upotrebom _generics_ _Java_ konstrukta, umesto deljenja glavnog interfejsa na dva podtipa. Svaka klasa plana operiše nad jednim ili nad dvoje dece, a dete plana se takođe zove i prodređena klasa plana.
 
 #figure(
-  image("../dijagrami/hijerarhija_planova.pdf"),
+  image("../dijagrami/struktura_planova.pdf"),
   caption: [
     Hijerarhija implementacije planova
   ],
@@ -63,7 +63,7 @@ Izbor vrednosti ovih konstanti je opisan u _SystemR_ istraživačkom radu @syste
 #figure(
   image("../dijagrami/racunanje_redukcionog_faktora.pdf", height: 76%),
   caption: [
-    _Flowchart_ računice redukcionog faktora člana
+    _Flowchart_ dijagram računice redukcionog faktora člana
   ],
 )<fig:racunanje_redukcionog_faktora>
 
@@ -186,7 +186,7 @@ Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` k
 
 === Planiranje _read-only_ naredbi
 
-Kao što je već spominjano u tekstu, _SQL_ naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
+_SQL_ naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
 
 Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja samog plana. Semantička provera se sastoji od sledećih koraka:
 - provera postojanja fizičkih tabela spomenutih u naredbi
@@ -199,7 +199,7 @@ Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja samog
 
 `QueryPlanner` apstraktna klasa pruža implementaciju semantičke provere, a konkretni algoritmi planiranja `SELECT` naredbe koji je nasleđuju mogu da podrazumevaju da su naredbe koje dobiju sigurno semantički validne. `QueryPlanner` takođe redukuje sve izraze i predikat pomoću `PartialEvaluator` klase.
 
-==== Algoritam planiranja `SELECT` naredbi
+==== Algoritam planiranja `SELECT` naredbi <plan-select>
 
 `BetterQueryPlanner` klasa nasleđuje `QueryPlanner` i predstavlja implementaciju osnovnog planera koji podržava sve alternative `SELECT` naredbe predstavljene u njenoj gramatici (sekcija @parse_select).
 

@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Relacioni operatori <relacioni-operatori>
 
@@ -76,7 +76,7 @@ Izrazi i predikati implementiraju `Evaluatable` interfejs koji definiše sve ope
 
 Za izvršavanje naredbi definisanih _SQL_ jezikom, često je potrebno primeniti više relacionih operatora. Primena više relacionih operatora se radi njihovim ulančavanjem u stablovsku strukturu podataka i zbog ovoga se kaže da sistem izvršava "stablo" relacionih operatora.
 
-=== Pajplajnovano procesovanje
+=== Protočna obrada
 
 Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
 - generišu slogove jedan po jedan
@@ -84,9 +84,9 @@ Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
 
 Zahtev za izvršavanje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko barem jedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
 
-Kombinacija dve navedene osobine uz delegaciju operacija se zove pajplajnovano procesovanje (eng. _pipelined processing_). Korišćenje pajplajnovanog procesovanja u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ga je pogodno koristiti.
+Kombinacija dve navedene osobine uz delegaciju operacija se zove protočna obrada (eng. _pipelined processing_). Korišćenje protočne obrade u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ju je pogodno koristiti.
 
-Prednost pajplajnovanog procesovanja što ne čuva međurezultate je upravo i njegova mana za određene operacije. Materijalizovano procesovanje (eng. _materialization_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim problemima. Takođe, neke operacije poput grupisane agregacije, vraćanje samo jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovanog procesovanja. Potrebno je koristiti oba načina procesovanja u sistemu za najbolje rezultate, ali _LBDB_ sistem implementira samo pajplajnovano procesovanje.
+Prednost protočne obrade što ne čuva međurezultate je upravo i njena mana za određene operacije. Materijalizovana obrada (eng. _materialization_, _materialized processing_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim problemima. Takođe, neke operacije poput grupisane agregacije, vraćanje samo jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovane obrade. Potrebno je koristiti oba načina obrade u sistemu za najbolje rezultate, ali _LBDB_ sistem implementira samo protočnu obradu.
 
 === Hijerarhija implementacije relacionih operatora <hijerarhija_rel_op>
 
@@ -154,7 +154,7 @@ Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikacij
 === Primeri
 
 Sledeći primeri vizuelno pokazuju različite delove stabla relacionih operatora i kako se neke funkcionalnosti ponašaju.
-Primeri ne oslikavaju stabla relacionih operatora koje bi _LBDB_ sistem napravio, već služe da pokažu uklapanje komponenata virtuelne mašine, pajplajnovano procesovanje i kako se `Scan` objekti oslanjaju jedni na druge.
+Primeri ne oslikavaju stabla relacionih operatora koje bi _LBDB_ sistem napravio, već služe da pokažu uklapanje komponenata virtuelne mašine, protočnu obradu i kako se `Scan` objekti oslanjaju jedni na druge.
 
 ==== Primer izgleda komponenti virtuelne mašine
 

@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Upravljanje transakcijama <transakcije>
 
@@ -8,7 +8,7 @@ Svaka operacija u sistemu mora biti izvršena u okviru jedne transakcije, ali se
 
 == Realizacija transakcionih mehanizama u sistemu
 
-Vrednost je niz bajtova (određenog tipa), koja dobija semantički značaj tek na apstrakcionim nivoima iznad nivoa transakcija, naime na nivou struktuiranja blokova u slogove. Na nivou transakcija, vrednosti nemaju semantičko značenje, ali da bi sistem obezbedio visok stepen usklađenosti sa _ACID_ osobinama, operacije nad vrednostima se obavljaju isključivo kroz transakcije koje enkapsuliraju svu potrebnu logiku tih osobina.
+Vrednost je niz bajtova (određenog tipa), koja dobija semantički značaj tek na apstrakcionim nivoima iznad nivoa transakcija, naime na nivou organizovanja blokova u slogove. Na nivou transakcija, vrednosti nemaju semantičko značenje, ali da bi sistem obezbedio visok stepen usklađenosti sa _ACID_ osobinama, operacije nad vrednostima se obavljaju isključivo kroz transakcije koje enkapsuliraju svu potrebnu logiku tih osobina.
 
 === Transakcije kao glavno mesto pristupa vrednostima <pristup_vrednostima_u_transakcijama>
 
@@ -57,7 +57,7 @@ Postoje tri generalna algoritma oporavka sistema @simpledb:
 - samo ponovna primena uspešnih transakcija (eng. _redo only recovery_).
 Izbor algoritma oporavka utiče na to kada će sadržaj bafera biti upisan na disk.
 
-U _LBDB_ sistemu, implementirani su _undo redo_ i _undo only_ algoritmi oporavke i moguće je postaviti koji će sistem koristiti u okviru sistemskih podešavanja (figura @fig:lbdbsettings).
+U _LBDB_ sistemu, implementirani su _undo redo_ i _undo only_ algoritmi oporavke i moguće je postaviti koji će sistem koristiti u okviru sistemskih podešavanja (listing @fig:lbdbsettings).
 
 ===== _Undo redo recovery_
 
@@ -114,13 +114,17 @@ Sprečavanje konfliktujućih operacija u sistemu se postiže preko sistema katan
 
 Poštovanje ovakvog protokola zaključavanja uvek garantuje tačnost rada sa vrednostima, ali znatno smanjuje konkurentnost sistema. Povećanje konkurentnosti sistema se radi izborom izolacionog nivoa individualnih transakcija. Izolacioni nivoi transakcija povećavaju konkurentnost ali žrtvuju tačnost pročitanih vrednosti tako što upravljaju životnim ciklusom _deljenih_ katanca na različite načine @simpledb.
 
+Različiti izolacioni nivoi su opisani u sekciji @izolacioni_nivoi_transakcija zbog šire slike razumevanja transakcija i potencijalnih proširenja, ali podsistem bezbednog višenitnog pristupa _LBDB_ sistema implementira samo serijalizujući izolacioni nivo transakcija.
+
+==== Izolacioni nivoi transakcija <izolacioni_nivoi_transakcija>
+
 #figure(
   {
     set par(justify: false)
     table(
       columns: (1.3fr, 1.2fr, 1fr, 0.65fr),
       align: (center, center),
-      inset: 8pt,
+      inset: 5pt,
       [Izolacioni nivo], [Problemi], [Puštanje _deljenih_ katanaca], [_EOF_ marker],
       //
       [Serijalizujući\ (eng. _serializable_)],
@@ -147,7 +151,7 @@ Poštovanje ovakvog protokola zaključavanja uvek garantuje tačnost rada sa vre
   caption: [Različiti izolacioni nivoi transakcija],
 )<tbl:izolacioni_nivoi>
 
-Različiti izolacioni nivoi se mogu implementirati i preko _MVCC_ (eng. _multi version concurrency control_) pristupa @mvcc, ali on nije podržan u okviru _LBDB_ sistema.
+Različiti izolacioni nivoi se mogu implementirati i preko _MVCC_ (eng. _multi version concurrency control_) pristupa @mvcc.
 
 Izolacioni nivoi transakcija su koncipirani tako da svaki nivo izolacije rešava sve probleme nivoa ispod njega.
 
@@ -159,15 +163,13 @@ Pošto je nivo granularnosti zaključavanja na nivou bloka, fantomska čitanja u
 
 Spomenuti izolacioni nivoi transakcija se odnose samo na operacije koje čitaju vrednosti. Operacije koje modifikuju vrednosti uvek moraju poštovati korektno dobijanje _ekskluzivnih_ katanaca. Transakcije na individualnom nivou mogu tolerisati neprecizne podatke, ali kada bi se dobijanje _ekskluzivnih_ zaobišlo, cela baza podataka bi postala neupotrebljiva @simpledb.
 
-Podsistem bezbednog višenitnog pristupa _LBDB_ sistema implementira samo serijalizujući izolacioni nivo transakcija.
-
-==== Katalog katanaca
+==== Katalog katanaca <katalog-katanaca>
 
 Instanca klase `LockTable` je deljena za sve transakcije u sistemu. U njoj se realizuju mehanizmi praćenja postojanja katanaca za sve blokove.
 
 _Deljeni_ katanac za neki blok je moguće steći bez obzira na postojanje drugih deljenih katanaca, ali _ekskluzivni_ katanac za neki blok je moguće steći samo kada ne postoji nijedan drugi katanac bilo koje vrste.
 
-Ako se desi da transakcija nije uspela da zaključa željeni blok (bilo sa _deljenim_ ili _ekskluzivnim_ katancem) posle određenog vremenskog perioda, vraća se greška klijentu.
+Ako se desi da transakcija nije uspela da zaključa željeni blok (bilo sa _deljenim_ ili _ekskluzivnim_ katancem) vraća se greška klijentu. Sistem nema mehanizam za detekciju zastoja, već čeka da prođe određeni vremenski period, posle kog smatra da je nemoguće zaključati željeni blok. Takođe, sistem ne može da spreči situaciju gde transakcije čekaju jedne na druge u krugu (eng. _deadlock_).
 
 ==== Upravljanje katancima na nivou individualnih transakcija
 

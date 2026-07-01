@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Upravljanje datotekama <datoteke>
 
@@ -26,7 +26,7 @@ Jedan _log_ je niz bajtova čije interpretiranje ukazuje na to kako se promenila
 
 _Log_ datoteka je specijalna vrsta datoteke u kojoj se čuva niz _log_-ova. Na apstrakcionom nivou upravljanja blokovima, nije bitan sadržaj ove datoteke, već samo algoritmi neophodni za korektno prolaženje kroz nju i algoritmi za dodavanje novih _log_-ova. Ovi algoritmi se nalaze u menadžeru _log_-ova (`LogManager` klasa) i _log_ iteratoru (`LogIterator` klasa).
 
-_Log_ datoteka je struktuirana tako da se noviji _log_-ovi nalaze u blokovima bližim kraju datoteke, a unutar jednog bloka _log_ datoteke noviji _log_-ovi se nalaze pri početku bloka. Ako nema mesta da se upiše novi _log_, prelazi se u sledeći blok _log_ datoteke.
+_Log_ datoteka je organizovana tako da se noviji _log_-ovi nalaze u blokovima bližim kraju datoteke, a unutar jednog bloka _log_ datoteke noviji _log_-ovi se nalaze pri početku bloka. Ako nema mesta da se upiše novi _log_, prelazi se u sledeći blok _log_ datoteke.
 
 Menadžer _log_-ova obezbeđuje algoritme upravljanja _log_ datotekom tako što čuva stranicu poslednjeg bloka _log_ datoteke. Upravljanje _log_ datotekom podrazumeva dodavanje novih _log_-ova, upis _log_-ova na disk i arhiviranje _log_ datoteke.
 
@@ -58,42 +58,42 @@ Pošto je količina radne memorije ograničena, i količina bafera u sistemu ist
 
 Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transakcije, to jest broj pinova mu mora biti nula. Postoje dva scenarija kada stranica koja do sada nije bila u memoriji treba da se mapira na bafer:
 
-- U slučaju da ne postoji nijedan bafer sa nula pinova, nova stranica čeka određeni vremenski period da se oslobodi neki bafer i ako se nijedan bafer ne oslobodi, vraća se greška klijentu.
+- U slučaju da ne postoji nijedan bafer sa nula pinova, nova stranica čeka određeni vremenski period da se oslobodi neki bafer i ako se nijedan bafer ne oslobodi, vraća se greška klijentu (detaljnije u sekciji @katalog-katanaca).
 - U slučaju da postoji više bafera sa nula pinova, potrebno je izabrati koji će biti izbačen iz radne memorije pomoću algoritma izbora.
 
-=== Algoritmi izbora smene bafera <algoritmi-smene-bafera>
+=== Algoritmi izbora bafera za smenu <algoritmi-smene-bafera>
 
-U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen.
+U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen. Potvrda svih tvrdnji o performansama se može pronaći u @simpledb i u sekciji @test-perf-asb.
 
 ==== _Naive_
 
-Naivni algoritam, kako mu i ime kaže, nema nikakvu logiku izbora bafera kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane su loše performanse @simpledb jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti.
+Naivni algoritam, kako mu i ime kaže, nema nikakvu logiku izbora bafera kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane su loše performanse jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti.
 
 ==== _FIFO_
 
-_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma @simpledb ali _FIFO_ algoritam će smeniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
+_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma ali _FIFO_ algoritam će smeniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
 
 ==== _LRU_
 
-_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišćen. Performanse su odlične @simpledb jer ako bafer dugo nije korišćen, verovatno se neće još dugo ni koristiti.
+_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišćen. Odlične performanse jer ako bafer dugo nije korišćen, verovatno se neće još dugo ni koristiti @simpledb.
 
 ==== _Clock_
 
-_Clock_ algoritam pretpostavlja da baferi imaju fiksne pozicije u listi bafera i smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera. Performanse su dobre jer je šansa da je bitan bafer pinovan velika @simpledb.
+_Clock_ algoritam pretpostavlja da baferi imaju fiksne pozicije u listi bafera i smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera. Performanse su odlične jer je šansa da je bitan bafer pinovan velika @simpledb.
 
 ==== _First unmodified_
 
-_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova, ili ako je svaki modifikovan prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma @simpledb, ali može se desiti da modifikovan bafer neće dugo biti korišćen što znači da nije izabran optimalan bafer za smenu.
+_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova, ili ako je svaki modifikovan prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma, ali može se desiti da modifikovan bafer neće dugo biti korišćen što znači da nije izabran optimalan bafer za smenu.
 
 ==== _LRM_
 
-_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Pretpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Performansa deluje zadovoljavajuća, ali je algoritam dosta nepredvidiv @simpledb.
+_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Pretpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Može biti bolji od naivnog algoritma u specifičnim situacijiama, a često je lošiji od njega.
 
 == Slogovi
 
 Podsistem za upravljanje baferima je generalan i ne pruža nikakvu strukturu podataka unutar samih bafera, odnosno blokova. Na nivou relacione baze podataka, najmanja jedinica interakcije nije jedan blok, već jedan slog neke tabele i potrebno je blokove organizovati tako da se to omogući. Jedan slog neke tabele je isto što i jedan red te tabele što je objašnjeno detaljnije u sekciji @relacioni-operatori.
 
-=== Struktuiranje
+=== Mehanizmi definisanja strukture sloga
 
 Da bi se podržalo kreiranje perzistentne strukture jednog sloga nove tabele, potrebno je definisati mehanizme kojima će klijenti opisivati tu strukturu. Na apstrakcionom nivou upravljanja datotekama, sistem se samo brine o tome da je teoretska i fizička struktura ispoštovana, a perzistiranje i samo kreiranje strukture je zadatak viših podsistema.
 
@@ -126,18 +126,18 @@ Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišć
 
 Za svaku kolonu pamte se sledeće fizičke karakteristike: pozicija početka vrednosti te kolone, maksimalna dužina vrednosti te kolone i pozicija te kolone u šemi. Takođe, pamti se i celokupna dužina celog sloga. Kolone se identifikuju pomoću njihovog naziva.
 
-== Primena strukture na blok <primena_strukture_na_blok>
+== Primena strukture slogova na blokove <primena_strukture_na_blok>
 
 Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U _LBDB_ sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine (više o ovom ograničenju u sekciji @slogovi-fiksne-duzine).
 
 Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišćeno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji poseban podsistem (sekcija @metapodaci).
 
-Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu prisutne, to jest imaju _NULL_ vrednost i to da li je slog obrisan. Rezerviše se četvorobajtno zaglavlje na početku svakog sloga i njegovi bitovi predstavljaju ove metapodatke. Da li je slog označen kao obrisan se predstavlja prvim bitom (O), dok ostalih 31 bitova (N#sub[i]) označavaju da li polje na toj poziciji ima _NULL_ vrednost. Zbog ovoga postoji ograničenje na broj polja po tabeli, maksimalno 31 polje.
+Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu prisutne, to jest imaju _NULL_ vrednost i to da li je slog obrisan. Rezerviše se četvorobajtno zaglavlje na početku svakog sloga i njegovi bitovi predstavljaju ove metapodatke. Da li je slog označen kao obrisan se predstavlja prvim bitom ($O$), dok ostalih 31 bitova ($N_i$) označavaju da li polje na toj poziciji ima _NULL_ vrednost. Zbog ovoga postoji ograničenje na broj polja po tabeli, maksimalno 31 polje.
 
 #figure(
   image("../dijagrami/stanica_slogova_izgled.pdf"),
   caption: [
-    Izgled jednog bloka struktuiranog sa slogovima
+    Izgled jednog bloka popunjenog slogovima
   ],
 )<fig:izgled_bloka_sa_podacima>
 

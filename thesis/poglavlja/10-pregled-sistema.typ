@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Pregled sistema <pregled-sistema>
 
@@ -26,7 +26,7 @@ Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serv
   mvn test
   ```,
   caption: [
-    Pokretanje svih testova u sistemu
+    Pokretanje svih funkcionalnih testova u sistemu
   ],
 )<fig:pokretanje_testova>
 

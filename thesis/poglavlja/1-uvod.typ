@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Uvod <uvod>
 
@@ -16,7 +16,7 @@ Moduli ovog sistema su raspoređeni tako da se svaki brine o jednoj grupi algori
 
 Svaki sloj iz uprošćene arhitekture sistema je posebno detaljno objašnjen u nastavku, a uz te slojeve se dodatno objašnjavaju i transakcije, koje su isprepletene kroz ceo sistem. Sličan dijagram koji opisuje celu arhitekturu sistema, ali mnogo detaljnije, se može pronaći na slici @fig:sekvenca_ceo_sistem.
 
-Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #footnote[https://github.com/lukascobbler/lbdb].
+Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Pregled znatnih razlika između osnovne implementacije i _LBDB_ sistema se može pronaći u sekciji @razlika-implementacije, a detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #footnote[https://github.com/lukascobbler/lbdb].
 
 == Klijentsko-serverska arhitektura
 

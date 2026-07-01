@@ -1,8 +1,8 @@
-#import "../funkcije.typ": todo
+
 
 = Zaključak <zakljucak>
 
-== Zbog čega
+== Motivacija
 
 Sistemi za upravljanje bazama podataka (SUBP) su me interesovali od druge godine osnovnih akademskih studija, nakon slušanja predmeta "Baze podataka". SUBP-ovi su osnova većine informacionih sistema koji se koriste u današnjici i razumevanje samo _SQL_ jezika nije dovoljno da bi se shvatilo njihovo interno funkcionisanje. Zbog njihove kompleksnosti, shvatio sam da bi ih najbolje razumeo tako što implementiram svoj SUBP sistem. Naučio sam mnogo iz oblasti upravljanja datotekama, izolacije podataka i obrade deklarativnih programskih jezika kao što je _SQL_.
 
@@ -20,7 +20,7 @@ Argumentacija ne implementiranja raznih grupa naredbi je sledeća:
   Dodavanje novih blokova na kraju datoteka je iste prirode kao i kreiranje i brisanje datoteka, ali poništavanje te akcije je lakše implementirati pošto će datoteka i dalje postojati nakon oporavka.
 - Ne postoje operacije nad celim bazama podataka (`CREATE DATABASE ...`) jer nisu neophodne za funkcionisanje implementacije relacionog modela.
 - Ne postoje pogledi (eng. _views_). Iako u _Database Design And Implementation_ @simpledb knjizi postoji opis implementacije pogleda, odlučio sam da ih izbacim jer se nisu slagali sa svim semantičkim proverama planera. Potrebno je produbiti i eventualno promeniti načine na koji planer proverava upite da bi se lako proveravali i pogledi.
-- `GROUP BY`, `DISTINCT`, `ORDER BY` i ostali delovi `SELECT` naredbe koji zahtevaju agregaciju podataka nisu podržani jer ne postoji implementacija materijalizovanog procesovanja. _Database Design And Implementation_ @simpledb u poglavlju 13 opisuje materijalizovano procesovanje, pa ću ga istražiti za sledeću iteraciju _LBDB_ sistema.
+- `GROUP BY`, `DISTINCT`, `ORDER BY` i ostali delovi `SELECT` naredbe koji zahtevaju agregaciju podataka nisu podržani jer ne postoji implementacija materijalizovane obrade. _Database Design And Implementation_ @simpledb u poglavlju 13 opisuje materijalizovanu obradu, pa ću je istražiti za sledeću iteraciju _LBDB_ sistema.
 - Ostatak _SQL_ jezika je previše kompleksan za implementaciju u okviru ovakvog projekta, ali je vredno istražiti ga da bi se shvatilo kako moderni SUBP-ovi funkcionišu @big_book.
 
 === Ograničenje na slogove fiksne dužine <slogovi-fiksne-duzine>
@@ -45,22 +45,78 @@ Statistički metapodaci sistema se čuvaju u memoriji i pristup njima je brz. Pr
 - održavanje ažurnosti tih tabela zahtevno
 - čitanje iz tih tabela potrebno raditi brzo što dalje zahteva implementaciju _read uncommitted_ izolacionog nivoa transakcija
 
-Moderni SUBP-ovi implementiraju i ceo deo spomenutog SQL standarda u kom su definisani specijalni pogledi i tabele metapodataka @simpledb. Pored toga postoje i kompleksni histogrami koji sadrže razne podatke iz više tabela i dodatno ubrzavaju upite @histogrami.
+Moderni SUBP-ovi implementiraju i ceo deo spomenutog _SQL_ standarda u kom su definisani specijalni pogledi i tabele metapodataka @simpledb. Pored toga postoje i kompleksni histogrami koji sadrže razne podatke iz više tabela i dodatno ubrzavaju upite @histogrami.
 
 === Nedostajuća implementacija indeksnih struktura podataka
 
-Indeksi predstavljaju specijalnu strukturu podataka koja omogućava znatno bržu pretragu podataka koji se nalaze u njima. Realizuju se preko jedne od _BTree_ varijanti ili kao _Hash_ indeks.
+Indeksi predstavljaju specijalnu strukturu podataka koja omogućava znatno bržu pretragu podataka. Realizuju se preko jedne od _BTree_ varijanti ili kao _Hash_ indeks.
 
-Iako su indeksi krucijalni za efikasan SUBP, odlučio sam da ih ne implementiram jer želim da im se posvetim u okviru sledeće iteracije _LBDB_ sistema.
-
-Ipak, podržano je kreiranje metapodataka vezanih za indekse u okviru menadžera metapodataka, ali smatram da ovo nije vredno spominjati van ovog poglavlja jer ne utiče na dalji sistem.
+Iako su indeksi krucijalni za efikasan SUBP, odlučio sam da ih ne implementiram jer želim da im se posvetim u okviru sledeće iteracije _LBDB_ sistema. Ipak, podržano je kreiranje metapodataka vezanih za indekse u okviru menadžera metapodataka, ali smatram da ovo nije vredno spominjati van ovog poglavlja jer ne utiče na dalji sistem.
 
 === Neoptimalni planer <neoptimalni-planer>
 
 Planer _LBDB_ sistema ne koristi skoro nijednu naprednu tehniku planiranja. Brzina izvršavanja upita dosta zavisi od redosleda tabela u upitu, uslov filtriranja se primenjuje nakon ulančavanja svih tabela umesto izolovano po tabeli, selektivnost i procene broja _NULL_ i jedinstvenih vrednosti se ne koriste, itd.
 
-_Database Design And Implementation_ @simpledb poglavlja 14 i 15 opisuju implementaciju efikasnijeg planera koji intenzivno koristi _RBO_ tehnike planiranja, ali je ovo ostavljeno za sledeću iteraciju _LBDB_ sistema.
+Poglavlja 14 i 15 iz @simpledb opisuju implementaciju efikasnijeg planera koji intenzivno koristi _RBO_ tehnike planiranja, ali je ovo ostavljeno za sledeću iteraciju _LBDB_ sistema.
 
 === Ulančavanje članova predikata je moguće samo konjunkcijom <samo-and>
 
-Predikati se mogu sastojati samo od članova ulančanih logičkom operacijom konjunkcije (`AND`). Negacija izraza (`NOT`) i ulančavanje operacijom disjunkcije (`OR`) nisu podržani iako je lako dodati obradu logičkih operacija jer nisam bio siguran kako se uklapaju u napredne tehnike planiranja. Kada završim sa istraživanjem naprednog planera, biće mi lakše da ubacim i nedostajuće logičke operacije. Uz njih, proširiću i `PartialEvaluator` zarad korektne redukcije.
+Predikati se mogu sastojati samo od članova ulančanih logičkom operacijom konjunkcije (`AND`). Negacija izraza (`NOT`) i ulančavanje operacijom disjunkcije (`OR`) nisu podržani iako je lako dodati obradu logičkih operacija jer nisam bio siguran kako se uklapaju u napredne tehnike planiranja. Kada završim sa istraživanjem naprednog planera, biće mi lakše da ubacim i nedostajuće logičke operacije.
+
+== Razlike između osnovne implementacije i _LBDB_ sistema <razlika-implementacije>
+
+U tabeli @tbl:najznacajnija_prosirenja se mogu videti razlike između osnovne implementacije i _LBDB_ sistema.
+
+#[
+  #show table.cell: set text(size: 10.5pt)
+
+  #figure(
+    {
+      set par(justify: false)
+      table(
+        columns: (0.8fr, 1.3fr),
+        align: (center, center),
+        inset: 4.5pt,
+        [Osnovna implementacija iz @simpledb], [Implementacija _LBDB_ sistema],
+        //
+        [_Integer_ i _String_ tipovi], [Podržan i _Boolean_ tip],
+        //
+        [_Naive_ algoritam smene bafera],
+        [Podržani i _FIFO_, _LRU_, _Clock_, _First unmodified_, _LRM_ algoritmi smene bafera],
+        //
+        [_Undo only_ algoritam oporavka], [Podržan i _undo redo_ algoritam oporavka],
+        //
+        [-], [Podržane _NULL_ vrednosti],
+        //
+        [-], [Aproksimacija broja jedinstvenih vrednosti kolone tabele preko _HyperLogLog_ probabilističke strukture],
+        //
+        [Konstantni i identifikacioni izrazi], [Podržani i aritmetički izrazi i članovi sa svim operatorima poređenja],
+        //
+        [Samo operatori selekcije, projekcije i proizvoda],
+        [Podržani i operatori generalizovane projekcije, preimenovanja i unije],
+        //
+        [Prosto računanje redukcionog faktora],
+        [Računanje redukcionog faktora na osnovu algoritma istraživačkog rada _SystemR_ @systemR],
+        //
+        [-], [Izraz zamenskog člana],
+        //
+        [-], [Detaljna semantička provera svih naredbi],
+        //
+        [-], [Podržana _EXPLAIN_ naredba],
+        //
+        [-], [Redukcija izraza za vreme planiranja],
+        //
+        [-],
+        [Protokol komunikacije, serverski i klijentski sloj, kontrolisano gašenje sistema i periodično pisanje mirne kontrolne tačke],
+        //
+        [-], [Implementacija sistema za testiranje funkcionalnosti],
+        //
+        [Starija _Java_ verzija],
+        [Moderna _Java_ verzija i njene mogućnosti poput _sealed interface_, _record_, _Optional_, _stream_ _API_-ja, ...],
+        //
+        [-], [_Maven_ za automatizaciju kompilacije],
+      )
+    },
+    caption: [Najznačajnija proširenja u implementaciji _LBDB_ sistema],
+  )<tbl:najznacajnija_prosirenja>
+]

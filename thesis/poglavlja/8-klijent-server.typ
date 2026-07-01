@@ -1,4 +1,4 @@
-#import "../funkcije.typ": todo
+
 
 = Klijentsko-serverska arhitektura <klijent-server>
 

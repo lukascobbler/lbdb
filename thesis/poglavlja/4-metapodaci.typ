@@ -1,8 +1,8 @@
-#import "../funkcije.typ": todo
+
 
 = Metapodaci <metapodaci>
 
-Metapodaci su podaci koji opisuju druge podatke. Iako su podaci struktuirani u okviru slogova (poglavlje @datoteke), sistem im ne može pristupiti ako se ne pobrine o perzistiranju te strukture. Praćenje distribucije vrednosti je korisno prilikom pravljenja efikasnog načina dobavljanja slogova. Podaci koji definišu strukturu slogova i podaci o distribuciji vrednosti su primeri metapodataka kojima sistem barata.
+Metapodaci su podaci koji opisuju druge podatke. Iako su podaci organizovani preko slogova (poglavlje @datoteke), sistem im ne može pristupiti ako se ne pobrine o perzistiranju strukture tih slogova. Praćenje distribucije vrednosti je korisno prilikom pravljenja efikasnog načina dobavljanja slogova. Podaci koji definišu strukturu slogova i podaci o distribuciji vrednosti su primeri metapodataka kojima sistem barata.
 
 == Kataloške tabele <kataloske-tabele>
 
