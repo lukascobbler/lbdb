@@ -21,6 +21,20 @@ public class LBDBSettings {
     public QueryPlannerType queryPlannerType = QueryPlannerType.BETTER; // todo change default when heuristic is implemented
     public UpdatePlannerType updatePlannerType = UpdatePlannerType.BASIC;
 
+    /// Default constructor
+    public LBDBSettings() {}
+
+    /// Copy constructor, for easier cloning.
+    public LBDBSettings(LBDBSettings other) {
+        this.UNDO_ONLY_RECOVERY = other.UNDO_ONLY_RECOVERY;
+        this.BLOCK_SIZE = other.BLOCK_SIZE;
+        this.BUFFER_POOL_SIZE = other.BUFFER_POOL_SIZE;
+        this.bufferStrategy = other.bufferStrategy;
+        this.LOG_FILE = other.LOG_FILE;
+        this.queryPlannerType = other.queryPlannerType;
+        this.updatePlannerType = other.updatePlannerType;
+    }
+
     /// @return The query planner object according to the set setting.
     public QueryPlanner getQueryPlanner(MetadataManager metadataManager) {
         return switch (queryPlannerType) {

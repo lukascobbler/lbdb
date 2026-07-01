@@ -26,6 +26,35 @@
                         -Xshare:off
                     </argLine>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>isolated-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/benchmarkTests/**/*.java</include>
+                            </includes>
+                            <reuseForks>false</reuseForks>
+                            <forkCount>1</forkCount>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/benchmarkTests/**/*.java</exclude>
+                            </excludes>
+                            <reuseForks>true</reuseForks>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

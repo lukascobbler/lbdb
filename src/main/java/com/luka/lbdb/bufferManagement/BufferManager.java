@@ -7,7 +7,7 @@ import com.luka.lbdb.fileManagement.FileManager;
 import com.luka.lbdb.logManagement.LogManager;
 
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /// The `BufferManager` object is responsible for writing user data
 /// to blocks in a DB file. Prevents pinned (currently in memory and in use)
@@ -19,6 +19,7 @@ public class BufferManager {
     private int numAvailableBuffers;
     private final ChooseUnpinnedBufferStrategy chooseUnpinnedBufferStrategy;
     private int clockPosition = 0;
+    private final AtomicInteger cacheHits = new AtomicInteger(0);
 
     public static final long MAX_TIME = 10_000;
 
@@ -32,6 +33,17 @@ public class BufferManager {
         for (int i = 0; i < numBuffers; i++) {
             bufferPool[i] = new Buffer(fileManager, logManager, i);
         }
+    }
+
+    /// @return The number of times the cache has been hit, generally
+    /// indicating the performance of the replacement strategy.
+    public int getCacheHits() {
+        return cacheHits.get();
+    }
+
+    /// Resets cache hits.
+    public void resetCacheHits() {
+        cacheHits.set(0);
     }
 
     /// @return Number of currently available buffers in the buffer manager.
@@ -95,6 +107,20 @@ public class BufferManager {
         }
     }
 
+    /// Warning: dangerous, should not be used outside of debug and test scenarios.
+    /// Resets the buffers in the buffer pool to their original state.
+    public synchronized void resetBufferPool() {
+        flushAll();
+        numAvailableBuffers = numMaxBuffers;
+        for (Buffer b : bufferPool) {
+            b.setUnmodified();
+            b.blockId = null;
+            b.pins = 0;
+            b.readInTime = -1;
+            b.unpinnedTime = -1;
+        }
+    }
+
     /// Checks if the system has waited too long for a buffer to become available.
     ///
     /// @return Whether the thread has waited for too long on the buffer.
@@ -112,6 +138,9 @@ public class BufferManager {
     /// such buffer.
     private Buffer tryToPin(BlockId blockId) {
         Buffer buffer = findExistingBuffer(blockId);
+        if (buffer != null) {
+            cacheHits.incrementAndGet();
+        }
         if (buffer == null) {
             buffer = chooseUnpinnedBufferStrategy.chooseUnpinnedBuffer();
             if (buffer == null) {
@@ -179,10 +208,12 @@ public class BufferManager {
         ///
         /// @return The first buffer in the buffer pool that is not pinned.
         private Buffer naive() {
-            return Arrays.stream(bufferPool)
-                    .filter(b -> !b.isPinned())
-                    .findFirst()
-                    .orElse(null);
+            for (int i = 0; i < numMaxBuffers; i++) {
+                if (!bufferPool[i].isPinned()) {
+                    return bufferPool[i];
+                }
+            }
+            return null;
         }
 
         /// This strategy is much better than the naive strategy,
@@ -192,10 +223,16 @@ public class BufferManager {
         ///
         /// @return The buffer that was earliest loaded.
         private Buffer fifo() {
-            return Arrays.stream(bufferPool)
-                    .filter(b -> !b.isPinned())
-                    .min(Comparator.comparing(Buffer::getReadInTime))
-                    .orElse(null);
+            Buffer target = null;
+            long minTime = Long.MAX_VALUE;
+            for (int i = 0; i < numMaxBuffers; i++) {
+                Buffer b = bufferPool[i];
+                if (!b.isPinned() && b.getReadInTime() < minTime) {
+                    minTime = b.getReadInTime();
+                    target = b;
+                }
+            }
+            return target;
         }
 
         /// This strategy is as good as the FIFO strategy, but does not
@@ -205,10 +242,16 @@ public class BufferManager {
         ///
         /// @return The buffer that was the earliest unpinned.
         private Buffer lru() {
-            return Arrays.stream(bufferPool)
-                    .filter(b -> !b.isPinned())
-                    .min(Comparator.comparing(Buffer::getUnpinnedTime))
-                    .orElse(null);
+            Buffer target = null;
+            long minTime = Long.MAX_VALUE;
+            for (int i = 0; i < numMaxBuffers; i++) {
+                Buffer b = bufferPool[i];
+                if (!b.isPinned() && b.getUnpinnedTime() < minTime) {
+                    minTime = b.getUnpinnedTime();
+                    target = b;
+                }
+            }
+            return target;
         }
 
         /// This strategy, uses a known SQL database fact that commonly
@@ -240,10 +283,13 @@ public class BufferManager {
         /// @return The first buffer that was not modified, else if all buffers
         /// are modified, it will return a buffer according to the naive strategy.
         private Buffer firstUnmodified() {
-            return Arrays.stream(bufferPool)
-                    .filter(b -> b.modifyingTransaction() == -1 && !b.isPinned())
-                    .findFirst()
-                    .orElseGet(this::naive);
+            for (int i = 0; i < numMaxBuffers; i++) {
+                Buffer b = bufferPool[i];
+                if (!b.isPinned() && b.modifyingTransaction() == -1) {
+                    return b;
+                }
+            }
+            return naive();
         }
 
         /// Buffers that were modified but not used for a long time will probably
@@ -252,10 +298,16 @@ public class BufferManager {
         /// @return The buffer that was earliest modified, else if no buffers
         /// were modified, it will return a buffer according to the naive strategy.
         private Buffer lrm() {
-            return Arrays.stream(bufferPool)
-                    .filter(b -> b.modifyingTransaction() != -1 && !b.isPinned())
-                    .min(Comparator.comparing(Buffer::getLsn))
-                    .orElseGet(this::naive);
+            Buffer target = null;
+            long minLsn = Long.MAX_VALUE;
+            for (int i = 0; i < numMaxBuffers; i++) {
+                Buffer b = bufferPool[i];
+                if (!b.isPinned() && b.modifyingTransaction() != -1 && b.getLsn() < minLsn) {
+                    minLsn = b.getLsn();
+                    target = b;
+                }
+            }
+            return target != null ? target : naive();
         }
     }
 }
