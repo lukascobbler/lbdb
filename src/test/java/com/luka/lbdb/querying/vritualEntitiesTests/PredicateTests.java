@@ -1,5 +1,7 @@
 package com.luka.lbdb.querying.vritualEntitiesTests;
 
+import com.luka.lbdb.planning.planner.PartialEvaluator;
+import com.luka.lbdb.planning.planner.ReductionFactorCalculator;
 import com.luka.lbdb.querying.QueryTestUtils;
 import com.luka.lbdb.planning.plan.ExplainData;
 import com.luka.lbdb.planning.plan.Plan;
@@ -30,7 +32,7 @@ public class PredicateTests {
         ts.next();
 
         Predicate emptyPred = new Predicate();
-        assertTrue(emptyPred.isSatisfied(ts));
+        assertTrue(emptyPred.evaluate(ts).asBoolean());
 
         Term t1 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -44,7 +46,7 @@ public class PredicateTests {
         );
         Predicate p1 = new Predicate(t1);
         p1.conjoinWith(new Predicate(t2));
-        assertTrue(p1.isSatisfied(ts));
+        assertTrue(p1.evaluate(ts).asBoolean());
 
         Term t3 = new Term(
                 new FieldNameExpression("t1_intField1"),
@@ -52,7 +54,7 @@ public class PredicateTests {
                 new ConstantExpression(new IntConstant(99))
         );
         p1.conjoinWith(new Predicate(t3));
-        assertFalse(p1.isSatisfied(ts));
+        assertFalse(p1.evaluate(ts).asBoolean());
 
         Predicate mixedPred = new Predicate(t1);
         Term tExt = new Term(
@@ -120,6 +122,39 @@ public class PredicateTests {
             p.conjoinWith(new Predicate(t));
         }
 
-        assertEquals(Double.MAX_VALUE, p.reductionFactor(plan));
+        assertEquals(Double.MAX_VALUE, ReductionFactorCalculator.calculatePredicateReductionFactor(p, plan));
+    }
+
+    @Test
+    public void testPredicatePartialEvaluation() {
+        Term tTrue = new Term(
+                new ConstantExpression(new IntConstant(1)),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(1))
+        );
+        Term tFalse = new Term(
+                new ConstantExpression(new IntConstant(1)),
+                TermOperator.EQUALS,
+                new ConstantExpression(new IntConstant(2))
+        );
+        Term tVar = new Term(
+                new FieldNameExpression("a"),
+                TermOperator.GREATER_THAN,
+                new ConstantExpression(new IntConstant(5))
+        );
+
+        Predicate p1 = new Predicate(tTrue, tVar);
+        Predicate p1Folded = (Predicate) PartialEvaluator.evaluate(p1);
+        assertEquals(1, p1Folded.getTerms().size());
+        assertEquals(tVar, p1Folded.getTerms().getFirst());
+
+        Predicate p2 = new Predicate(tFalse, tVar);
+        Predicate p2Folded = (Predicate) PartialEvaluator.evaluate(p2);
+        assertEquals(1, p2Folded.getTerms().size());
+        assertEquals(tFalse, p2Folded.getTerms().getFirst());
+
+        Predicate p3 = new Predicate(tTrue);
+        Predicate p3Folded = (Predicate) PartialEvaluator.evaluate(p3);
+        assertEquals(0, p3Folded.getTerms().size());
     }
 }

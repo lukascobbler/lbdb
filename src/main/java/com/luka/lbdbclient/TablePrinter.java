@@ -1,7 +1,6 @@
 package com.luka.lbdbclient;
 
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
-import com.luka.lbdb.querying.virtualEntities.constant.StringConstant;
 import com.luka.lbdb.records.DatabaseType;
 import com.luka.lbdb.records.schema.Schema;
 
@@ -34,10 +33,8 @@ public class TablePrinter {
 
                 if (c.isNull()) {
                     val = "NULL";
-                } else if (c instanceof StringConstant(String value)) {
-                    val = value;
                 } else {
-                    val = c.toString();
+                    val = c.toString().replace("'", "");
                 }
 
                 displayRow.add(val);

@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.file.StandardOpenOption.*;
 
@@ -20,6 +21,8 @@ public class FileManager {
     private final int blockSize;
     private final boolean isNew;
     private final Map<String, FileChannel> openFiles = new HashMap<>();
+    private final AtomicInteger reads = new AtomicInteger(0);
+    private final AtomicInteger writes = new AtomicInteger(0);
 
     /// The constructor initializes the directory where the database files will
     /// be stored by removing all files that start with "temp", or if the directory
@@ -48,6 +51,7 @@ public class FileManager {
         try {
             FileChannel fc = getFile(blockId.filename());
 
+            reads.incrementAndGet();
             return fc.read(page.contents(), (long) blockId.blockNum() * blockSize);
         } catch (IOException e) {
             throw new FileException("cannot read block " + blockId);
@@ -70,6 +74,7 @@ public class FileManager {
                         "greater than length of blocks for file " + blockId.filename());
             }
 
+            writes.incrementAndGet();
             return fc.write(page.contents(), (long) blockId.blockNum() * blockSize);
         } catch (IOException e) {
             throw new FileException("cannot write block " + blockId);
@@ -178,6 +183,19 @@ public class FileManager {
     /// initialization.
     public boolean isNew() {
         return isNew;
+    }
+
+    /// @return A two sized array of integers, where the first
+    /// element represents the number of reads, and the second
+    /// number of writes to blocks.
+    public int[] getBlockStatistics() {
+        return new int[] { reads.get(), writes.get() };
+    }
+
+    /// Resets the counters for read and write block statistics.
+    public void resetBlockStatistics() {
+        reads.set(0);
+        writes.set(0);
     }
 
     /// The implementation of this function creates a file if it doesn't

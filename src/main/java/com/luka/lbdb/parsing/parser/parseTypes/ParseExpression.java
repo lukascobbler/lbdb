@@ -27,7 +27,7 @@ import com.luka.lbdb.querying.virtualEntities.expression.*;
 /// for example, multiplication and division can be calculated before subtraction
 /// and addition. Three main functions exist that call each other recursively.
 public class ParseExpression {
-    private static final int PREFIX_PRECEDENCE = 30;
+    private static final int PREFIX_PRECEDENCE = 100;
     private final ParserContext ctx;
 
     /// Every syntactic category requires the parse context to
@@ -55,7 +55,7 @@ public class ParseExpression {
     private Expression parseExpression(int precedence) {
         Expression left = parsePrefix();
 
-        while (precedence < getPrecedence(ctx.current())) {
+        while (precedence < getPrecedence(ctx.lookAhead(0))) {
             Token opToken = ctx.advance();
             left = parseInfix(left, opToken);
         }
@@ -98,7 +98,7 @@ public class ParseExpression {
                 }
                 default -> throw new ParsingException("Unexpected symbol: " + sym);
             };
-            default -> throw new ParsingException("Expected expression, found: " + ctx.current());
+            default -> throw new ParsingException("Expected expression, found: " + ctx.lookAhead(0));
         };
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
 /// Read-only operations only.
 public class ProductPlan implements Plan<Scan> {
     private final Plan<Scan> childPlan1, childPlan2;
-    private final Schema schema = new Schema();
+    private final Schema outputSchema = new Schema();
 
     /// Requires two subplans that will create the "combined record" which is a
     /// record that has all fields of both subplans. Assumes that no two fields
@@ -20,8 +20,8 @@ public class ProductPlan implements Plan<Scan> {
     public ProductPlan(Plan<Scan> childPlan1, Plan<Scan> childPlan2) {
         this.childPlan1 = childPlan1;
         this.childPlan2 = childPlan2;
-        schema.addAll(childPlan1.outputSchema());
-        schema.addAll(childPlan2.outputSchema());
+        outputSchema.addAll(childPlan1.outputSchema());
+        outputSchema.addAll(childPlan2.outputSchema());
     }
 
     @Override
@@ -35,7 +35,8 @@ public class ProductPlan implements Plan<Scan> {
     /// of the right subplan for one **record** (not block) of the left subplan, it is
     /// better to place the subplan that has more records in one block to be the left subplan.
     /// That way, more records will be processed in per block access. This formula will be
-    /// symmetric if both subplans have the same number of records per block.
+    /// symmetric if both subplans have the same number of records per block and the same number
+    /// of blocks.
     ///
     /// @return  The total number of blocks accessed for the product operation where the
     /// first subplan is the left subplan, and the second subplan is the right
@@ -94,7 +95,7 @@ public class ProductPlan implements Plan<Scan> {
     /// @return The schema describing the "combined record".
     @Override
     public Schema outputSchema() {
-        return schema;
+        return outputSchema;
     }
 
     @Override

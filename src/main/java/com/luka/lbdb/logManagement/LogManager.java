@@ -77,16 +77,16 @@ public class LogManager {
     /// The algorithm implementation is as follows:
     /// * get boundary of block
     /// * calculate bytes needed for the new log record to be written
-    /// (log record runtimeLength + integer runtimeLength)
+    /// (log record length + integer length)
     /// * if boundary - bytes needed for the new log record is
     /// less than the size of an integer (because an additional integer
-    /// is needed to store new log record byte runtimeLength),
+    /// is needed to store new log record byte length),
     /// flush the block to disk and get a new one as the last block
     /// * position the new log record at the byte:
-    /// boundary - bytes runtimeLength of the new record
+    /// boundary - bytes length of the new record
     /// * place the bytes into the page using regular page API
     /// (which automatically puts the bytes and an integer
-    /// that contains the runtimeLength of those bytes)
+    /// that contains the length of those bytes)
     /// * update the block boundary to be the first byte
     /// where the newly written log record starts
     /// * update the latest log sequence number
@@ -111,6 +111,9 @@ public class LogManager {
         return latestLSN;
     }
 
+    /// Moves the current log file in the archive directory, giving
+    /// it the name of the latest log file number + 1 and creates a new
+    /// log file.
     public void archiveLogFile() {
         Path dbDir = fileManager.getDbDirectory();
         Path archiveDir = dbDir.resolve("log_archive");

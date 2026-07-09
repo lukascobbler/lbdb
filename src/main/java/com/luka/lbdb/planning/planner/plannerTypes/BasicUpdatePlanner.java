@@ -44,7 +44,7 @@ public class BasicUpdatePlanner extends UpdatePlanner {
         List<String> fields = insertStatement.allTuplesValueInfo().fieldNames();
 
         try (UpdateScan insertScan = plan.open()) {
-            lastInsertionForTable.ifPresent(insertScan::moveToRecordId);
+            lastInsertionForTable.ifPresent(insertScan::moveToRecord);
 
             for (List<Constant> tuple : insertStatement.allTuplesValueInfo().newTuples()) {
                 insertScan.insert();
@@ -60,13 +60,24 @@ public class BasicUpdatePlanner extends UpdatePlanner {
         return insertStatement.allTuplesValueInfo().newTuples().size();
     }
 
+    /// On a transaction rollback, resets all last insertions.
+    @Override
+    public void resetLastInsertion() {
+        for (String table: lastInsertions.keySet()) {
+            setLastInsertion(table, new RecordId(0, 0));
+        }
+    }
+
     /// Updates all records that match a predicate. Only provided fields' will be changed.
     ///
     /// @return The number of rows that matched the predicate.
     @Override
     protected int executeUpdate(UpdateStatement updateStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, updateStatement.tableName(), metadataManager);
-        plan = new SelectPlan(plan, updateStatement.predicate());
+
+        if (!updateStatement.predicate().getTerms().isEmpty()) {
+            plan = new SelectPlan(plan, updateStatement.predicate());
+        }
 
         int count = 0;
         try (UpdateScan updateScan = plan.open()) {
@@ -89,7 +100,10 @@ public class BasicUpdatePlanner extends UpdatePlanner {
     @Override
     protected int executeDelete(DeleteStatement deleteStatement, Transaction transaction) {
         Plan<UpdateScan> plan = new TablePlan(transaction, deleteStatement.tableName(), metadataManager);
-        plan = new SelectPlan(plan, deleteStatement.predicate());
+
+        if (!deleteStatement.predicate().getTerms().isEmpty()) {
+            plan = new SelectPlan(plan, deleteStatement.predicate());
+        }
 
         int count = 0;
         try (UpdateScan deleteScan = plan.open()) {

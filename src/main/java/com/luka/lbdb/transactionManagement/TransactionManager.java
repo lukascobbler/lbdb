@@ -43,7 +43,7 @@ public class TransactionManager {
         this.fileManager = fileManager;
         this.settings = settings;
         logManager = new LogManager(fileManager, settings.LOG_FILE);
-        bufferManager = new BufferManager(fileManager, logManager, settings.BUFFER_POOL_SIZE);
+        bufferManager = new BufferManager(fileManager, logManager, settings.BUFFER_POOL_SIZE, settings.bufferStrategy);
         lockTable = new LockTable();
     }
 
@@ -87,11 +87,13 @@ public class TransactionManager {
         manualTransactions.remove(sessionId);
     }
 
-    /// Waits for all transactions to finish and writes a checkpoint.
+    /// Waits for all transactions to finish, flushes all their
+    /// buffers and writes a checkpoint.
     public synchronized void writeCheckpoint(boolean terminal) {
         acceptingNewTransactions = false;
         System.out.println("Starting system checkpoint, waiting for all transactions to finish...");
         waitForAllTransactionsToFinish();
+        bufferManager.flushAll();
         try {
             int lastTxNum = nextTransactionNum.get();
             int lsn = QuiescentCheckpointRecord.writeToLog(logManager, lastTxNum);
@@ -121,10 +123,35 @@ public class TransactionManager {
         systemLock.writeLock().lock();
     }
 
-    /// Creates a new anonymous function from the system's settings and
+    /// @return The size of one block in bytes across the system.
+    public int getBlockSize() {
+        return fileManager.getBlockSize();
+    }
+
+    /// @return The general buffer statistics at the current time.
+    public BufferStatistics getBufferStatistics() {
+        int[] blockReadsAndWrites = fileManager.getBlockStatistics();
+        return new BufferStatistics(blockReadsAndWrites[0], blockReadsAndWrites[1], bufferManager.getCacheHits());
+    }
+
+    /// Resets the buffer statistics.
+    public void resetBufferStatistics() {
+        fileManager.resetBlockStatistics();
+        bufferManager.resetCacheHits();
+    }
+
+    /// Warning: dangerous, should not be used outside of debug and test scenarios.
+    /// Waits for all transactions to finish, unpins all buffers and resets the buffer
+    /// pool to its initial state.
+    public synchronized void resetInMemoryState() {
+        waitForAllTransactionsToFinish();
+        bufferManager.resetBufferPool();
+    }
+
+    /// Creates a new anonymous transaction from the system's settings and
     /// begins tracking it.
     ///
-    /// @return A newly created anonymous function.
+    /// @return A newly created anonymous transaction.
     private Transaction createAndTrackTransaction() {
         Transaction tx = new Transaction(
                 fileManager, logManager, bufferManager, lockTable,

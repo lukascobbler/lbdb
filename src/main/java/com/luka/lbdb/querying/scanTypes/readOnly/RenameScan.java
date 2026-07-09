@@ -13,13 +13,13 @@ import java.util.function.Function;
 /// names to old field names and from this scan upward, renamed fields can only
 /// be accessed through the new name.
 public class RenameScan extends UnaryScan {
-    private final Map<String, String> fieldNameMapper;
+    private final Map<String, String> fieldMapping;
 
     /// A rename scan requires the field name mapping and a
     /// child scan.
     public RenameScan(Scan updateScan, Map<String, String> newToOldMapper) {
         super(updateScan);
-        this.fieldNameMapper = newToOldMapper;
+        this.fieldMapping = newToOldMapper;
     }
 
     /// The field exists if it's either the new name for
@@ -45,11 +45,11 @@ public class RenameScan extends UnaryScan {
 
     /// Does the actual mapping from the new field name to the old field name.
     private String map(String fieldName) {
-        if (!fieldNameMapper.containsKey(fieldName)) {
-            if (fieldNameMapper.containsValue(fieldName)) return null;
+        if (!fieldMapping.containsKey(fieldName)) {
+            if (fieldMapping.containsValue(fieldName)) return null;
             return fieldName;
         }
-        return fieldNameMapper.get(fieldName);
+        return fieldMapping.get(fieldName);
     }
 
     /// Maps the field name, and if its non-existent it errors out.

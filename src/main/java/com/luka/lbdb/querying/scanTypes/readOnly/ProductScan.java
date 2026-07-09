@@ -9,7 +9,7 @@ import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 /// It is a binary table read-only scan. The user specifies two child scans
 /// that will have a cross product as a result of this scan.
 public class ProductScan extends BinaryScan {
-    private final DiffSchemaJoinContextScan diffSchemaJoinContextScan;
+    private final DiffSchemaJoinContextScan joinContext;
     private boolean isOuterValid = false;
 
     /// A product scan requires two child scans to create a product on.
@@ -17,7 +17,7 @@ public class ProductScan extends BinaryScan {
     /// the inner scan.
     public ProductScan(Scan childScan1, Scan childScan2) {
         super(childScan1, childScan2);
-        diffSchemaJoinContextScan = new DiffSchemaJoinContextScan(childScan1, childScan2);
+        joinContext = new DiffSchemaJoinContextScan(childScan1, childScan2);
     }
 
     /// A product scan is positioned before the first "combined" record
@@ -94,12 +94,12 @@ public class ProductScan extends BinaryScan {
     /// @return True if either scan has the field.
     @Override
     public boolean hasField(String fieldName) {
-        return diffSchemaJoinContextScan.hasField(fieldName);
+        return joinContext.hasField(fieldName);
     }
 
     /// @return The constant from the scan that has that field.
     @Override
     public Constant getValue(String fieldName) {
-        return diffSchemaJoinContextScan.getValue(fieldName);
+        return joinContext.getValue(fieldName);
     }
 }

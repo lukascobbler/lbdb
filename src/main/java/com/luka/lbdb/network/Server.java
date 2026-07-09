@@ -16,7 +16,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,7 +33,6 @@ public class Server {
 
     private final ExecutorService threadPool;
     private final ScheduledExecutorService checkpointScheduler;
-    private final Set<OutputStream> activeClients = ConcurrentHashMap.newKeySet();
 
     /// A LBDB server needs a port to work on (host is localhost), and the path
     /// representing a directory where the database will operate.

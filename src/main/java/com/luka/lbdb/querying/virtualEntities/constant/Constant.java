@@ -69,7 +69,7 @@ public sealed interface Constant extends Comparable<Constant>
         };
     }
 
-    /// @return The runtimeLength of the field.
+    /// @return The length of the field.
     default int length() {
         return switch (this) {
             case BooleanConstant b -> 1;

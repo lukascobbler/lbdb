@@ -26,6 +26,35 @@
                         -Xshare:off
                     </argLine>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>isolated-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/benchmarkTests/**/*.java</include>
+                            </includes>
+                            <reuseForks>false</reuseForks>
+                            <forkCount>1</forkCount>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/benchmarkTests/**/*.java</exclude>
+                            </excludes>
+                            <reuseForks>true</reuseForks>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -59,6 +88,12 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>org.apache.datasketches:*</include>
+                                    <include>org.jetbrains:annotations</include>
+                                </includes>
+                            </artifactSet>
                             <outputFile>${project.build.directory}/LBDBServer.jar</outputFile>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -75,6 +110,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.luka.ldbdb:LBDB</include>
+                                    <include>org.jline:*</include>
+                                    <include>net.java.dev.jna:jna</include>
+                                </includes>
+                            </artifactSet>
                             <outputFile>${project.build.directory}/LBDBClient.jar</outputFile>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -85,16 +127,23 @@
                     </execution>
 
                     <execution>
-                        <id>lbdbbulkmodifier</id>
+                        <id>lbdbbulkexecutor</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <outputFile>${project.build.directory}/BulkModifier.jar</outputFile>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.luka.ldbdb:LBDB</include>
+                                    <include>org.jline:*</include>
+                                    <include>net.java.dev.jna:jna</include>
+                                </includes>
+                            </artifactSet>
+                            <outputFile>${project.build.directory}/BulkExecutor.jar</outputFile>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.luka.lbdbclient.BulkModifier</mainClass>
+                                    <mainClass>com.luka.lbdbclient.BulkExecutor</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

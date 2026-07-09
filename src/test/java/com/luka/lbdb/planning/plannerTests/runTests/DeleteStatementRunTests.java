@@ -99,9 +99,9 @@ public class DeleteStatementRunTests {
                 PlanTestUtils.newTransaction(testDataThreeTablesDeletionTransaction);
 
         Plan<Scan> queryPlanAfterRollback =
-                PlanTestUtils.createQueryPlan(testDataThreeTablesDeletionTransaction, selectQueryTable);
+                PlanTestUtils.createQueryPlan(testDataThreeTablesAfterRollbackTransaction, selectQueryTable);
 
-        try (Scan s = queryPlan.open()) {
+        try (Scan s = queryPlanAfterRollback.open()) {
             s.beforeFirst();
             for (int i = 0; i < 250; i++) {
                 assertTrue(s.next());

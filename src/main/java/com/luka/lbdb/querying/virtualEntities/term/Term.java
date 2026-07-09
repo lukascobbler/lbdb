@@ -1,7 +1,5 @@
 package com.luka.lbdb.querying.virtualEntities.term;
 
-import com.luka.lbdb.planning.plan.Plan;
-import com.luka.lbdb.planning.planner.PartialEvaluator;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.virtualEntities.expression.*;
@@ -11,10 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /// The term class represents the logic for comparison operators
-/// between two expressions. It also has logic for how much will
-/// the result of the given comparison affect the query.
+/// between two expressions.
 public class Term {
-    private Expression lhs, rhs;
+    private final Expression lhs, rhs;
     private final TermOperator termOperator;
 
     /// An expression comparison is done between two expressions and the
@@ -65,14 +62,6 @@ public class Term {
         return lhs.appliesTo(schema) && rhs.appliesTo(schema);
     }
 
-    /// A reduction factor for a term is the dividing factor for how many rows
-    /// this term will affect.
-    ///
-    /// @return The calculated reduction factor for this term.
-    public <T extends Scan> double reductionFactor(Plan<T> plan) {
-        return ReductionFactorCalculator.calculateReductionFactor(this, plan);
-    }
-
     /// Checks for "Field = Constant" or "Constant = Field" cases
     /// and if that is true, returns the constant.
     ///
@@ -106,12 +95,6 @@ public class Term {
                     when exp2.qualifiedName().equals(fieldName) -> Optional.of(exp1.qualifiedName());
             default -> Optional.empty();
         };
-    }
-
-    /// Folds the expressions contained in the term object.
-    public void foldExpressions() {
-        lhs = PartialEvaluator.evaluate(lhs);
-        rhs = PartialEvaluator.evaluate(rhs);
     }
 
     public TermOperator getTermOperator() {

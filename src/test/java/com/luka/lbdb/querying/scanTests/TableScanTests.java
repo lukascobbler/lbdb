@@ -172,7 +172,7 @@ public class TableScanTests {
                 ts.setValue("B", new StringConstant(String.format("rec%03d", i)));
             }
 
-            ts.moveToRecordId(new RecordId(0, 50));
+            ts.moveToRecord(new RecordId(0, 50));
             assertEquals(50, ts.getValue("A").asInt());
 
             for (int i = 0; i < 10; i ++) {
@@ -299,23 +299,23 @@ public class TableScanTests {
             }
 
             for (int i = 0; i <= 100; i++) {
-                ts.moveToRecordId(new RecordId(0, i));
+                ts.moveToRecord(new RecordId(0, i));
                 assertEquals(ts.getValue("nullable").asInt(), i);
                 assertEquals(ts.getValue("non-nullable").asInt(), i);
             }
 
             for (int i = 0; i <= 100; i++) {
-                ts.moveToRecordId(new RecordId(0, i));
+                ts.moveToRecord(new RecordId(0, i));
                 ts.setValue("nullable", NullConstant.INSTANCE);
             }
 
             for (int i = 0; i <= 100; i++) {
-                ts.moveToRecordId(new RecordId(0, i));
+                ts.moveToRecord(new RecordId(0, i));
                 assertTrue(ts.getValue("nullable").isNull());
                 assertEquals(NullConstant.INSTANCE, ts.getValue("nullable"));
             }
 
-            ts.moveToRecordId(new RecordId(0, 0));
+            ts.moveToRecord(new RecordId(0, 0));
         }
 
         tx.commit();

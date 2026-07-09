@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public record WildcardExpression(Optional<String> rangeVariableName) implements Expression {
+public record WildcardExpression(Optional<String> rangeVariable) implements Expression {
     /// Initialization with no range variable.
     public WildcardExpression() {
         this(Optional.empty());
@@ -28,6 +28,6 @@ public record WildcardExpression(Optional<String> rangeVariableName) implements 
 
     @Override
     public @NotNull String toString() {
-        return rangeVariableName.map(s -> s + ".").orElse("") + "*";
+        return rangeVariable.map(s -> s + ".").orElse("") + "*";
     }
 }

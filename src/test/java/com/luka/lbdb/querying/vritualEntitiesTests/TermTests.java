@@ -140,28 +140,6 @@ public class TermTests {
     }
 
     @Test
-    public void testTermFoldingOptimization() throws Exception {
-        Expression fivePlusFive = new BinaryArithmeticExpression(
-                new ConstantExpression(new IntConstant(5)),
-                ArithmeticOperator.ADD,
-                new ConstantExpression(new IntConstant(5))
-        );
-
-        Term t = new Term(
-                fivePlusFive,
-                TermOperator.EQUALS,
-                new ConstantExpression(new IntConstant(10))
-        );
-
-        t.foldExpressions();
-
-        Expression lhs = (Expression) TestUtils.getPrivateField(t, "lhs");
-
-        assertEquals(new ConstantExpression(new IntConstant(10)), lhs);
-        assertTrue(t.isSatisfied(null));
-    }
-
-    @Test
     public void testEquatesLogic() {
         Expression f1 = new FieldNameExpression("t1_intField1");
         Expression f2 = new FieldNameExpression("t1_intField2");

@@ -4,6 +4,8 @@ import com.luka.lbdb.parsing.exceptions.ParsingException;
 import com.luka.lbdb.parsing.tokenizer.Tokenizer;
 import com.luka.lbdb.parsing.tokenizer.token.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /// A parser context is a wrapper around the tokenizer that
@@ -15,6 +17,7 @@ import java.util.Optional;
 public class ParserContext {
     private final Tokenizer tokenizer;
     private Token currentToken;
+    private final List<Token> lookaheadBuffer = new ArrayList<>();
 
     /// A parser context is initialized from a query, so that it
     /// can initialize a tokenizer from that query.
@@ -23,9 +26,21 @@ public class ParserContext {
         advance();
     }
 
-    /// @return The current token.
-    public Token current() {
-        return currentToken;
+    /// Looks ahead in the token stream by `n` positions without consuming the tokens.
+    ///
+    /// @return The token at the specified lookahead position.
+    public Token lookAhead(int n) {
+        if (n == 0) return currentToken;
+        
+        while (lookaheadBuffer.size() < n) {
+            if (tokenizer.hasNext()) {
+                lookaheadBuffer.add(tokenizer.next());
+            } else {
+                lookaheadBuffer.add(new EofToken());
+            }
+        }
+        
+        return lookaheadBuffer.get(n - 1);
     }
 
     /// Advances the token stream by one. If there are no more tokens,
@@ -35,11 +50,15 @@ public class ParserContext {
     /// @return The previous token.
     public Token advance() {
         Token oldToken = currentToken;
-        if (tokenizer.hasNext()) {
+        
+        if (!lookaheadBuffer.isEmpty()) {
+            currentToken = lookaheadBuffer.removeFirst();
+        } else if (tokenizer.hasNext()) {
             currentToken = tokenizer.next();
         } else {
             currentToken = new EofToken();
         }
+        
         return oldToken;
     }
 

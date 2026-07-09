@@ -8,7 +8,7 @@ import java.util.Optional;
 
 /// A field name expression represents an expression wrapper over some field
 /// in a table.
-public record FieldNameExpression(String fieldName, Optional<String> rangeVariableName) implements Expression {
+public record FieldNameExpression(String fieldName, Optional<String> rangeVariable) implements Expression {
     /// A constructor that initializes the range variable name to be nothing
     /// by default.
     public FieldNameExpression(String fieldName) {
@@ -22,7 +22,7 @@ public record FieldNameExpression(String fieldName, Optional<String> rangeVariab
 
     /// @return The full qualified name with the optional range variable.
     public String qualifiedName() {
-        return rangeVariableName
+        return rangeVariable
                 .map(rangeVar -> rangeVar + "." + fieldName)
                 .orElse(fieldName);
     }

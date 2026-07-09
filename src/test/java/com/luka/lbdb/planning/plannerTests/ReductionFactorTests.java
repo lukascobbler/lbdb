@@ -1,4 +1,4 @@
-package com.luka.lbdb.querying.vritualEntitiesTests;
+package com.luka.lbdb.planning.plannerTests;
 
 import com.luka.lbdb.planning.plan.Plan;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
@@ -6,7 +6,7 @@ import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.virtualEntities.constant.IntConstant;
 import com.luka.lbdb.querying.virtualEntities.constant.NullConstant;
 import com.luka.lbdb.querying.virtualEntities.expression.*;
-import com.luka.lbdb.querying.virtualEntities.term.ReductionFactorCalculator;
+import com.luka.lbdb.planning.planner.ReductionFactorCalculator;
 import com.luka.lbdb.querying.virtualEntities.term.Term;
 import com.luka.lbdb.querying.virtualEntities.term.TermOperator;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(expressionFive, TermOperator.EQUALS, expressionTen);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(ALL_ROWS_MATCH, result);
     }
@@ -59,7 +59,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(expressionNull, TermOperator.IS, expressionNull);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(ALL_ROWS_MATCH, result);
     }
@@ -70,7 +70,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(expressionNull, TermOperator.IS, expressionFive);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(NO_ROWS_MATCH, result);
     }
@@ -81,7 +81,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(expressionNull, TermOperator.EQUALS, expressionFive);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(NO_ROWS_MATCH, result);
     }
@@ -92,7 +92,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(expressionFive, TermOperator.EQUALS, expressionFive);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(ALL_ROWS_MATCH, result);
     }
@@ -103,7 +103,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(expressionFive, TermOperator.EQUALS, expressionTen);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(NO_ROWS_MATCH, result);
     }
@@ -117,7 +117,7 @@ public class ReductionFactorTests {
         Expression fieldExpression = new FieldNameExpression(fieldName);
         Term term = new Term(fieldExpression, TermOperator.IS, expressionNull);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(5.0, result);
     }
@@ -132,7 +132,7 @@ public class ReductionFactorTests {
         Expression fieldExpression = new FieldNameExpression(fieldName);
         Term term = new Term(fieldExpression, TermOperator.EQUALS, expressionNull);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(NO_ROWS_MATCH, result);
     }
@@ -147,7 +147,7 @@ public class ReductionFactorTests {
         Expression fieldExpression = new FieldNameExpression(fieldName);
         Term term = new Term(fieldExpression, TermOperator.EQUALS, expressionFive);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(10.0, result);
     }
@@ -162,7 +162,7 @@ public class ReductionFactorTests {
         Expression fieldExpression = new FieldNameExpression(fieldName);
         Term term = new Term(fieldExpression, TermOperator.GREATER_THAN, expressionFive);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(100.0 / 30.0, result, 0.0001);
     }
@@ -177,7 +177,7 @@ public class ReductionFactorTests {
         Expression fieldExpression = new FieldNameExpression(fieldName);
         Term term = new Term(fieldExpression, TermOperator.NOT_EQUALS, expressionFive);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(100.0 / 9.0, result, 0.0001);
     }
@@ -197,7 +197,7 @@ public class ReductionFactorTests {
         Expression rightExpression = new FieldNameExpression(rightFieldName);
         Term term = new Term(leftExpression, TermOperator.EQUALS, rightExpression);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(10.0, result);
     }
@@ -217,7 +217,7 @@ public class ReductionFactorTests {
         Expression rightExpression = new FieldNameExpression(rightFieldName);
         Term term = new Term(leftExpression, TermOperator.GREATER_THAN, rightExpression);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(100.0 / (80.0 / 3.0), result, 0.0001);
     }
@@ -242,7 +242,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(leftExpression, TermOperator.EQUALS, rightExpression);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(12.5, result);
     }
@@ -267,7 +267,7 @@ public class ReductionFactorTests {
 
         Term term = new Term(leftExpression, TermOperator.GREATER_THAN, rightExpression);
 
-        double result = ReductionFactorCalculator.calculateReductionFactor(term, planMock);
+        double result = ReductionFactorCalculator.calculateTermReductionFactor(term, planMock);
 
         assertEquals(100.0 / 30.0, result, 0.0001);
     }

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="railroad-diagram" width="858" height="283" viewBox="0 0 858 283">
+    <g>
+        <g>
+            <path d="M20 45v20m0 -10h20"></path>
+        </g>
+        <path d="M40 55h10"></path>
+        <g>
+            <path d="M50 55h0"></path>
+            <path d="M50 55h6"></path>
+            <g>
+                <path d="M56 55h10"></path>
+                <path d="M792 55h10"></path>
+                <rect x="66" y="36" width="726" height="57" rx="6" ry="6" class="group-box"></rect>
+                <g>
+                    <path d="M66 55h10"></path>
+                    <path d="M782 55h10"></path>
+                    <g class="terminal ">
+                        <path d="M76 55h0"></path>
+                        <path d="M144 55h0"></path>
+                        <rect x="76" y="44" width="68" height="22" rx="10" ry="10"></rect>
+                        <text x="110" y="59">UPDATE</text>
+                    </g>
+                    <path d="M144 55h10"></path>
+                    <path d="M154 55h10"></path>
+                    <g class="non-terminal ">
+                        <path d="M164 55h0"></path>
+                        <path d="M336 55h0"></path>
+                        <rect x="164" y="44" width="172" height="22"></rect>
+                        <text x="250" y="59">IdentificationToken</text>
+                    </g>
+                    <path d="M336 55h10"></path>
+                    <path d="M346 55h10"></path>
+                    <g class="terminal ">
+                        <path d="M356 55h0"></path>
+                        <path d="M400 55h0"></path>
+                        <rect x="356" y="44" width="44" height="22" rx="10" ry="10"></rect>
+                        <text x="378" y="59">SET</text>
+                    </g>
+                    <path d="M400 55h10"></path>
+                    <path d="M410 55h10"></path>
+                    <g class="non-terminal ">
+                        <path d="M420 55h0"></path>
+                        <path d="M536 55h0"></path>
+                        <rect x="420" y="44" width="116" height="22"></rect>
+                        <text x="478" y="59">SetNewValues</text>
+                    </g>
+                    <path d="M536 55h10"></path>
+                    <g>
+                        <path d="M546 55h0"></path>
+                        <path d="M782 55h0"></path>
+                        <path d="M546 55h12"></path>
+                        <g>
+                            <path d="M558 55h212"></path>
+                        </g>
+                        <path d="M770 55h12"></path>
+                        <path d="M546 55a6 6 0 0 1 6 6v7a6 6 0 0 0 6 6"></path>
+                        <g>
+                            <path d="M558 74h0"></path>
+                            <path d="M770 74h0"></path>
+                            <g class="terminal ">
+                                <path d="M558 74h0"></path>
+                                <path d="M618 74h0"></path>
+                                <rect x="558" y="63" width="60" height="22" rx="10" ry="10"></rect>
+                                <text x="588" y="78">WHERE</text>
+                            </g>
+                            <path d="M618 74h10"></path>
+                            <path d="M628 74h10"></path>
+                            <g class="non-terminal ">
+                                <path d="M638 74h0"></path>
+                                <path d="M770 74h0"></path>
+                                <rect x="638" y="63" width="132" height="22"></rect>
+                                <text x="704" y="78">ParsePredicate</text>
+                            </g>
+                        </g>
+                        <path d="M770 74a6 6 0 0 0 6 -6v-7a6 6 0 0 1 6 -6"></path>
+                    </g>
+                </g>
+                <g class="undefined">
+                    <path d="M66 26h0"></path>
+                    <path d="M153 26h0"></path>
+                    <text x="109.5" y="29" class="comment">ParseUpdate</text>
+                </g>
+            </g>
+            <path d="M802 55a6 6 0 0 1 6 6v34a6 6 0 0 1 -6 6h-746a6 6 0 0 0 -6 6v31a6 6 0 0 0 6 6"></path>
+            <g>
+                <path d="M56 144h303"></path>
+                <path d="M499 144h303"></path>
+                <rect x="359" y="125" width="140" height="68" rx="6" ry="6" class="group-box"></rect>
+                <g>
+                    <path d="M359 144h10"></path>
+                    <path d="M489 144h10"></path>
+                    <path d="M369 144h6"></path>
+                    <g class="non-terminal ">
+                        <path d="M375 144h0"></path>
+                        <path d="M483 144h0"></path>
+                        <rect x="375" y="133" width="108" height="22"></rect>
+                        <text x="429" y="148">SetNewValue</text>
+                    </g>
+                    <path d="M483 144h6"></path>
+                    <path d="M375 144a6 6 0 0 0 -6 6v18a6 6 0 0 0 6 6"></path>
+                    <g class="terminal ">
+                        <path d="M375 174h40"></path>
+                        <path d="M443 174h40"></path>
+                        <rect x="415" y="163" width="28" height="22" rx="10" ry="10"></rect>
+                        <text x="429" y="178">,</text>
+                    </g>
+                    <path d="M483 174a6 6 0 0 0 6 -6v-18a6 6 0 0 0 -6 -6"></path>
+                </g>
+                <g class="undefined">
+                    <path d="M359 115h0"></path>
+                    <path d="M453 115h0"></path>
+                    <text x="406" y="118" class="comment">SetNewValues</text>
+                </g>
+            </g>
+            <path d="M802 144a6 6 0 0 1 6 6v45a6 6 0 0 1 -6 6h-746a6 6 0 0 0 -6 6v31a6 6 0 0 0 6 6"></path>
+            <g>
+                <path d="M56 244h173"></path>
+                <path d="M629 244h173"></path>
+                <rect x="229" y="225" width="400" height="38" rx="6" ry="6" class="group-box"></rect>
+                <g>
+                    <path d="M229 244h10"></path>
+                    <path d="M619 244h10"></path>
+                    <g class="non-terminal ">
+                        <path d="M239 244h0"></path>
+                        <path d="M411 244h0"></path>
+                        <rect x="239" y="233" width="172" height="22"></rect>
+                        <text x="325" y="248">IdentificationToken</text>
+                    </g>
+                    <path d="M411 244h10"></path>
+                    <path d="M421 244h10"></path>
+                    <g class="terminal ">
+                        <path d="M431 244h0"></path>
+                        <path d="M459 244h0"></path>
+                        <rect x="431" y="233" width="28" height="22" rx="10" ry="10"></rect>
+                        <text x="445" y="248">=</text>
+                    </g>
+                    <path d="M459 244h10"></path>
+                    <path d="M469 244h10"></path>
+                    <g class="non-terminal ">
+                        <path d="M479 244h0"></path>
+                        <path d="M619 244h0"></path>
+                        <rect x="479" y="233" width="140" height="22"></rect>
+                        <text x="549" y="248">ParseExpression</text>
+                    </g>
+                </g>
+                <g class="undefined">
+                    <path d="M229 215h0"></path>
+                    <path d="M316 215h0"></path>
+                    <text x="272.5" y="218" class="comment">SetNewValue</text>
+                </g>
+            </g>
+            <path d="M802 244h6"></path>
+            <path d="M808 244h0"></path>
+        </g>
+        <path d="M808 244h10"></path>
+        <path d="M 818 244 h 20 m 0 -10 v 20"></path>
+    </g>
+  <style>
+    svg.railroad-diagram {
+        background-color: white;
+    }
+    svg.railroad-diagram path {
+        stroke-width: 2;
+        stroke: black;
+        fill: rgba(0, 0, 0, 0);
+    }
+    svg.railroad-diagram text.diagram-text {
+        font-size: 12px;
+    }
+    svg.railroad-diagram text.diagram-arrow {
+        font-size: 16px;
+    }
+    svg.railroad-diagram text.label {
+        text-anchor: start;
+    }
+    svg.railroad-diagram text.comment {
+        font: normal 12px monospace;
+        fill: #990099;
+    }
+    svg.railroad-diagram rect.group-box {
+        stroke: #990099;
+        stroke-dasharray: 10 5;
+        fill: none;
+    }
+    svg.railroad-diagram path.diagram-text {
+        stroke-width: 2;
+        stroke: black;
+        fill: white;
+        cursor: help;
+    }
+    svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+        fill: #eeeeee;
+    }
+    svg.railroad-diagram rect {
+        stroke-width: 2;
+        stroke: black;
+        fill: #ccffcc;
+    }
+    svg.railroad-diagram text {
+        font: bold 14px monospace;
+        text-anchor: middle;
+        white-space: pre;
+    }
+    svg.railroad-diagram g.optional-path rect {
+        fill: #ccffff;
+    }
+    svg.railroad-diagram g.optional-path text {
+        font-style: italic;
+        font-weight: 100;
+    }
+    svg.railroad-diagram g.recurring-path rect {
+        fill: #ffffcc;
+    }
+    svg.railroad-diagram g.recurring-path text {
+        font-style: italic;
+    }
+    svg.railroad-diagram g.unhappy-path rect {
+        fill: #ffcccc;
+    }
+    svg.railroad-diagram g.unhappy-path text {
+        font-variant: small-caps;
+    
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .day.dark-scheme {
+            background: #333333;
+            color: white;
+        }
+        .night.dark-scheme {
+            background: black;
+            color: #dddddd;
+        }
+    }
+    
+    @media (prefers-color-scheme: light) {
+        svg.railroad-diagram {
+            background-color: white;
+        }
+        svg.railroad-diagram path {
+            stroke: black;
+            fill: rgba(0, 0, 0, 0);
+        }
+        svg.railroad-diagram text.comment {
+            fill: #990099;
+        }
+        svg.railroad-diagram rect {
+            stroke: black;
+            fill: #ccffcc;
+        }
+        svg.railroad-diagram rect.group-box {
+            stroke: #990099;
+        }
+        svg.railroad-diagram path.diagram-text {
+            stroke: black;
+            fill: white;
+        }
+        svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+            fill: #eeeeee;
+        }
+        svg.railroad-diagram g.optional-path rect {
+            fill: #ccffff;
+        }
+        svg.railroad-diagram g.recurring-path rect {
+            fill: #ffffcc;
+        }
+        svg.railroad-diagram g.unhappy-path rect {
+            fill: #ffcccc;
+        }
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        svg.railroad-diagram {
+            background-color: #1e2129;
+        }
+        svg.railroad-diagram path {
+            stroke: silver;
+            fill: rgba(0, 0, 0, 0);
+        }
+        svg.railroad-diagram text {
+            fill: whitesmoke;
+        }
+        svg.railroad-diagram text.comment {
+            fill: #990099;
+        }
+        svg.railroad-diagram rect {
+            stroke: silver;
+            fill: #009900;
+        }
+        svg.railroad-diagram rect.group-box {
+            stroke: #990099;
+        }
+        svg.railroad-diagram path.diagram-text {
+            stroke: silver;
+            fill: darkslategrey;
+        }
+        svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+            fill: dimgray;
+        }
+        svg.railroad-diagram g.optional-path rect {
+            fill: #009999;
+        }
+        svg.railroad-diagram g.recurring-path rect {
+            fill: #999900;
+        }
+        svg.railroad-diagram g.unhappy-path rect {
+            fill: #990033;
+        }
+    }
+  </style>
+</svg>

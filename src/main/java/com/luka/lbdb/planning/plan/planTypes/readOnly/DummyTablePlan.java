@@ -17,26 +17,26 @@ import java.util.Map;
 /// any relational algebra operator. Read-only operations only.
 public class DummyTablePlan implements Plan<Scan> {
     private final Schema outputSchema = new Schema();
-    private final Map<String, Constant> fieldToValues;
+    private final Map<String, Constant> fields;
 
     /// A dummy table plan needs the data that will simulate a table.
     public DummyTablePlan(List<ProjectionFieldInfo> projectionFieldInfoList) {
-        fieldToValues = new HashMap<>();
+        fields = new HashMap<>();
         for (ProjectionFieldInfo info : projectionFieldInfoList) {
             outputSchema.addField(
                     info.name(),
-                    info.expression().type(null),
-                    info.expression().length(null),
-                    info.expression().isNullable(null)
+                    info.evaluatable().type(null),
+                    info.evaluatable().length(null),
+                    info.evaluatable().isNullable(null)
             );
 
-            fieldToValues.put(info.name(), info.expression().evaluate(null));
+            fields.put(info.name(), info.evaluatable().evaluate(null));
         }
     }
 
     @Override
     public Scan open() {
-        return new DummyTableScan(fieldToValues);
+        return new DummyTableScan(fields);
     }
 
     /// @return 0 because all rows are virtual and there will be no

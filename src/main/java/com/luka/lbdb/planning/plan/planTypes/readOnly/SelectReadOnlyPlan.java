@@ -2,6 +2,7 @@ package com.luka.lbdb.planning.plan.planTypes.readOnly;
 
 import com.luka.lbdb.planning.plan.ExplainData;
 import com.luka.lbdb.planning.plan.Plan;
+import com.luka.lbdb.planning.planner.ReductionFactorCalculator;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.querying.scanTypes.readOnly.SelectReadOnlyScan;
 import com.luka.lbdb.querying.virtualEntities.Predicate;
@@ -44,7 +45,8 @@ public class SelectReadOnlyPlan implements Plan<Scan> {
     /// by the predicate's reduction factor.
     @Override
     public int recordsOutput() {
-        return (int) Math.ceil(childPlan.recordsOutput() / predicate.reductionFactor(childPlan));
+        return (int) Math.ceil(childPlan.recordsOutput() /
+                ReductionFactorCalculator.calculatePredicateReductionFactor(predicate, childPlan));
     }
 
     /// If any of the terms of a predicate equate the requested field to a constant (all
@@ -105,7 +107,8 @@ public class SelectReadOnlyPlan implements Plan<Scan> {
             return 0;
         }
 
-        return (int) Math.ceil(childPlan.nullValues(fieldName) / predicate.reductionFactor(childPlan));
+        return (int) Math.ceil(childPlan.nullValues(fieldName) /
+                ReductionFactorCalculator.calculatePredicateReductionFactor(predicate, childPlan));
     }
 
     /// The output schema after selection is the same as the subplan's

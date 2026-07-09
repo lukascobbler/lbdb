@@ -154,7 +154,7 @@ public class TableScan extends UpdateScan {
     }
 
     /// Move to explicitly defined record.
-    public void moveToRecordId(RecordId recordId) {
+    public void moveToRecord(RecordId recordId) {
         close();
         BlockId blockId = new BlockId(filename, recordId.blockNum());
         recordPage = new RecordPage(transaction, blockId, layout);

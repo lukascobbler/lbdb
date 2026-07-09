@@ -12,14 +12,14 @@ public class Buffer {
     private final LogManager logManager;
     private final Page contents;
 
-    private BlockId blockId = null;
-    private int pins = 0;
+    protected BlockId blockId = null;
+    protected int pins = 0;
     private int transactionNumber = -1;
     private int lsn = -1;
 
     private final int position;
-    private long readInTime = -1;
-    private long unpinnedTime = -1;
+    protected long readInTime = -1;
+    protected long unpinnedTime = -1;
 
     /// Initializes a buffer by initializing the page using the system's
     /// block size. File and log managers required for flushing i.e. writing to disk.
@@ -142,5 +142,9 @@ public class Buffer {
 
     public int getPosition() {
         return position;
+    }
+
+    public int getLsn() {
+        return lsn;
     }
 }

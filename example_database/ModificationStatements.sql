@@ -7,11 +7,11 @@ SET IsActive = false
 WHERE EnrollmentYear = 2019 AND IsActive = true;
 
 UPDATE Enrollment
-SET Grade = 100
-WHERE Grade > 91 AND Grade < 100 AND CourseID > 50;
+SET Points = 100
+WHERE Points > 91 AND Points < 100 AND CourseID > 50;
 
 DELETE FROM Enrollment
-WHERE Grade < 78 AND StudentID = 16;
+WHERE Points < 78 AND StudentID = 16;
 
 DELETE FROM Professor
 WHERE Salary < 50000 AND IsTenured = false;

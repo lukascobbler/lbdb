@@ -362,7 +362,7 @@ public class TransactionManagementTests {
 
         FileManager fm = new FileManager(tmpDir, recoverySettings.BLOCK_SIZE);
         LogManager lm = new LogManager(fm, recoverySettings.LOG_FILE);
-        BufferManager bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE);
+        BufferManager bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE, recoverySettings.bufferStrategy);
         LockTable lt = new LockTable();
         AtomicInteger nextTxNum = new AtomicInteger(0);
 
@@ -372,7 +372,7 @@ public class TransactionManagementTests {
 
         fm = new FileManager(tmpDir, recoverySettings.BLOCK_SIZE);
         lm = new LogManager(fm, recoverySettings.LOG_FILE);
-        bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE);
+        bm = new BufferManager(fm, lm, recoverySettings.BUFFER_POOL_SIZE, recoverySettings.bufferStrategy);
         lt = new LockTable();
 
         Transaction transaction2 = new Transaction(fm, lm, bm, lt, undoOnlyRecovery, nextTxNum, (t) -> {});
@@ -391,7 +391,8 @@ public class TransactionManagementTests {
 
         FileManager fileManager = new FileManager(tmpDir, recoverySettings.BLOCK_SIZE);
         LogManager logManager = new LogManager(fileManager, recoverySettings.LOG_FILE);
-        BufferManager bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_POOL_SIZE);
+        BufferManager bufferManager = new BufferManager(fileManager, logManager, recoverySettings.BUFFER_POOL_SIZE,
+                recoverySettings.bufferStrategy);
         LockTable lockTable = new LockTable();
         AtomicInteger nextTxNum = new AtomicInteger(0);
 

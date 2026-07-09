@@ -35,7 +35,7 @@ public abstract class UpdateScan extends Scan {
     /// specific record ids because regular scans can contain records whose
     /// data doesn't entirely exist on a physical disk, so navigating to their
     /// record ids may be disingenuous.
-    public abstract void moveToRecordId(RecordId rid);
+    public abstract void moveToRecord(RecordId rid);
 
     // public API scan setters
 

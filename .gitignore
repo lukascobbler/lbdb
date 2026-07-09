@@ -46,3 +46,4 @@ build/
 **/lbdbclient_history.txt
 .obsidian/*
 .obsidian/
+__pycache__/

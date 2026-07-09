@@ -61,7 +61,7 @@ public class Page {
     }
 
     /// The implementation of this function first gets the bytes'
-    /// runtimeLength, which is stored right before the actual bytes,
+    /// length, which is stored right before the actual bytes,
     /// at the given offset.
     ///
     /// @return Bytes at the given offset.
@@ -75,15 +75,15 @@ public class Page {
     }
 
     /// The implementation of this function firstly puts the bytes'
-    /// runtimeLength at the given offset, and then the actual bytes.
+    /// length at the given offset, and then the actual bytes.
     public void setBytes(int offset, byte[] bytes) {
         byteBuffer.position(offset);
         byteBuffer.putInt(bytes.length);
         byteBuffer.put(bytes);
     }
 
-    /// @return The maximum byte runtimeLength of a string, with the system's
-    /// charset, of a given runtimeLength.
+    /// @return The maximum byte runtime length of a string, with the system's
+    /// charset, of a given length.
     public static int maxLength(int strlen) {
         float bytesPerChar = CHARSET.newEncoder().maxBytesPerChar();
         return Integer.BYTES + (strlen * (int)bytesPerChar);

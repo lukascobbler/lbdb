@@ -186,4 +186,11 @@ public class ParseSelectTests {
     public void parseFailAsKeywordWithoutExpression() {
         assertThrows(ParsingException.class, () -> parse("SELECT AS f1 FROM b"));
     }
+
+    @Test
+    public void parseSelectWithPredicateProjection() {
+        String query = "SELECT a > 5 AND b = 3 AS p1 FROM t";
+        String expected = "SELECT a > 5 AND b = 3 AS p1 FROM t;";
+        assertEquals(expected, parse(query).toString());
+    }
 }

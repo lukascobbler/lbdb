@@ -16,9 +16,24 @@ public class LBDBSettings {
     public boolean UNDO_ONLY_RECOVERY = true;
     public int BLOCK_SIZE = 4096;
     public int BUFFER_POOL_SIZE = 128;
+    public BufferStrategy bufferStrategy = BufferStrategy.LRU;
     public String LOG_FILE = "log_file";
     public QueryPlannerType queryPlannerType = QueryPlannerType.BETTER; // todo change default when heuristic is implemented
     public UpdatePlannerType updatePlannerType = UpdatePlannerType.BASIC;
+
+    /// Default constructor
+    public LBDBSettings() {}
+
+    /// Copy constructor, for easier cloning.
+    public LBDBSettings(LBDBSettings other) {
+        this.UNDO_ONLY_RECOVERY = other.UNDO_ONLY_RECOVERY;
+        this.BLOCK_SIZE = other.BLOCK_SIZE;
+        this.BUFFER_POOL_SIZE = other.BUFFER_POOL_SIZE;
+        this.bufferStrategy = other.bufferStrategy;
+        this.LOG_FILE = other.LOG_FILE;
+        this.queryPlannerType = other.queryPlannerType;
+        this.updatePlannerType = other.updatePlannerType;
+    }
 
     /// @return The query planner object according to the set setting.
     public QueryPlanner getQueryPlanner(MetadataManager metadataManager) {

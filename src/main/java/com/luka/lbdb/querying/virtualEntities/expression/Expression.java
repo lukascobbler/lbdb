@@ -1,6 +1,7 @@
 package com.luka.lbdb.querying.virtualEntities.expression;
 
 import com.luka.lbdb.querying.exceptions.RuntimeExecutionException;
+import com.luka.lbdb.querying.virtualEntities.Evaluatable;
 import com.luka.lbdb.querying.virtualEntities.constant.Constant;
 import com.luka.lbdb.querying.scanDefinitions.Scan;
 import com.luka.lbdb.records.DatabaseType;
@@ -14,7 +15,7 @@ import java.util.Set;
 /// rows. This interface is an abstraction over all types of expressions that
 /// the database can evaluate, and it is needed for constructing expression ASTs
 /// whose exact structure isn't known at compile time.
-public sealed interface Expression permits
+public sealed interface Expression extends Evaluatable permits
         BinaryArithmeticExpression, ConstantExpression, FieldNameExpression,
         UnaryArithmeticExpression, WildcardExpression {
     /// @return The constant evaluation of an expression over some scan.
@@ -51,6 +52,12 @@ public sealed interface Expression permits
             case BinaryArithmeticExpression b -> {
                 DatabaseType leftT = b.left().type(schema);
                 DatabaseType rightT = b.right().type(schema);
+                if (leftT == DatabaseType.NULL) {
+                    yield rightT;
+                }
+                if (rightT == DatabaseType.NULL) {
+                    yield leftT;
+                }
                 if (leftT == DatabaseType.INT && rightT == DatabaseType.INT) {
                     yield DatabaseType.INT;
                 }
@@ -68,7 +75,7 @@ public sealed interface Expression permits
         };
     }
 
-    /// @return The runtimeLength needed for the longest operand
+    /// @return The runtime length needed for the longest operand
     /// in the expression AST for a given schema.
     default int length(Schema schema) {
         return switch (this) {
@@ -124,7 +131,7 @@ public sealed interface Expression permits
     default Expression qualify(Map<String, String> aliases) {
         return switch (this) {
             case FieldNameExpression f -> {
-                if (f.rangeVariableName().isEmpty() && aliases.containsKey(f.fieldName())) {
+                if (f.rangeVariable().isEmpty() && aliases.containsKey(f.fieldName())) {
                     yield new FieldNameExpression(f.fieldName(), aliases.get(f.fieldName()));
                 }
                 yield f;
