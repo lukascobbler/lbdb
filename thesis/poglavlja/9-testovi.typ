@@ -1,12 +1,11 @@
-#import "../funkcije.typ": todo
 
-= Testovi <testovi>
+= Тестови <testovi>
 
-Pošto je za korektno funkcionisanje sistema potrebno mnogo kompleksnih funkcionalnosti i algoritama, potrebno je izvršiti intenzivno testiranje istih da bi se dokazala pravilna i efikasna implementacija. Slojevi od kojih se sistem sastoji su testirani izolovano, s tim da se slojevi višeg apstrakcionog nivoa ne testiraju odvojeno od slojeva nižeg apstrakcionog nivoa.
+Пошто је за коректно функционисање система потребно много комплексних функционалности и алгоритама, потребно је извршити интензивно тестирање истих да би се доказала правилна и ефикасна имплементација. Слојеви од којих се систем састоји су тестирани изоловано, с тим да се слојеви вишег апстракционог нивоа не тестирају одвојено од слојева нижег апстракционог нивоа.
 
-== Organizacija testova
+== Организација тестова
 
-Sve testove u sistemu podržava _JUnit_#footnote[https://junit.org/] biblioteka. _JUnit_ sadrži razne konfiguracione parametre, a za testiranje _LBDB_ sistema su najbitniji parametri koji omogućavaju definisanje čistača i parametri koji omogućavaju paralelno pokretanje testova.
+Све тестове у систему подржава _JUnit_#footnote[https://junit.org/] библиотека. _JUnit_ садржи разне конфигурационе параметре, а за тестирање _LBDB_ система су најбитнији параметри који омогућавају дефинисање чистача и параметри који омогућавају паралелно покретање тестова.
 
 #figure(
   ```properties
@@ -15,53 +14,53 @@ Sve testove u sistemu podržava _JUnit_#footnote[https://junit.org/] biblioteka.
   junit.jupiter.execution.parallel.mode.default = concurrent
   ```,
   caption: [
-    Konfiguracioni parametri _JUnit_ biblioteke
+    Конфигурациони параметри _JUnit_ библиотеке
   ],
 )<fig:junit_konfiguracija>
 
-Sistem prati standardnu definiciju strukture direktorijuma izvornog koda _Maven_#footnote[https://maven.apache.org/] sistema za upravljanje zavisnostima. Više o njemu u o pregledu sistema (sekcija @buildsystem). Po _Maven_-u, testovi se nalaze unutar `src/test/java` direktorijuma, a konfiguracioni parametri _JUnit_ biblioteke se nalaze unutar `src/test/resources` direktorijuma. Testovi su grupisani po istim modulima kao i glavni izvorni kod.
+Систем прати стандардну дефиницију структуре директоријума изворног кода _Maven_#footnote[https://maven.apache.org/] система за управљање зависностима. Више о њему у о прегледу система (секција @buildsystem). По _Maven_-у, тестови се налазе унутар `src/test/java` директоријума, а конфигурациони параметри _JUnit_ библиотеке се налазе унутар `src/test/resources` директоријума. Тестови су груписани по истим модулима као и главни изворни код.
 
-=== Testno okruženje
+=== Тестно окружење
 
-Da bi se postiglo korektno i uniformno testiranje svih funkcionalnosti, potrebno je pružiti im odgovarajuće testno okruženje. Pošto većina funkcionalnosti zahteva rad sa datotekama, glavna dužnost testnog okruženja je da izoluje direktorijume gde će se ove datoteke nalaziti. Time se postiže da test _A_ koji kreira na primer tri tabele ne može da utiče na test _B_ koji kreira dve tabele gde se imena tabela poklapaju.
+Да би се постигло коректно и униформно тестирање свих функционалности, потребно је пружити им одговарајуће тестно окружење. Пошто већина функционалности захтева рад са датотекама, главна дужност тестног окружења је да изолује директоријуме где ће се ове датотеке налазити. Тиме се постиже да тест _A_ који креира на пример три табеле не може да утиче на тест _B_ који креира две табеле где се имена табела поклапају.
 
-`TestUtils` je pomoćna klasa koja pruža implementaciju ove izolacije, ali pruža i dodatne pomoćne metode koje olakšavaju testiranje:
-- provera postojanja datoteka,
-- dobavljanje privatnih polja putem _Java_ refleksije.
+`TestUtils` је помоћна класа која пружа имплементацију ове изолације, али пружа и додатне помоћне методе које олакшавају тестирање:
+- провера постојања датотека,
+- добављање приватних поља путем _Java_ рефлексије.
 
-=== Sistem izolacije direktorijuma na disku <disk-filesystem>
+=== Систем изолације директоријума на диску <disk-filesystem>
 
-Prvi od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze na fizičkom disku. Prednosti ovog načina pokretanja su laki pregled generisanih datoteka zarad otklanjanja grešaka i nezahtevno pokretanje. Mana ovog načina pokretanja je brzina jer je pristup fizičkom disku spor.
+Први од два начина покретања тестова је у оквиру директоријума који се налазе на физичком диску. Предности овог начина покретања су лаки преглед генерисаних датотека зарад отклањања грешака и незахтевно покретање док је мана брзина јер је приступ физичком диску спор.
 
-Da bi se postigla izolacija i kroz iteracije pokretanja istih testova, potrebno je očistiti stare direktorijume. _JUnit_ omogućava konfiguraciju čistača, to jest funkcije koja se izvršava pre svih testova. `GlobalCleanup` klasa sadrži ovu logiku.
+Да би се постигла изолација и кроз итерације покретања истих тестова, потребно је очистити старе директоријуме. _JUnit_ омогућава конфигурацију чистача, то јест функције која се извршава пре свих тестова. `GlobalCleanup` класа садржи ову логику.
 
-=== Sistem izolacije direktorijuma u radnoj memoriji
+=== Систем изолације директоријума у радној меморији
 
-Drugi od dva načina pokretanja testova je u okviru direktorijuma koji se nalaze u radnoj memoriji. Pošto je _LBDB_ sistem kompatibilan sa `java.nio.file` _API_-jem, rukovođenje direktorijumima u radnoj memoriji se vrši preko _Jimfs_ biblioteke. Prednost ovog načina pokretanja je brzina testova. Mane ovog načina pokretanja su težak pristup datotekama zarad otklanjanja grešaka i velika potrošnja radne memorije.
+Други од два начина покретања тестова је у оквиру директоријума који се налазе у радној меморији. Пошто је _LBDB_ систем компатибилан са `java.nio.file` _API_-јем, руковођење директоријумима у радној меморији се врши преко _Jimfs_ библиотеке. Предност овог начина покретања је брзина тестова, док су мане тежак приступ датотекама зарад отклањања грешака и велика потрошња радне меморије.
 
-U okviru `TestUtils` klase se podešava način pokretanja testova, gde je pokretanje u radnoj memoriji podrazumevano podešeno. `TestUtils` definiše jednu instancu `Jimfs` implementacije `Filesystem` klase koja se koristi za sve testove. Nema potrebe za čišćenjem preko `GlobalCleanup` klase jer se radna memorija sama čisti kada se proces u kom su pokrenuti testovi završi.
+У оквиру `TestUtils` класе се подешава начин покретања тестова, где је покретање у радној меморији подразумевано подешено. `TestUtils` дефинише једну инстанцу `Jimfs` имплементације `Filesystem` класе која се користи за све тестове. Нема потребе за чишћењем преко `GlobalCleanup` класе јер се радна меморија сама чисти када се процес у ком су покренути тестови заврши.
 
-== Funkcionalni testovi
+== Функционални тестови
 
-Funkcionalni testovi potvrđuju da li su algoritmi i strukture podataka korektni, to jest da li imaju smisleno i tačno ponašanje.
+Функционални тестови потврђују да ли су алгоритми и структуре података коректни, то јест да ли имају смислено и тачно понашање.
 
-Za podsistem relacionih operatora, postoji pomoćna klasa `QueryTestUtils` koja pruža dodatne pomoćne metode za testiranje ovog podsistema:
-- inicijalizacija i popunjavanje jedne tabele sa $250$ slogova, koja ima tri _Integer_, tri _String_ i tri _Boolean_ kolone,
-- inicijalizacija i popunjavanje dve tabele sa po $250$ slogova koje imaju istu šemu kao tabela u prethodnoj pomoćnoj metodi.
+За подсистем релационих оператора, постоји помоћна класа `QueryTestUtils` која пружа додатне помоћне методе за тестирање овог подсистема:
+- иницијализација и попуњавање једне табеле са $250$ слогова
+- иницијализација и попуњавање две табеле са по $250$ слогова
 
-Za podsistem planiranja, postoji pomoćna klasa `PlanTestUtils` koja pruža dodatne pomoćne metode za testiranje ovog podsistema:
-- pokretanje *samo* provere `SELECT` naredbe i vraćanje proširenog `SelectStatement` objekta,
-- pokretanje *samo* provere modifikacionih naredbi,
-- pravljenje stabla planova za `SELECT` naredbe,
-- pokretanje modifikacionih naredbi,
-- kreiranje novih transakcija, korisno za proveru izolacije,
-- inicijalizacija tri prazne ili tri popunjene tabele, gde prve dve imaju istu šemu kao kod pomoćne klase za testiranje podsistema relacionih operatora, a treća sadrži samo jedno _Integer_ polje i korisna je za testiranje spajanja tabela samih sa sobom.
+За подсистем планирања, постоји помоћна класа `PlanTestUtils` која пружа додатне помоћне методе за тестирање овог подсистема:
+- покретање *само* провере `SELECT` наредбе,
+- покретање *само* провере модификационих наредби,
+- прављење стабла планова за `SELECT` наредбе,
+- покретање модификационих наредби,
+- креирање нових трансакција, корисно за проверу изолације,
+- иницијализација три празне или три попуњене табеле, где прве две имају исту шему као код помоћне класе за тестирање релационих оператора, а трећа садржи само једно _Integer_ поље и корисна је за тестирање спајања табела самих са собом.
 
-== Testiranje performansi
+== Тестирање перформанси
 
-Testovi performanse imaju zadatak da potvrde pretpostavke iz teksta rada. Za korektno izvršavanje testova performansi, potrebno je pružiti mehanizme pokretanja koji vrše dodatnu izolaciju. Testovi performanse uvek moraju da se izvršavaju serijski, u zasebnim procesima i na disku. `TestUtils` već pruža mogućnost izbora izvršavanja na disku, dok se serijsko izvršavanje i izvršavanje u zasebnim procesima konfiguriše preko _Maven_ sistema i _JUnit_ biblioteke. Bitna napomena je da je vreme izvršavanja zavisno od hardvera, dok ostale metrike nisu, ali vreme izvršavanja i dalje može pokazati korisne uvide. Svaki test se pokreće deset puta i prikazane vrednosti su medijalne da bi se izbegao šum.
+Тестови перформансе имају задатак да потврде претпоставке из текста рада. За коректно извршавање тестова перформанси, потребно је пружити механизме покретања који врше додатну изолацију. Тестови перформансе увек морају да се извршавају серијски, у засебним процесима и на диску. `TestUtils` већ пружа могућност избора извршавања на диску, док се серијско извршавање и извршавање у засебним процесима конфигурише преко _Maven_ система и _JUnit_ библиотеке. Битна напомена је да је време извршавања зависно од хардвера, док остале метрике нису, али време извршавања и даље може показати корисне увиде. Сваки тест се покреће десет пута и приказане вредности су медијалне да би се избегао шум.
 
-Da bi _Maven_ instancirao nov _JVM_ proces za svaki test, neophodno je da svaki test stoji u zasebnoj klasi. Pošto svi testovi performanse jednog dela sistema strukturalno izgledaju isto, najbolji način da se ovo obezbedi je da se definiše jedna apstraktna klasa u kojoj stoji logika testa i po jedna klasa naslednica za svaku željenu kombinaciju parametara testa. Listing @fig:apst_klasa_podesavanja pokazuje _JUnit_ anotacije koje se vezuju za apstraktnu klasu i koji su neophodni za serijsko pokretanje.
+Да би _Maven_ инстанцирао нов _JVM_ процес за сваки тест, неопходно је да сваки тест стоји у засебној класи. Пошто сви тестови перформансе једног дела система структурално изгледају исто, најбољи начин да се ово обезбеди је да се дефинише једна апстрактна класа у којој стоји логика теста и по једна класа наследница за сваку жељену комбинацију параметара теста. Листинг @fig:apst_klasa_podesavanja показује _JUnit_ анотације које се везују за апстрактну класу и који су неопходни за серијско покретање.
 
 #figure(
   ```java
@@ -69,13 +68,13 @@ Da bi _Maven_ instancirao nov _JVM_ proces za svaki test, neophodno je da svaki 
   @EnabledIfSystemProperty(named = "benchmark", matches = ".*")
   ```,
   caption: [
-    Podešavanja apstraktne klase testa performanse
+    Подешавања апстрактне класе теста перформансе
   ],
 )<fig:apst_klasa_podesavanja>
 
-=== Testovi performanse algoritama smene bafera <test-perf-asb>
+=== Тестови перформансе алгоритама смене бафера <test-perf-asb>
 
-Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene bafera pod različitim okolnostima. Tipovi su opisani naredbom koja se izvršava i količinom slogova u tabelama. Tipovi testova koji modifikuju podatke (sufiks _\_M_) imaju dodatnu logiku pokretanja dve `UPDATE` naredbe koja će učiniti bafere obe tabele "prljavim" i time dati mogućnost izbora na osnovu tog podatka.
+Постоје четири типа тестова који имају функцију тестирања алгоритама смене бафера под различитим околностима. Типови су описани наредбом која се извршава и количином слогова у табелама. Типови тестова који модификују податке (суфикс _\_M_) имају додатну логику покретања две `UPDATE` наредбе која ће учинити бафере обе табеле "прљавим" и тиме дати могућност избора на основу тог податка.
 
 #figure(
   ```java
@@ -89,7 +88,7 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
   }
   ```,
   caption: [
-    Tipovi testova za algoritme smene bafera
+    Типови тестова за алгоритме смене бафера
   ],
 )<fig:tipovi_testova_asb>
 
@@ -99,7 +98,7 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
     mvn test -Dgroups="[TIP PO ENUMERACIJI]" -Dbenchmark
     ```,
     caption: [
-      Pokretanje testova performanse algoritama smene bafera određenog tipa
+      Покретање тестова перформансе алгоритама смене бафера одређеног типа
     ],
   )<fig:pokretanje_testova_asb>
 ]
@@ -114,12 +113,12 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
     {
       set par(justify: false)
       table(
-        [Tip testa],
-        [Algoritam],
-        [Čitanja],
-        [Pisanja],
-        [Pogoci],
-        [Vreme (ms)],
+        [Тип теста],
+        [Алгоритам],
+        [Читања],
+        [Писања],
+        [Погоци],
+        [Време (ms)],
         //
         [_HOT_BUFFERS_],
         [_LRU_],
@@ -164,19 +163,19 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
         [$236$],
       )
     },
-    caption: [Rezultati testiranja algoritama smene bafera za _HOT_BUFFERS_],
+    caption: [Резултати тестирања алгоритама смене бафера за _HOT_BUFFERS_],
   )<tbl:rezultati_testova_hot_buffers>
 
   #figure(
     {
       set par(justify: false)
       table(
-        [Tip testa],
-        [Algoritam],
-        [Čitanja],
-        [Pisanja],
-        [Pogoci],
-        [Vreme (ms)],
+        [Тип теста],
+        [Алгоритам],
+        [Читања],
+        [Писања],
+        [Погоци],
+        [Време (ms)],
         //
         [_CONTINUOUS_READS_],
         [_LRU_],
@@ -221,19 +220,19 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
         [$161$],
       )
     },
-    caption: [Rezultati testiranja algoritama smene bafera za _CONTINUOUS_READS_],
+    caption: [Резултати тестирања алгоритама смене бафера за _CONTINUOUS_READS_],
   )<tbl:rezultati_testova_continuous_reads>
 
   #figure(
     {
       set par(justify: false)
       table(
-        [Tip testa],
-        [Algoritam],
-        [Čitanja],
-        [Pisanja],
-        [Pogoci],
-        [Vreme (ms)],
+        [Тип теста],
+        [Алгоритам],
+        [Читања],
+        [Писања],
+        [Погоци],
+        [Време (ms)],
         //
         [_HOT_BUFFERS_M_],
         [_LRU_],
@@ -278,19 +277,19 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
         [$1170$],
       )
     },
-    caption: [Rezultati testiranja algoritama smene bafera za _HOT_BUFFERS_M_],
+    caption: [Резултати тестирања алгоритама смене бафера за _HOT_BUFFERS_M_],
   )<tbl:rezultati_testova_hot_buffers_m>
 
   #figure(
     {
       set par(justify: false)
       table(
-        [Tip testa],
-        [Algoritam],
-        [Čitanja],
-        [Pisanja],
-        [Pogoci],
-        [Vreme (ms)],
+        [Тип теста],
+        [Алгоритам],
+        [Читања],
+        [Писања],
+        [Погоци],
+        [Време (ms)],
         //
         [_CONTINUOUS_READS_M_],
         [_LRU_],
@@ -335,27 +334,27 @@ Postoje četiri tipa testova koji imaju funkciju testiranja algoritama smene baf
         [$1799$],
       )
     },
-    caption: [Rezultati testiranja algoritama smene bafera za _CONTINUOUS_READS_M_],
+    caption: [Резултати тестирања алгоритама смене бафера за _CONTINUOUS_READS_M_],
   )<tbl:rezultati_testova_continuous_reads_m>
 ]
 
-U tabelama @tbl:rezultati_testova_hot_buffers, @tbl:rezultati_testova_continuous_reads, @tbl:rezultati_testova_hot_buffers_m, @tbl:rezultati_testova_continuous_reads_m stoje vrednosti metrika: broja čitanja sa diska, broja upisa na disk, broj pogodaka bafera koji je već u memoriji i vreme izvršavanja.
+У табелама @tbl:rezultati_testova_hot_buffers, @tbl:rezultati_testova_continuous_reads, @tbl:rezultati_testova_hot_buffers_m, @tbl:rezultati_testova_continuous_reads_m стоје вредности метрика: броја читања са диска, броја уписа на диск, број погодака бафера који је већ у меморији и време извршавања.
 
-Rezultati testiranja performansi za tip testa gde se radi upit koji zahteva zadržavanje istih bafera u memoriji su predstavljeni tabelom @tbl:rezultati_testova_hot_buffers. Ovi podaci jasno pokazuju podelu između algoritama koji uspešno prepoznaju radni skup unutrašnje petlje i onih koji potpuno zakazuju. _LRU_ i _FIFO_ ostvaruju optimalne rezultate sa minimalnim brojem čitanja i maksimalnim brojem pogodaka jer uspešno zadržavaju blokove manje tabele u memoriji. Nasuprot njima, _Naive_, _LRM_ i _First Unmodified_ pokazuju najgore performanse jer konstantno izbacuju potrebne podatke pre nego što se oni ponovo iskoriste, dok je _Clock_ pozicioniran između njih sa umerenim brojem promašaja.
+Резултати тестирања перформанси за тип теста где се ради упит који захтева задржавање истих бафера у меморији су представљени табелом @tbl:rezultati_testova_hot_buffers. Ови подаци јасно показују поделу између алгоритама који успешно препознају радни скуп унутрашње петље и оних који потпуно заказују. _LRU_ и _FIFO_ остварују оптималне резултате са минималним бројем читања јер успешно задржавају блокове мање табеле у меморији. Насупрот њима, _Naive_, _LRM_ и _First Unmodified_ показују најгоре перформансе јер константно избацују потребне податке пре него што се они поново искористе, док је _Clock_ позициониран између њих са умереним бројем промашаја.
 
-Rezultati testiranja performansi za tip testa gde radi upit koji zahteva sekvencijalno čitanje su predstavljeni tabelom @tbl:rezultati_testova_continuous_reads. U ovom scenariju svi ispitivani algoritmi pokazuju praktično identično ponašanje jer veličina tabele drastično prevazilazi kapacitet bafer pula. Nijedna strategija ne može da zadrži podatke za ponovnu upotrebu, pa svi algoritmi završavaju sa istim brojem čitanja i minimalnim brojem pogodaka. Vreme izvršavanja je ujednačeno jer usko grlo u ovom testu diktira isključivo brzina samog diska.
+Резултати тестирања перформанси за тип теста где ради упит који захтева секвенцијално читање су представљени табелом @tbl:rezultati_testova_continuous_reads. У овом сценарију сви испитивани алгоритми показују практично идентично понашање јер величина табеле драстично превазилази капацитет бафер пула. Ниједна стратегија не може да задржи податке за поновну употребу, па сви алгоритми завршавају са истим бројем читања.
 
-Rezultati testiranja performansi za tip testa gde se prvo modifikuju podaci pa se radi upit koji zahteva zadržavanje istih bafera u memoriji su predstavljeni tabelom @tbl:rezultati_testova_hot_buffers_m. Uvođenje modifikacije podataka dodatno naglašava razlike u efikasnosti, gde _LRU_ i _FIFO_ ponovo postižu najbolje rezultate sa najmanje čitanja jer uspešno čuvaju radni skup unutrašnje petlje. _First Unmodified_ donekle uspešno iskorišćava činjenicu da su neki baferi "prljavi", ali daje lošije rezultate jer ne izbacivanjem "prljavih" bafera previše sužava raspoloživi prostor u memoriji. _Naive_ i _LRM_ uvek izbacuju pogrešne bafere. _Clock_ zauzima sredinu jer uspešno smanjuje broj upisa na disk, ali uz cenu većeg broja čitanja.
+Резултати тестирања перформанси за тип теста где се прво модификују подаци па се ради упит који захтева задржавање истих бафера у меморији су представљени табелом @tbl:rezultati_testova_hot_buffers_m. Увођење модификације података додатно наглашава разлике у ефикасности, где _LRU_ и _FIFO_ поново постижу најбоље резултате са најмање читања јер успешно чувају радни скуп унутрашње петље. _First Unmodified_ донекле успешно искоришћава чињеницу да су неки бафери "прљави", али даје лошије резултате јер не избацивањем "прљавих" бафера превише сужава расположиви простор у меморији. _Naive_ и _LRM_ увек избацују погрешне бафере. _Clock_ заузима средину јер успешно смањује број уписа на диск, али уз цену већег броја читања.
 
-Rezultati testiranja performansi za tip testa gde se prvo modifikuju podaci pa se radi upit koji zahteva sekvencijalno čitanje su predstavljeni tabelom @tbl:rezultati_testova_continuous_reads_m. Pri masovnom skeniranju izmenjenih podataka broj čitanja ostaje isti za sve strategije jer se svaka stranica mora povući sa diska, ali se ključna razlika uočava u broju upisa. _Clock_ algoritam se ovde pokazuje kao najefikasniji jer značajno rasterećuje rad sa diskom u odnosu na _LRU_ i _FIFO_.
+Резултати тестирања перформанси за тип теста где се прво модификују подаци па се ради упит који захтева секвенцијално читање су представљени табелом @tbl:rezultati_testova_continuous_reads_m. При масовном скенирању измењених података број читања остаје исти за све стратегије јер се свака страница мора повући са диска, али се кључна разлика уочава у броју уписа. _Clock_ алгоритам се овде показује као најефикаснији.
 
-Generalno, u svim testnim tipovima, broj bafera u listi bafera je izabran da bude $15$ jer se time postiže da algoritmi izbora bafera za smenu moraju da rade pod pritiskom i izaberu najbolje bafere za smenu. Jedan slog tabele `table1` je dužine $1240$ bajtova, jedan slog tabele `table2` je dužine $916$ bajtova, dok je veličina bloka u sistemu podešena na $4096$ bajtova. Ovo znači da u jednom bloku staje tri sloga tabele `table1` ili četiri sloga tabele `table2`.
+Генерално, у свим тестним типовима, број бафера у систему је изабран да буде $15$ јер се тиме постиже да алгоритми морају да раде под притиском и изаберу најбоље бафере за смену. Један слог табеле `table1` је дужине $1240$ бајтова, један слог табеле `table2` је дужине $916$ бајтова, док је величина блока у систему подешена на $4096$ бајтова. Ово значи да у једном блоку стаје три слога табеле `table1` или четири слога табеле `table2`.
 
-Analizom podataka rezultata testiranja, tvrdnje iz sekcije @algoritmi-smene-bafera su potvrđene. _LRU_ je ubedljivo pobednik za generalni slučaj, ali postoje i situacije gde ne mora biti najbrži.
+Анализом података резултата тестирања, тврдње из секције @algoritmi-smene-bafera су потврђене. _LRU_ је убедљиво победник за генерални случај, али постоје и ситуације где не мора бити најбржи.
 
-=== Testovi performanse _RBO_ tehnike u planiranju `SELECT` naredbi
+=== Тестови перформансе _RBO_ технике у планирању `SELECT` наредби
 
-Postoje dva tipa testova koji imaju funkciju testiranja algoritma planiranja `SELECT` naredbe. Tipovi su opisani naredbom koja se izvršava i količinom slogova u tabeli. Kod prvog tipa testa, prvo se stavlja tabela čija je veličina sloga veća. Kod drugog tipa testa, prvo se stavlja tabela čija je veličina sloga manja.
+Постоје два типа тестова који имају функцију тестирања алгоритма планирања `SELECT` наредбе. Типови су описани наредбом која се извршава и количином слогова у табели. Код првог типа теста, прво се ставља табела чија је величина слога већа. Код другог типа теста, прво се ставља табела чија је величина слога мања.
 
 #figure(
   ```java
@@ -367,7 +366,7 @@ Postoje dva tipa testova koji imaju funkciju testiranja algoritma planiranja `SE
   }
   ```,
   caption: [
-    Tipovi testova za proizvod velikih i malih tabela
+    Типови тестова за производ великих и малих табела
   ],
 )<fig:tipovi_testova_bs>
 
@@ -377,7 +376,7 @@ Postoje dva tipa testova koji imaju funkciju testiranja algoritma planiranja `SE
     mvn test -Dgroups="[TIP IZ ENUMERACIJE]" -Dbenchmark
     ```,
     caption: [
-      Pokretanje testova performanse proizvoda velike i male tabele sa _LRU_ algoritmom smene bafera
+      Покретање тестова перформансе производа велике и мале табеле са _LRU_ алгоритмом избора смене бафера
     ],
   )<fig:pokretanje_testova_asb>
 ]
@@ -388,26 +387,26 @@ Postoje dva tipa testova koji imaju funkciju testiranja algoritma planiranja `SE
     mvn test -Dgroups="[TIP IZ ENUMERACIJE]" -Dbenchmark -Dnaive
     ```,
     caption: [
-      Pokretanje testova performanse proizvoda velike i male tabele sa _Naive_ algoritmom smene bafera
+      Покретање тестова перформансе производа велике и мале табеле са _Naive_ алгоритмом избора смене бафера
     ],
   )<fig:pokretanje_testova_asb_n>
 ]
 
 #[
   #show table.cell: set text(size: 10pt)
-  #set table(inset: 5pt)
-  #set table(columns: (0.5fr, 0.9fr, 1fr, 0.3fr, 0.5fr))
+  #set table(inset: 4.9pt)
+  #set table(columns: (0.5fr, 0.6fr, 1.4fr, 0.3fr, 0.5fr))
   #set table(align: (center, center))
 
   #figure(
     {
       set par(justify: false)
       table(
-        [Tip testa],
-        [Algoritam smene bafera],
+        [Тип теста],
+        [Алгоритам смене бафера],
         [$text("B")(T_r) = text("B")(T_l) + (text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d))$],
-        [Čitanja],
-        [Vreme (ms)],
+        [Читања],
+        [Време (ms)],
         //
         [_BIG_SMALL_],
         [_LRU_],
@@ -422,18 +421,18 @@ Postoje dva tipa testova koji imaju funkciju testiranja algoritma planiranja `SE
         [$4845$],
       )
     },
-    caption: [Rezultati testiranja _RBO_ tehnike za tip _BIG_SMALL_],
+    caption: [Резултати тестирања _RBO_ технике за тип _BIG_SMALL_],
   )<tbl:rezultati_testova_big_small>
 
   #figure(
     {
       set par(justify: false)
       table(
-        [Tip testa],
-        [Algoritam smene bafera],
+        [Тип теста],
+        [Алгоритам смене бафера],
         [$text("B")(T_r) = text("B")(T_l) + (text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d))$],
-        [Čitanja],
-        [Vreme (ms)],
+        [Читања],
+        [Време (ms)],
         //
         [_SMALL_BIG_],
         [_LRU_],
@@ -448,10 +447,10 @@ Postoje dva tipa testova koji imaju funkciju testiranja algoritma planiranja `SE
         [$5367$],
       )
     },
-    caption: [Rezultati testiranja _RBO_ tehnike za tip _SMALL_BIG_],
+    caption: [Резултати тестирања _RBO_ технике за тип _SMALL_BIG_],
   )<tbl:rezultati_testova_small_big>
 ]
 
-U tabelama @tbl:rezultati_testova_big_small, @tbl:rezultati_testova_small_big stoje vrednosti metrika: predviđeni broj čitanja formulom, zapravi broj čitanja i vreme izvršavanja. Dodatno, stoji i algoritam smene bafera jer korišćenjem _LRU_ algoritma se dodatno smanjuje broj pristupa (jer se blokovima manje tabele konstantno pristupa pa ostaju u memoriji), dok se korišćenjem _Naive_ algoritma ne postiže ova optimizacija.
+У табелама @tbl:rezultati_testova_big_small, @tbl:rezultati_testova_small_big стоје вредности метрика: предвиђени број читања формулом, заправи број читања и време извршавања. Додатно, стоји и алгоритам избора смене бафера јер коришћењем _LRU_ алгоритма блокови мање табеле константно остају у меморији, док се коришћењем _Naive_ алгоритма не постиже ова оптимизација.
 
-Na osnovu izmerenih podataka, tvrdnje iz sekcije @plan-select su potvrđene. Algoritam planiranja `SELECT` naredbe uvek bira jeftiniju putanju i _RBO_ tehnika optimizacije ima vidljiv uticaj.
+На основу измерених података, тврдње из секције @plan-select су потврђене. Алгоритам планирања `SELECT` наредбе увек бира јефтинију путању и _RBO_ техника оптимизације има видљив утицај.

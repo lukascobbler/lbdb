@@ -17,7 +17,7 @@ can be found in [Tasks.md](Tasks.md).
 ## Thesis
 
 The first part of this project (chapters up to indexes) represent my Bachelor's thesis 
-and can be found [here]() (not yet done). The thesis is only in Serbian.
+and can be found [here](). The thesis is only in Serbian.
 
 ## Building and running
 

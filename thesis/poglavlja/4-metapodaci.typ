@@ -1,12 +1,12 @@
 
 
-= Metapodaci <metapodaci>
+= Метаподаци <metapodaci>
 
-Metapodaci su podaci koji opisuju druge podatke. Iako su podaci organizovani preko slogova (poglavlje @datoteke), sistem im ne može pristupiti ako se ne pobrine o perzistiranju strukture tih slogova. Praćenje distribucije vrednosti je korisno prilikom pravljenja efikasnog načina dobavljanja slogova. Podaci koji definišu strukturu slogova i podaci o distribuciji vrednosti su primeri metapodataka kojima sistem barata.
+Метаподаци су подаци који описују друге податке. Иако су подаци организовани преко слогова (поглавље @datoteke), систем им не може приступити ако се не побрине о перзистирању структуре тих слогова. Праћење дистрибуције вредности је корисно приликом прављења ефикасног начина добављања слогова. Подаци који дефинишу структуру слогова и подаци о расподели вредности су метаподаци којима систем барата.
 
-== Kataloške tabele <kataloske-tabele>
+== Каталошке табеле <kataloske-tabele>
 
-Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o postojećim tabelama i kako kolone tih tabela izgledaju. Ti podaci se čuvaju u okviru sistemskih tabela i one se nazivaju kataloške tabele. Kataloška tabela _tablecatalog_ čuva podatke o postojećim tabelama, dok kataloška tabela _fieldcatalog_ čuva podatke o fizičkoj strukturi sloga neke tabele.
+Метаподатаке које систем чува да би омогућио рад са табелама су подаци о постојећим табелама и како колоне тих табела изгледају. Ти подаци се чувају у оквиру системских табела и оне се називају каталошке табеле. Каталошка табела _tablecatalog_ чува податке о постојећим табелама, док каталошка табела _fieldcatalog_ чува податке о физичкој структури слога неке табеле.
 
 #figure(
   {
@@ -14,17 +14,17 @@ Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o posto
     table(
       columns: (0.5fr, 0.3fr, 1.3fr),
       align: (center, center),
-      inset: 8pt,
-      [Kolona], [Tip], [Opis],
+      inset: 6pt,
+      [Колона], [Тип], [Опис],
       //
-      [_tableid_], [_Integer_], [unikatni identifikator tabele],
+      [_tableid_], [_Integer_], [јединствени идентификатор табеле],
       //
-      [_tablename_], [_String_], [ime tabele],
+      [_tablename_], [_String_], [име табеле],
       //
-      [_slotsize_], [_Integer_], [veličina jednog sloga te tabele u bajtovima],
+      [_slotsize_], [_Integer_], [величина једног слога те табеле у бајтовима],
     )
   },
-  caption: [Šema _tablecatalog_ tabele],
+  caption: [Шема _tablecatalog_ табеле],
 )<tbl:tablecatalog>
 
 #figure(
@@ -33,49 +33,45 @@ Metapodatake koje sistem čuva da bi omogućio rad sa tabelama su podaci o posto
     table(
       columns: (0.5fr, 0.3fr, 1.3fr),
       align: (center, center),
-      inset: 8pt,
-      [Kolona], [Tip], [Opis],
+      inset: 6pt,
+      [Колона], [Тип], [Опис],
       //
-      [_type_], [_Integer_], [tip kolone zapisan kao numerička vrednost],
+      [_type_], [_Integer_], [тип колоне записан као нумеричка вредност],
       //
-      [_runtimelength_], [_Integer_], [maksimalna fizička dužina vrednosti ovog polja],
+      [_runtimelength_], [_Integer_], [максимална физичка дужина вредности овог поља],
       //
-      [_offset_], [_Integer_], [pozicija vrednosti te kolone],
+      [_offset_], [_Integer_], [позиција вредности те колоне],
       //
-      [_tableid_], [_Integer_], [unikatni identifikator tabele u kojoj se kolona nalazi],
+      [_tableid_], [_Integer_], [јединствени идентификатор табеле у којој се колона налази],
       //
-      [_fieldname_], [_String_], [ime kolone],
+      [_fieldname_], [_String_], [име колоне],
       //
-      [_nullable_], [_Boolean_], [da li vrednosti kolone mogu biti _NULL_ vrednost],
+      [_nullable_], [_Boolean_], [да ли вредности колоне могу бити _NULL_ вредност],
     )
   },
-  caption: [Šema _fieldcatalog_ tabele],
+  caption: [Шема _fieldcatalog_ табеле],
 )<tbl:fieldcatalog>
 
-Kataloške tabele se kreiraju prilikom inicijalizacije sistema. Bitno je napomenuti da se kataloške tabele perzistiraju na isti način kao i sve ostale tabele u sistemu, što znači da će one sadržati i slogove koje opisuju njih same. Time što se kataloške tabele perzistiraju isto kao i korisničke, sistemskim tabelama se može pristupiti putem standardnih mehanizama relacionih operatora (sekcija @relacioni-operatori).
+Каталошке табеле се креирају приликом иницијализације система. Битно је напоменути да се каталошке табеле перзистирају на исти начин као и све остале табеле у систему, што значи да ће оне садржати и слогове које описују њих саме. Тиме што се каталошке табеле перзистирају исто као и корисничке, системским табелама се може приступити путем стандардних механизама релационих оператора (поглавље @relacioni-operatori).
 
-Svi identifikatori u sistemu (imena kolona, tabela, ...) se implicitno konvertuju tako da sadrže samo mala slova.
+Сви идентификатори у систему (имена колона, табела, ...) се имплицитно конвертују тако да садрже само мала слова.
 
-== Statistički podaci <statisticki-metapodaci>
+== Статистички подаци <statisticki-metapodaci>
 
-Pristup istim slogovima tabela se često može izvršiti na više različitih načina, ali neki načini mogu biti znatno manje efikasni od ostalih. Apstrakcioni nivo upravljanja metapodacima je dužan da obezbedi statističke metapodatke koji pomažu pri proceni vremena izvršavanja određenih načina pristupa. Sam posao konstruisanja efikasnog načina pristupa je briga podsistema planiranja (sekcija @planiranje).
+Приступ истим слоговима табела се често може извршити на више различитих начина, али неки начини могу бити знатно мање ефикасни од осталих. Апстракциони ниво управљања метаподацима је дужан да обезбеди статистичке метаподатке који помажу при процени времена извршавања одређених начина приступа. Сам посао конструисања ефикасног начина приступа је брига подсистема планирања (поглавље @planiranje).
 
-Statistički metapodaci neke tabele uključuju:
-- broj blokova tabele
-- broj slogova u tabeli
-- broj različitih vrednosti kolona tabele
-- broj _NULL_ vrednosti kolona tabele
+Статистички метаподаци неке табеле укључују:
+- број блокова табеле
+- број слогова у табели
+- број различитих вредности колона табеле
+- број _NULL_ вредности колона табеле
 
-=== Računanje statističkih podataka <racunanje-statistike>
+=== Рачунање статистичких података <racunanje-statistike>
 
-Prilikom inicijalizacije sistema, računaju se statistički metapodaci za svaku tabelu u sistemu, a svakih 100 poziva dobavljanja metapodataka za bilo koju tabelu se osvežavaju statistički metapodaci za sve tabele. Ovaj način osvežavanja nije idealan jer pauzira sistem dok se računanje statističkih metapodataka ne završi i ovo ograničenje je detaljnije opisano u sekciji @ogranicenje-stat-podataka.
+Приликом иницијализације система, рачунају се статистички метаподаци за сваку табелу у систему, а сваких 100 позива добављања метаподатака за било коју табелу се освежавају статистички метаподаци за све табеле. Овај начин освежавања није идеалан јер паузира систем док се рачунање статистичких метаподатака не заврши и ово ограничење је детаљније описано у секцији @ogranicenje-stat-podataka.
 
-Broj blokova tabele i broj slogova u tabeli se trivijalno dobijaju iteracijom kroz svaki slog.
+Број блокова и број слогова табеле се тривијално добијају проласком кроз сваки слог. Број различитих вредности колоне табеле није могуће израчунати прецизно, јер је за то потребно чување свих јединствених вредности те колоне у радној меморији. Мале непрецизности неће утицати на процену времена извршавања операција, па је искоришћена пробабилистичка структура података _HyperLogLog_ @hll која решава _count distinct_ проблем и она не чува све јединствене вредности у радној меморији. Једна таква структура се додељује за сваку колону. Бројање _NULL_ вредности колона табеле се своди на чување бројача за сваку колону.
 
-Broj različitih vrednosti kolone tabele nije moguće izračunati precizno, jer je za to potrebno čuvanje svih jedinstvenih vrednosti te kolone u radnoj memoriji. Male nepreciznosti neće uticati na procenu vremena izvršavanja operacija, pa je iskorišćena probabilistička struktura podataka _HyperLogLog_ @hll koja rešava _count distinct_ problem i ona ne čuva sve jedinstvene vrednosti u radnoj memoriji. Jedna takva struktura se dodeljuje za svaku kolonu.
+== Приступ метаподацима <metadata-menadzer>
 
-Brojanje _NULL_ vrednosti kolona tabele se svodi na čuvanje prostog brojača za svaku kolonu.
-
-== Pristup metapodacima <metadata-menadzer>
-
-Menadžer metapodataka je glavno mesto pristupa svim ostalim metapodacima. Sastoji se iz menadžera metapodataka tabela i menadžera statističkih metapodataka. Menadžer metapodataka je jedan od tri glavna podsistema _LBDB_ sistema obrade upita.
+Менаджер метаподатака је главно место приступа свим метаподацима. Састоји се из менаджера метаподатака табела и менаджера статистичких метаподатака. Менаджер метаподатака је један од три главна подсистема _LBDB_ система обраде упита.

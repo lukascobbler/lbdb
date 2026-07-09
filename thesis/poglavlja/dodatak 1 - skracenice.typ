@@ -1,13 +1,13 @@
 #import "../funkcije.typ": dodatak, todo
 
-= Spisak korišćenih skraćenica <dodatak-1>
+= Списак коришћених скраћеница <dodatak-1>
 
 #dodatak(
   table(
-    table.header[*Skraćenica*][*Značenje*],
+    table.header[*Скраћеница*][*Значење*],
 
-    [SUBP],
-    [Sistem za upravljanje bazama podataka],
+    [СУБП],
+    [Систем за управљање базама података],
     [_SQL_],
     [_Structured Query Language_],
     [_AST_],
@@ -40,8 +40,8 @@
     [_Continuous Integration_],
     [_CD_],
     [_Continuous Delivery_],
-    [U/I],
-    [Ulaz/Izlaz],
+    [У/И],
+    [Улаз/Излаз],
     [_API_],
     [_Application Programming Interface_],
     [_EOF_],

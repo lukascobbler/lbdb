@@ -1,74 +1,72 @@
 
 
-= Zaključak <zakljucak>
+= Закључак <zakljucak>
 
-== Motivacija
+== Мотивација
 
-Sistemi za upravljanje bazama podataka (SUBP) su me interesovali od druge godine osnovnih akademskih studija, nakon slušanja predmeta "Baze podataka". SUBP-ovi su osnova većine informacionih sistema koji se koriste u današnjici i razumevanje samo _SQL_ jezika nije dovoljno da bi se shvatilo njihovo interno funkcionisanje. Zbog njihove kompleksnosti, shvatio sam da bi ih najbolje razumeo tako što implementiram svoj SUBP sistem. Naučio sam mnogo iz oblasti upravljanja datotekama, izolacije podataka i obrade deklarativnih programskih jezika kao što je _SQL_.
+Системи за управљање базама података (СУБП) су ме интересовали од друге године основних академских студија, након слушања предмета "Базе података". СУБП-ови су основа већине информационих система који се користе у данашњици и разумевање само _SQL_ језика није довољно да би се схватило њихово интерно функционисање. Због њихове комплексности, схватио сам да би их најбоље разумео тако што имплементирам свој СУБП систем. Научио сам много из области управљања датотекама, изолације података и обраде декларативних програмских језика као што је _SQL_.
 
-== Ograničenja sistema
+== Ограничења система
 
-Iako je _LBDB_ SUBP funkcionalan i pruža zadovoljavajuću podršku _SQL_ jezika, za neke delove implementacije se može reći da im fali još dorade. Odlučio sam da napravim presek kod ovih stvari, da bi postigao funkcionalnu implementaciju u doglednom vremenskom periodu, makar ona ne bila savršena.
+Иако је _LBDB_ СУБП функционалан и пружа задовољавајућу подршку _SQL_ језика, за неке делове имплементације се може рећи да им фали још дораде. Одлучио сам да направим пресек код ових ствари, да би постигао функционалну имплементацију у догледном временском периоду, макар она не била савршена.
 
-=== Implementiran je samo podskup _SQL_-a
+=== Имплементиран је само подскуп _SQL_-а
 
-Specifikacija _SQL_ jezika definisana _ISO/IEC 9075_ standardom#footnote[https://en.wikipedia.org/wiki/ISO/IEC_9075] pokriva veliku količinu naredbi. _LBDB_ sistem implementira samo najosnovnije naredbe potrebne za primitivno upravljanje tabelama i slogovima.
+Спецификација _SQL_ језика дефинисана _ISO/IEC 9075_ стандардом#footnote[https://en.wikipedia.org/wiki/ISO/IEC_9075] покрива велику количину наредби. _LBDB_ систем имплементира само најосновније наредбе потребне за примитивно управљање табелама и слоговима.
 
-Argumentacija ne implementiranja raznih grupa naredbi je sledeća:
-- Iako se brisanje tabela svodi na brisanje slogova u kataloškim tabelama i brisanje datoteka tih tabela, sistem oporavka i potvrde transakcija nije dovoljno napredan da prati promene koje se dešavaju van bafera: kreiranje i brisanje datoteka. Na primer, ako se u istoj transakciji kreira i obriše tabela, nakon potvrde transakcije datoteka tabele će ostati na disku. Ovo se dešava jer proces potvrde zapisuje sve bafere (sekcija @undo_only_recovery), a bar jedan bafer će biti dodeljen novoj obrisanoj datoteci i njegovo pisanje na disk će uvek rekreirati datoteku.
+Аргументација не имплементирања разних група наредби је следећа:
+- Иако се брисање табела своди на брисање слогова у каталошким табелама и брисање датотека тих табела, систем опоравка и потврде трансакција није довољно напредан да прати промене које се дешавају ван бафера: креирање и брисање датотека. На пример, ако се у истој трансакцији креира и обрише табела, након потврде трансакције датотека табеле ће остати на диску. Ово се дешава јер процес потврде записује све бафере (секција @undo_only_recovery), а бар један бафер ће бити додељен новој обрисаној датотеци и његово писање на диск ће увек рекреирати датотеку.
 
-  Dodavanje novih blokova na kraju datoteka je iste prirode kao i kreiranje i brisanje datoteka, ali poništavanje te akcije je lakše implementirati pošto će datoteka i dalje postojati nakon oporavka.
-- Ne postoje operacije nad celim bazama podataka (`CREATE DATABASE ...`) jer nisu neophodne za funkcionisanje implementacije relacionog modela.
-- Ne postoje pogledi (eng. _views_). Iako u _Database Design And Implementation_ @simpledb knjizi postoji opis implementacije pogleda, odlučio sam da ih izbacim jer se nisu slagali sa svim semantičkim proverama planera. Potrebno je produbiti i eventualno promeniti načine na koji planer proverava upite da bi se lako proveravali i pogledi.
-- `GROUP BY`, `DISTINCT`, `ORDER BY` i ostali delovi `SELECT` naredbe koji zahtevaju agregaciju podataka nisu podržani jer ne postoji implementacija materijalizovane obrade. _Database Design And Implementation_ @simpledb u poglavlju 13 opisuje materijalizovanu obradu, pa ću je istražiti za sledeću iteraciju _LBDB_ sistema.
-- Ostatak _SQL_ jezika je previše kompleksan za implementaciju u okviru ovakvog projekta, ali je vredno istražiti ga da bi se shvatilo kako moderni SUBP-ovi funkcionišu @big_book.
+  Додавање нових блокова на крају датотека је исте природе као и креирање и брисање датотека, али поништавање те акције је лакше имплементирати пошто ће датотека и даље постојати након опоравка.
+- Не постоје операције над целим базама података (`CREATE DATABASE ...`) јер нису неопходне за функционисање имплементације релационог модела.
+- Не постоје погледи (енг. _views_). Иако у _Database Design And Implementation_ @simpledb књизи постоји опис имплементације погледа, одлучио сам да их избацим јер се нису слагали са свим семантичким проверама планера. Потребно је продубити и евентуално променити начине на који планер проверава упите да би се лако проверавали и погледи.
+- `GROUP BY`, `DISTINCT`, `ORDER BY` и остали делови `SELECT` наредбе који захтевају агрегацију података нису подржани јер не постоји имплементација материјализоване обраде. _Database Design And Implementation_ @simpledb у поглављу 13 описује материјализовану обраду, па ћу је истражити за следећу итерацију _LBDB_ система.
+- Остатак _SQL_ језика је превише комплексан за имплементацију у оквиру оваквог пројекта, али је вредно истражити га да би се схватило како модерни СУБП-ови функционишу @big_book.
 
-=== Ograničenje na slogove fiksne dužine <slogovi-fiksne-duzine>
+=== Ограничење на слогове фиксне дужине <slogovi-fiksne-duzine>
 
-_LBDB_ sistem za upravljanje datotekama i slogovima ograničava slogove na fiksnu, unapred definisanu veličinu i ređa ih serijski jedne do drugih. Prednost ovog načina upravljanja slogovima je jednostavnost implementacije i lako računanje pozicija slogova (što dalje omogućava lako brisanje, umetanje, ...). Uz neke promene (omogućavanje _NULL_ vrednosti), preuzet je direktno iz _Database Design And Implementation_ @simpledb knjige.
+_LBDB_ систем за управљање датотекама и слоговима ограничава слогове на фиксну, унапред дефинисану величину и ређа их серијски једне до других. Предност овог начина управљања слоговима је једноставност имплементације и лако рачунање позиција слогова (што даље омогућава лако брисање, уметање, ...). Уз неке промене (омогућавање _NULL_ вредности), преузет је директно из _Database Design And Implementation_ @simpledb књиге.
 
-Prezentuju se dve velike mane:
-- čuvanje vrednosti različitih dužina u okviru iste kolone (_String_, to jest _*VAR*__CHAR_ tip) je nemoguće, jer je uvek potrebno znati unapred veličinu svih vrednosti. Da bi se mogle smestiti sve vrednosti do te dužine, finalna veličina kolone će uvek biti maksimalna.
-- ukupna veličina sloga (u bajtovima) ne sme da bude veća od sistemski definisane veličine jednog bloka (isto u bajtovima) jer slogovi ne mogu da se prostiru kroz više od jednog bloka.
+Презентују се две велике мане:
+- чување вредности различитих дужина у оквиру исте колоне (_String_, то јест _*VAR*__CHAR_ тип) је немогуће, јер је увек потребно знати унапред величину свих вредности. Да би се могле сместити све вредности до те дужине, финална величина колоне ће увек бити максимална.
+- укупна величина слога (у бајтовима) не сме да буде већа од системски дефинисане величине једног блока (исто у бајтовима) јер слогови не могу да се простиру кроз више од једног блока.
 
-_Slotted Page Architecture_ (_SPA_) predstavlja arhitekturu koja rešava ove probleme i moderni SUBP-ovi je intenzivno koriste#footnote[https://www.postgresql.org/docs/current/storage-page-layout.html]. Koncepti na koje se oslanja su prvi put uvedeni u okviru _SystemR_ _RSS_ (_Relational Storage System_) sistema @slotted_pages.
+_Slotted Page Architecture_ (_SPA_) представља архитектуру која решава ове проблеме и модерни СУБП-ови је интензивно користе#footnote[https://www.postgresql.org/docs/current/storage-page-layout.html]. Концепти на које се ослања су први пут уведени у оквиру _SystemR_ _RSS_ (_Relational Storage System_) система @slotted_pages.
 
-U okviru _SPA_, vrednosti slogova, pa ni sami slogovi, nemaju predefinisanu poziciju. Blokovi se isto mapiraju na stranice. Jedna stranica se sastoji od dve komponente: zaglavlje i vrednosti. U zaglavlju stoje specijalni brojevi koji označavaju pozicije (eng. _slots_) vrednosti. Zaglavlje se uvek nalazi na početku stranice i raste u desno, a vrednosti se uvek nalaze na kraju stranice i rastu u levo. Stranica se smatra popunjenim ako se zaglavlje preklopi sa vrednostima.
+У оквиру _SPA_, вредности слогова, па ни сами слогови, немају предефинисану позицију. Блокови се исто мапирају на странице. Једна страница се састоји од две компоненте: заглавље и вредности. У заглављу стоје специјални бројеви који означавају позиције (енг. _slots_) вредности. Заглавље се увек налази на почетку странице и расте у десно, а вредности се увек налазе на крају странице и расту у лево. Страница се сматра попуњеним ако се заглавље преклопи са вредностима.
 
-Ako se stranica popuni na taj način da svi slogovi koji joj logički pripadaju nemaju dovoljno prostora za sve svoje vrednosti, toj stranici se dodeljuje stranica prelivanja (eng. _overflow page_) i time se izbegava ograničenje veličine sloga na veličinu bloka. Pozicija stranice prelivanja se isto nalazi u zaglavlju. Moguće je uvezivati više stranica prelivanja. Ako se stranica popuni i treba da se doda novi slog koji joj ne pripada logički, pravi se nova stranica umesto stranice prelivanja.
+Ако се страница попуни на тај начин да сви слогови који јој логички припадају немају довољно простора за све своје вредности, тој страници се додељује страница преливања (енг. _overflow page_) и тиме се избегава ограничење величине слога на величину блока. Позиција странице преливања се исто налази у заглављу. Могуће је увезивати више страница преливања. Ако се страница попуни и треба да се дода нови слог који јој не припада логички, прави се нова страница уместо странице преливања.
 
-U zaglavlju takođe stoji i pozicija sledećeg logičkog sloga. Slogovi se identifikuju preko _slot_ vrednosti pa je reorganizacija, brisanje i dodavanje slogova moguća manipulacijom samo _slot_ vrednosti. Ovo znatno olakšava probleme stvorene stranicama prelivanja, jer se slogovi ne prate preko fizičke pozicije, već preko logičke pozicije. Rupe i fragmentacija stranica se rešavaju kompakcijom (_PostgreSQL_ `VACUUM` naredba#footnote[https://www.postgresql.org/docs/current/sql-vacuum.html]).
+У заглављу такође стоји и позиција следећег логичког слога. Слогови се идентификују преко _slot_ вредности па је реорганизација, брисање и додавање слогова могућа манипулацијом само _slot_ вредности. Ово знатно олакшава проблеме створене страницама преливања, јер се слогови не прате преко физичке позиције, већ преко логичке позиције. Рупе и фрагментација страница се решавају компакцијом (_PostgreSQL_ `VACUUM` наредба#footnote[https://www.postgresql.org/docs/current/sql-vacuum.html]).
 
-=== Sporo računanje statističkih metapodataka <ogranicenje-stat-podataka>
+=== Споро рачунање статистичких метаподатака <ogranicenje-stat-podataka>
 
-Statistički metapodaci sistema se čuvaju u memoriji i pristup njima je brz. Problemi ovog načina su to što se ne skalira efikasno sa brojem tabela i to što se računanje metapodataka mora raditi iznova (pri svakom pokretanju sistema, na svakih $100$ poziva). Bolji pristup je čuvanje statističkih metapodataka u zasebnim kataloškim tabelama. _LBDB_ ne podržava ovaj način zato što je:
-- održavanje ažurnosti tih tabela zahtevno
-- čitanje iz tih tabela potrebno raditi brzo što dalje zahteva implementaciju _read uncommitted_ izolacionog nivoa transakcija
+Статистички метаподаци система се чувају у меморији и приступ њима је брз. Проблеми овог начина су то што се не скалира ефикасно са бројем табела и то што се рачунање метаподатака мора радити изнова (при сваком покретању система, на сваких $100$ позива). Бољи приступ је чување статистичких метаподатака у засебним каталошким табелама. _LBDB_ не подржава овај начин зато што је:
+- одржавање ажурности тих табела захтевно
+- читање из тих табела потребно радити брзо што даље захтева имплементацију _read uncommitted_ изолационог нивоа трансакција
 
-Moderni SUBP-ovi implementiraju i ceo deo spomenutog _SQL_ standarda u kom su definisani specijalni pogledi i tabele metapodataka @simpledb. Pored toga postoje i kompleksni histogrami koji sadrže razne podatke iz više tabela i dodatno ubrzavaju upite @histogrami.
+Модерни СУБП-ови имплементирају и цео део споменутог _SQL_ стандарда у ком су дефинисани специјални погледи и табеле метаподатака @simpledb. Поред тога постоје и комплексни хистограми који садрже разне податке из више табела и додатно убрзавају упите @histogrami.
 
-=== Nedostajuća implementacija indeksnih struktura podataka
+=== Недостајућа имплементација индексних структура података
 
-Indeksi predstavljaju specijalnu strukturu podataka koja omogućava znatno bržu pretragu podataka. Realizuju se preko jedne od _BTree_ varijanti ili kao _Hash_ indeks.
+Индекси представљају специјалну структуру података која омогућава знатно бржу претрагу података. Реализују се преко једне од _BTree_ варијанти или као _Hash_ индекс.
 
-Iako su indeksi krucijalni za efikasan SUBP, odlučio sam da ih ne implementiram jer želim da im se posvetim u okviru sledeće iteracije _LBDB_ sistema. Ipak, podržano je kreiranje metapodataka vezanih za indekse u okviru menadžera metapodataka, ali smatram da ovo nije vredno spominjati van ovog poglavlja jer ne utiče na dalji sistem.
+Иако су индекси круцијални за ефикасан СУБП, одлучио сам да их не имплементирам јер желим да им се посветим у оквиру следеће итерације _LBDB_ система. Ипак, подржано је креирање метаподатака везаних за индексе у оквиру менаджера метаподатака, али сматрам да ово није вредно спомињати ван овог поглавља јер не утиче на даљи систем.
 
-=== Neoptimalni planer <neoptimalni-planer>
+=== Неоптимални планер <neoptimalni-planer>
 
-Planer _LBDB_ sistema ne koristi skoro nijednu naprednu tehniku planiranja. Brzina izvršavanja upita dosta zavisi od redosleda tabela u upitu, uslov filtriranja se primenjuje nakon ulančavanja svih tabela umesto izolovano po tabeli, selektivnost i procene broja _NULL_ i jedinstvenih vrednosti se ne koriste, itd.
+Планер _LBDB_ система не користи скоро ниједну напредну технику планирања. Брзина извршавања упита доста зависи од редоследа табела у упиту, услов филтрирања се примењује након уланчавања свих табела уместо изоловано по табели, селективност и процене броја _NULL_ и јединствених вредности се не користе, итд.
 
-Poglavlja 14 i 15 iz @simpledb opisuju implementaciju efikasnijeg planera koji intenzivno koristi _RBO_ tehnike planiranja, ali je ovo ostavljeno za sledeću iteraciju _LBDB_ sistema.
+Поглавља 14 и 15 из @simpledb описују имплементацију планера који интензивно користи _RBO_ технике планирања, али је ово остављено за следећу итерацију _LBDB_ система.
 
-=== Ulančavanje članova predikata je moguće samo konjunkcijom <samo-and>
+=== Уланчавање чланова предиката је могуће само коњункцијом <samo-and>
 
-Predikati se mogu sastojati samo od članova ulančanih logičkom operacijom konjunkcije (`AND`). Negacija izraza (`NOT`) i ulančavanje operacijom disjunkcije (`OR`) nisu podržani iako je lako dodati obradu logičkih operacija jer nisam bio siguran kako se uklapaju u napredne tehnike planiranja. Kada završim sa istraživanjem naprednog planera, biće mi lakše da ubacim i nedostajuće logičke operacije.
+Предикати се могу састојати само од чланова уланчаних логичком операцијом коњункције (`AND`). Негација израза (`NOT`) и уланчавање операцијом дисјункције (`OR`) нису подржани иако је лако додати обраду логичких операција јер нисам био сигуран како се уклапају у напредне технике планирања. Када завршим са истраживањем напредног планера, биће ми лакше да убацим и недостајуће логичке операције.
 
-== Razlike između osnovne implementacije i _LBDB_ sistema <razlika-implementacije>
-
-U tabeli @tbl:najznacajnija_prosirenja se mogu videti razlike između osnovne implementacije i _LBDB_ sistema.
+== Разлике између основне имплементације и _LBDB_ система <razlika-implementacije>
 
 #[
-  #show table.cell: set text(size: 10.5pt)
+  #show table.cell: set text(size: 9.4pt)
 
   #figure(
     {
@@ -76,47 +74,47 @@ U tabeli @tbl:najznacajnija_prosirenja se mogu videti razlike između osnovne im
       table(
         columns: (0.8fr, 1.3fr),
         align: (center, center),
-        inset: 4.5pt,
-        [Osnovna implementacija iz @simpledb], [Implementacija _LBDB_ sistema],
+        inset: 3.5pt,
+        [Основна имплементација из @simpledb], [Имплементација _LBDB_ система],
         //
-        [_Integer_ i _String_ tipovi], [Podržan i _Boolean_ tip],
+        [_Integer_ и _String_ типови], [Подржан и _Boolean_ тип],
         //
-        [_Naive_ algoritam smene bafera],
-        [Podržani i _FIFO_, _LRU_, _Clock_, _First unmodified_, _LRM_ algoritmi smene bafera],
+        [_Naive_ алгоритам смене бафера],
+        [Подржани и _FIFO_, _LRU_, _Clock_, _First unmodified_, _LRM_ алгоритми смене бафера],
         //
-        [_Undo only_ algoritam oporavka], [Podržan i _undo redo_ algoritam oporavka],
+        [_Undo only_ алгоритам опоравка], [Подржан и _undo redo_ алгоритам опоравка],
         //
-        [-], [Podržane _NULL_ vrednosti],
+        [-], [Подржане _NULL_ вредности],
         //
-        [-], [Aproksimacija broja jedinstvenih vrednosti kolone tabele preko _HyperLogLog_ probabilističke strukture],
+        [-], [Апроксимација броја јединствених вредности колоне табеле преко _HyperLogLog_ структуре],
         //
-        [Konstantni i identifikacioni izrazi], [Podržani i aritmetički izrazi i članovi sa svim operatorima poređenja],
+        [Константни и идентификациони изрази], [Подржани и аритметички изрази и чланови са свим операторима поређења],
         //
-        [Samo operatori selekcije, projekcije i proizvoda],
-        [Podržani i operatori generalizovane projekcije, preimenovanja i unije],
+        [Само оператори селекције, пројекције и производа],
+        [Подржани и оператори генерализоване пројекције, преименовања и уније],
         //
-        [Prosto računanje redukcionog faktora],
-        [Računanje redukcionog faktora na osnovu algoritma istraživačkog rada _SystemR_ @systemR],
+        [Просто рачунање редукционог фактора],
+        [Рачунање редукционог фактора на основу алгоритма истраживачког рада _SystemR_ @systemR],
         //
-        [-], [Izraz zamenskog člana],
+        [-], [Израз заменског члана],
         //
-        [-], [Detaljna semantička provera svih naredbi],
+        [-], [Детаљна семантичка провера свих наредби],
         //
-        [-], [Podržana _EXPLAIN_ naredba],
+        [-], [Подржана _EXPLAIN_ наредба],
         //
-        [-], [Redukcija izraza za vreme planiranja],
+        [-], [Редукција израза за време планирања],
         //
         [-],
-        [Protokol komunikacije, serverski i klijentski sloj, kontrolisano gašenje sistema i periodično pisanje mirne kontrolne tačke],
+        [Протокол комуникације, серверски и клијентски слој, контролисано гашење система и периодично писање мирне контролне тачке],
         //
-        [-], [Implementacija sistema za testiranje funkcionalnosti],
+        [-], [Имплементација система за тестирање функционалности],
         //
-        [Starija _Java_ verzija],
-        [Moderna _Java_ verzija i njene mogućnosti poput _sealed interface_, _record_, _Optional_, _stream_ _API_-ja, ...],
+        [Старија _Java_ верзија],
+        [Модерна _Java_ верзија и њене могућности попут _sealed interface_, _record_, _Optional_, _stream_ _API_-ја, ...],
         //
-        [-], [_Maven_ za automatizaciju kompilacije],
+        [-], [_Maven_ за аутоматизацију компилације],
       )
     },
-    caption: [Najznačajnija proširenja u implementaciji _LBDB_ sistema],
+    caption: [Најзначајнија проширења у имплементацији _LBDB_ система],
   )<tbl:najznacajnija_prosirenja>
 ]

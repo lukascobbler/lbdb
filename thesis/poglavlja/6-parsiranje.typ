@@ -1,136 +1,136 @@
 
 
-= Parsiranje <parsiranje>
+= Парсирање <parsiranje>
 
-Klijenti šalju _SQL_ naredbe u tekstualnom formatu, ali sistemu komad teksta nema nikakvo inherentno značenje. Podsistem za ekstrakciju informacija iz teksta naredbe se naziva parser.
+Клијенти шаљу _SQL_ наредбе у текстуалном формату, али систему комад текста нема никакво инхерентно значење. Подсистем за екстракцију информација из текста наредбе се назива парсер.
 
-Nije svaki komad teksta validna _SQL_ naredba, ali njegova validnost se može podeliti na dva sloja @simpledb:
-- sintaksička validnost, gde sintaksa predstavlja skup pravila koja definišu moguće operacije po nekoj gramatici,
-- semantička validnost, koja je ispunjena ako je neka operacija validna u kontekstu podataka koje koristi (imena tabela, imena kolona, ...)
+Није сваки комад текста валидна _SQL_ наредба, али његова валидност се може поделити на два слоја @simpledb:
+- синтаксичка валидност, где синтакса представља скуп правила која дефинишу могуће операције по некој граматици,
+- семантичка валидност, која је испуњена ако је нека операција валидна у контексту података које користи (имена табела, имена колона, ...)
 
-Parsiranje konstruiše apstraktno sintaksičko stablo (eng. _abstract syntax tree_, _AST_) koje se mapira na podržane operacije i služi za proveru *samo* sintaksičke validnosti operacije. Provera semantičke validnosti je deo planera (sekcija @planer).
+Парсирање конструише апстрактно синтаксичко стабло (енг. _abstract syntax tree_, _AST_) које се мапира на подржане операције и служи за проверу *само* синтаксичке валидности операције. Провера семантичке валидности је део планера (секција @planer).
 
-== Tokenizator
+== Токенизатор
 
-Blokovi teksta se sastoje od individualnih karaktera. Većina individualnih karaktera sadrži jako malo značenja kada se obrađuju nezavisno i zbog toga se uvodi sistem koji grupiše povezane karaktere. Skup grupisanih karaktera koji zajedno imaju visok stepen značenja se zovu tokeni. Karakteri koji se obrađuju sami su isto opisani kao tokeni, jer je bitno da je svaki token imenovan.
+Блокови текста се састоје од индивидуалних карактера. Већина индивидуалних карактера садржи јако мало значења када се обрађују независно и због тога се уводи систем који групише повезане карактере. Скуп груписаних карактера који заједно имају висок степен значења се зову токени. Карактери који се обрађују сами су исто описани као токени, јер је битно да је сваки токен именован.
 
-`Tokenizer` klasa sadrži logiku pretvaranja bloka teksta u tokene odgovarajućeg tipa i implementirana je preko _Java_ `Iterator` interfejsa. `Token` je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Svi tokeni u sistemu su grupisani u sledeće kategorije:
-- ključne reči _SQL_ jezika,
-- identifikatori,
-- simboli,
-- brojevi,
-- _String_-ovi,
-- nevalidni karakteri,
-- `EOF` token.
-Svaka kategorija tokena implementira `Token` interfejs i predstavljena je _record_ ili _enum_ _Java_ strukturom.
+`Tokenizer` класа садржи логику претварања блока текста у токене одговарајућег типа и имплементирана је преко _Java_ `Iterator` интерфејса. `Token` је дефинисан _sealed interface_ _Java_ конструктом, због његове одличне компатибилности са `switch` синтаксом. Сви токени у систему су груписани у следеће категорије:
+- кључне речи _SQL_ језика,
+- идентификатори,
+- симболи,
+- бројеви,
+- _String_-ови,
+- невалидни карактери,
+- `EOF` токен.
+Свака категорија токена имплементира `Token` интерфејс и представљена је _record_ или _enum_ _Java_ структуром.
 
-== Parser
+== Парсер
 
-Gramatika nekog jezika predstavlja skup pravila koje opisuju sve legalne komade teksta, koje neki sistem podržava. Sintaksičke kategorije su koncepti sa kojima gramatika barata. Predstavljaju čvorove sintakstičkog stabla i sadrže se od drugih sintaksičkih kategorija i tokena.
+Граматика неког језика представља скуп правила које описују све легалне комаде текста, које неки систем подржава. Синтаксичке категорије су концепти са којима граматика барата. Представљају чворове синтакстичког стабла и садрже се од других синтаксичких категорија и токена.
 
-Vrsta parsiranja koja je implementirana se zove _recursive descent_ parsiranje. U _recursive descent_ parsiranju, gramatika se proverava od gore ka dole. Ulazna tačka je koren sintaksičkog stabla i za svako podstablo, to jest gramatičko pravilo, postoji funkcija koja obrađuje to pravilo. Funkcije se često pozivaju rekurzivno da bi obradili veće celine, pa je tako ovaj način parsiranja i dobio ime. Svaka funkcija obrade pravila, na bilo kom nivou, se mapira na jednu sintaksičku kategoriju.
+Врста парсирања која је имплементирана се зове _recursive descent_ парсирање. У _recursive descent_ парсирању, граматика се проверава од горе ка доле. Улазна тачка је корен синтаксичког стабла и за свако подстабло, то јест граматичко правило, постоји функција која обрађује то правило. Функције се често позивају рекурзивно да би обрадили веће целине, па је тако овај начин парсирања и добио име. Свака функција обраде правила, на било ком нивоу, се мапира на једну синтаксичку категорију.
 
-=== Iskazi <statement>
+=== Искази <statement>
 
-Uspešno parsiranje nekog bloka teksta koji predstavlja _SQL_ operaciju rezultuje u iskazu, koji sadrži sve neophodne podatke da se ta operacija izvrši. Iskaz (`Statement` klasa) je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Svaki iskaz je predstavljen _Java_ _record_ strukturom i nasleđuje `Statement`.
+Успешно парсирање неког блока текста који представља _SQL_ операцију резултује у исказу, који садржи све неопходне податке да се та операција изврши. Исказ (`Statement` класа) је дефинисан _sealed interface_ _Java_ конструктом, због његове одличне компатибилности са `switch` синтаксом. Сваки исказ је представљен _Java_ _record_ структуром и наслеђује `Statement`.
 
-=== Sintaksičke kategorije _SQL_ operacija
+=== Синтаксичке категорије _SQL_ операција
 
-Funkcije koje generišu iskaze predstavljaju sintaksičke kategorije najvišeg apstrakcionog nivoa i grupisane su u različite _Java_ datoteke. Svaka datoteka sadrži sve sintaksičke kategorije nižeg apstrakcionog nivoa potrebne da se iskaz uspešno obradi.
+Функције које генеришу исказе представљају синтаксичке категорије највишег апстракционог нивоа и груписане су у различите _Java_ датотеке. Свака датотека садржи све синтаксичке категорије нижег апстракционог нивоа потребне да се исказ успешно обради.
 
 ==== `Parse`
 
 #figure(
   image("../dijagrami/parsiranje/parse.svg", height: 26%),
   caption: [
-    Gramatika `Parse` sintaksičke kategorije
+    Граматика `Parse` синтаксичке категорије
   ],
 )<fig:parse>
 
-`Parse` predstavlja glavnu sintatičku kategoriju i grupiše sve ostale sintaksičke kategorije. Omogućava i `EXPLAIN` naredbu, koja generiše opis naredbe koja će se izvršiti. Iskazi upravljanja životnim ciklusima transakcija se isto parsiraju ovde jer su previše jednostavni da bi se pravila posebna sintaksička kategorija za njih. Vraća `Statement` objekat.
+`Parse` представља главну синтатичку категорију и групише све остале синтаксичке категорије. Омогућава и `EXPLAIN` наредбу, која генерише опис наредбе која ће се извршити. Искази управљања животним циклусима трансакција се исто парсирају овде јер су превише једноставни да би се правила посебна синтаксичка категорија за њих. Враћа `Statement` објекат.
 
 ==== `ParseUpdate`
 
 #figure(
   image("../dijagrami/parsiranje/parse_update.svg"),
   caption: [
-    Gramatika `ParseUpdate` sintaksičke kategorije
+    Граматика `ParseUpdate` синтаксичке категорије
   ],
 )<fig:parse_update>
 
-`ParseUpdate` predstavlja naredbu modifikovanja podataka neke tabele. Može sadržati proizvoljan broj novih dodela vrednosti, ali svako polje u svim dodelama vrednosti mora postojati u referenciranoj tabeli. Moguće je modifikovati samo neke slogove, a ne sve, tako što se definiše uslov pretrage. Vraća `UpdateStatement` objekat.
+`ParseUpdate` представља наредбу модификовања података неке табеле. Може садржати произвољан број нових додела вредности, али свако поље у свим доделама вредности мора постојати у споменутој табели. Могуће је модификовати само подскуп слогова, тако што се дефинише услов претраге. Враћа `UpdateStatement` објекат.
 
 ==== `ParseSelect` <parse_select>
 
 #figure(
-  image("../dijagrami/parsiranje/parse_select.svg", height: 52%),
+  image("../dijagrami/parsiranje/parse_select.svg", height: 43%),
   caption: [
-    Gramatika `ParseSelect` sintaksičke kategorije
+    Граматика `ParseSelect` синтаксичке категорије
   ],
 )<fig:parse_select>
 
-`ParseSelect` predstavlja naredbu upita (eng. _query_) podataka. Može sadržati proizvoljan broj projektovanih kolona, gde je svaka kolona predstavljena kao bilo šta što može da se evaluira i kojoj se može dodeliti novo ime (uz `AS` ključnu reč). Podržava filtriranje na osnovu uslova pretrage. Upit može biti nad pravim tabelama ili nad virtuelnom tabelom koja sadrži jedan slog. Ulančavanje tabela se može raditi na dva načina: samo navođenje tabela odvojene zarezom ili preko `JOIN` ključne reči gde se uslov ulančavanja upisuje odmah. Uslov ulančavanja napisan u `JOIN` sekciji se samo dodaje na uslov pretrage, umesto da predstavlja neki specijalan način ulančavanja. Vraća `SelectStatement` objekat.
+`ParseSelect` представља наредбу упита (енг. _query_) података. Може садржати произвољан број пројектованих колона, где је свака колона представљена као било шта што може да се евалуира и којој се може доделити ново име (уз `AS` кључну реч). Подржава филтрирање на основу услова претраге. Упит може бити над правим табелама или над виртуелном табелом која садржи један слог. Уланчавање табела се може радити на два начина: само навођење табела одвојене зарезом или преко `JOIN` кључне речи где се услов уланчавања уписује одмах. Услов уланчавања написан у `JOIN` секцији се само додаје на услов претраге. Враћа `SelectStatement` објекат.
 
 ==== `ParseInsert`
 
 #figure(
   image("../dijagrami/parsiranje/parse_insert.svg", height: 32%),
   caption: [
-    Gramatika `ParseInsert` sintaksičke kategorije
+    Граматика `ParseInsert` синтаксичке категорије
   ],
 )<fig:parse_insert>
 
-`ParseInsert` predstavlja naredbu umetanja novih slogova u neku tabelu. Lista polja ne mora biti definisana, uzima se podrazumevani redosled koji je napravljen tokom kreiranja te tabele. Izrazi moraju biti konstantni, to jest njihova evaluacija ne sme zavisiti od vrednosti koje ne mogu da se izračunaju bez pristupa tabelama. Vraća `InsertStatement` objekat.
+`ParseInsert` представља наредбу уметања нових слогова у неку табелу. Листа поља не мора бити дефинисана, узима се подразумевани редослед који је направљен током креирања те табеле. Изрази морају бити константни, то јест њихова евалуација не сме зависити од вредности које не могу да се израчунају без приступа табелама. Враћа `InsertStatement` објекат.
 
 ==== `ParseDelete`
 
 #figure(
   image("../dijagrami/parsiranje/parse_delete.svg", height: 10%),
   caption: [
-    Gramatika `ParseDelete` sintaksičke kategorije
+    Граматика `ParseDelete` синтаксичке категорије
   ],
 )<fig:parse_delete>
 
-`ParseDelete` predstavlja naredbu brisanja slogova iz neke tabele. Moguće je obrisati samo slogove koji ispunjavaju neki uslov, tako što se definiše uslov pretrage. Vraća `DeleteStatement` objekat.
+`ParseDelete` представља наредбу брисања слогова из табеле. Могуће је обрисати само подскуп слогова, тако што се дефинише услов претраге. Враћа `DeleteStatement` објекат.
 
 ==== `ParseCreateTable`
 
 #figure(
-  image("../dijagrami/parsiranje/parse_create_table.svg", height: 27%),
+  image("../dijagrami/parsiranje/parse_create_table.svg", height: 25%),
   caption: [
-    Gramatika `ParseCreateTable` sintaksičke kategorije
+    Граматика `ParseCreateTable` синтаксичке категорије
   ],
 )<fig:parse_create_table>
 
-`ParseCreateTable` predstavlja naredbu kreiranja nove tabele. Tabela može sadržati maksimalno 31 polje (sekcija @primena_strukture_na_blok). Polje može biti jedno od tipova podržanih u sistemu (listing @fig:tip), a za _String_ (_VARCHAR_) tip se mora definisati i maksimalna dužina, koja mora biti konstantan izraz. Ograničenje da slogovi za neku kolonu ne smeju imati _NULL_ vrednosti je opciono i definiše se nakon tipa kolone. Vraća `CreateTableStatement` objekat.
+`ParseCreateTable` представља наредбу креирања нове табеле. Поље може бити једно од типова подржаних у систему (листинг @fig:tip), а за _String_ (_VARCHAR_) тип се мора дефинисати и максимална дужина, која мора бити константан израз. Ограничење да слогови за неку колону не смеју имати _NULL_ вредности је опционо и дефинише се након типа колоне. Враћа `CreateTableStatement` објекат.
 
 ==== `ParsePredicate`
 
 #figure(
   image("../dijagrami/parsiranje/parse_predicate.svg", height: 34%),
   caption: [
-    Gramatika `ParsePredicate` sintaksičke kategorije
+    Граматика `ParsePredicate` синтаксичке категорије
   ],
 )<fig:parse_predicate>
 
-`ParsePredicate` je specijalna vrsta sintaksičke kategorije koja ne proizvodi iskaz, već služi za kreiranje sintaksičkih stabala predikata. Parsiraju se izrazi i operacije poređenja od kojih se članovi sastoje, a zatim se ulančavaju članovi da bi se formirao predikat. Vraća `Predicate` objekat. Ne podržava članove bez operatora poređenja.
+`ParsePredicate` је специјална врста синтаксичке категорије која не производи исказ, већ служи за креирање синтаксичких стабала предиката. Парсирају се изрази и операције поређења од којих се чланови састоје, а затим се уланчавају чланови да би се формирао предикат. Враћа `Predicate` објекат. Не подржава чланове без оператора поређења.
 
 ==== `ParseExpression` <parsiranje_izraza>
 
 #figure(
   image("../dijagrami/parsiranje/parse_expression.svg", height: 94.5%),
   caption: [
-    Gramatika `ParseExpression` sintaksičke kategorije
+    Граматика `ParseExpression` синтаксичке категорије
   ],
 )<fig:parse_expression>
 
-`ParseExpression` je specijalna vrsta sintaksičke kategorije koja ne proizvodi iskaz, već služi za kreiranje sintaksičkih stabala izraza. Parsiranje izraza je urađeno specijalnom tehnikom _recursive descent_ parsiranja koja se zove _Pratt parsing_ @pratt_parsing. _Pratt parsing_ definiše tehnike obrade prioriteta operacija, zagrada, prepoznavanja identifikatora i zamenskih članova. Vraća `Expression` objekat.
+`ParseExpression` је специјална врста синтаксичке категорије која не производи исказ, већ служи за креирање синтаксичких стабала израза. Парсирање израза је урађено специјалном техником _recursive descent_ парсирања која се зове _Pratt parsing_ @pratt_parsing. _Pratt parsing_ дефинише технике обраде приоритета операција, заграда, препознавања идентификатора и заменских чланова. Враћа `Expression` објекат.
 
-Prvo se parsira prefiksni izraz, koji može biti literal različitog tipa, identifikator, zamenski član, izraz sa unarnom operacijom ili izraz u zagradama. Rezultat ovog koraka postaje početni levi operand. Zatim se ulazi u petlju koja se izvršava sve dok je prioritet sledećeg (infiksnog, $+$, $-$, $*$, $\/$, $\^$) operatora strogo veći od trenutnog prioriteta.
+Прво се парсира префиксни израз, који може бити литерал различитог типа, идентификатор, заменски члан, израз са унарном операцијом или израз у заградама. Резултат овог корака постаје почетни леви операнд. Затим се улази у петљу која се извршава све док је приоритет следећег (инфиксног, $+$, $-$, $*$, $\/$, $\^$) оператора строго већи од тренутног приоритета.
 
-Unutar petlje, operator se konzumira, a desni operand se dobija rekurzivnim pozivom funkcije za parsiranje izraza kojoj se prosleđuje prioritet tog novog operatora (ili prioritet umanjen za jedan, ukoliko je operacija desno-asocijativna, poput stepenovanja). Od levog operanda, operatora i desnog operanda kreira se novo stablo binarnog izraza, koje zatim postaje novi levi operand za narednu iteraciju petlje.
+Унутар петље, оператор се конзумира, а десни операнд се добија рекурзивним позивом функције за парсирање израза којој се прослеђује приоритет тог новог оператора (или приоритет умањен за један, уколико је операција десно-асоцијативна, попут степеновања). Од левог операнда, оператора и десног операнда креира се ново стабло бинарног израза, које затим постаје нови леви операнд за наредну итерацију петље.
 
-U isečku koda ispod se mogu videti različiti prioriteti operacija na osnovu tokena koji ih opisuju. Token `STAR` predstavlja i operator zamenskog člana, pa se zove `STAR` umesto `MULTIPLY`. Prefiksne operacije imaju najveći prioritet.
+У исечку кода испод се могу видети различити приоритети операција на основу токена који их описују. Токен `STAR` представља и оператор заменског члана, па се зове `STAR` уместо `MULTIPLY`. Префиксне операције имају највећи приоритет.
 
 #figure(
   ```java
@@ -146,7 +146,7 @@ U isečku koda ispod se mogu videti različiti prioriteti operacija na osnovu to
   }
   ```,
   caption: [
-    Prioriteti aritmetičkih operacija u sistemu
+    Приоритети аритметичких операција у систему
   ],
 )<fig:prioriteti_pratt>
 
@@ -155,8 +155,8 @@ U isečku koda ispod se mogu videti različiti prioriteti operacija na osnovu to
 #figure(
   image("../dijagrami/parsiranje/parse_evaluatable.svg", height: 46%),
   caption: [
-    Gramatika `ParseEvaluatable` sintaksičke kategorije
+    Граматика `ParseEvaluatable` синтаксичке категорије
   ],
 )<fig:parse_evaluatable>
 
-`ParseEvaluatable` je specijalna vrsta sintaksičke kategorije koja ne proizvodi iskaz, već služi za agnostično kreiranje objekata koji se mogu evaluirati na vrednost. Liči na `ParsePredicate`, ali sa dodatnom mogućnošću da prepozna kada izraz nije deo člana ili predikata. Vraća objekat koji implementira `Evaluatable` interfejs (sekcija @evaluatable-interfejs). Ne podržava članove bez operatora poređenja.
+`ParseEvaluatable` је специјална врста синтаксичке категорије која не производи исказ, већ служи за агностично креирање објеката који се могу евалуирати на вредност. Личи на `ParsePredicate`, али са додатном могућношћу да препозна када израз није део члана или предиката. Враћа објекат који имплементира `Evaluatable` интерфејс (секција @evaluatable-interfejs). Не подржава чланове без оператора поређења.

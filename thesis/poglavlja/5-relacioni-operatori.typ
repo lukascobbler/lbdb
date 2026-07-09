@@ -1,58 +1,58 @@
 
 
-= Relacioni operatori <relacioni-operatori>
+= Релациони оператори <relacioni-operatori>
 
-_SQL_ programski jezik je jezik deklarativnog tipa. To znači da se preko njega specificira šta treba da se uradi sa podacima (dobavljanje, filtriranje, modifikacija, ...), ali za razliku od proceduralnih programskih jezika, ne specificira se i kako. Most između deklarativne prirode _SQL_ jezika i potrebe definisanja načina pristupa podacima je rešen implementacijom _relacione algebre_ @relaciona_alg. _LBDB_ sistem prevodi kod _SQL_ programskog jezika u stablo operatora relacione algebre.
+_SQL_ програмски језик је језик декларативног типа. То значи да се преко њега специфицира шта треба да се уради са подацима (добављање, филтрирање, модификација, ...), али за разлику од процедуралних програмских језика, не специфицира се и како. Мост између декларативне природе _SQL_ језика и потребе дефинисања начина приступа подацима је решен имплементацијом _relacione algebre_ @relaciona_alg. _LBDB_ систем преводи код _SQL_ програмског језика у стабло оператора релационе алгебре.
 
-Relacija $R$ je skup torki oblika ($d_1, d_2, ..., d_j$) gde za svaku komponentu $d_k$ torke $d_j$ važi $d_k in D_k$, gde je $D_k$ domen koji definiše skup svih dozvoljenih vrednosti za tu komponentu. U relacionim bazama podataka, tabela se modeluje kao relacija, dok operatori relacione algebre preslikavaju jednu ili više relacija u novu relaciju kao rezultat primenjene transformacije. Torke se mapiraju na slogove tabela.
+Релација $R$ је скуп торки облика ($d_1, d_2, ..., d_j$) где за сваку компоненту $d_k$ торке $d_j$ важи $d_k in D_k$, где је $D_k$ домен који дефинише скуп свих дозвољених вредности за ту компоненту. У релационим базама података, табела се моделује као релација, док оператори релационе алгебре пресликавају једну или више релација у нову релацију као резултат примењене трансформације. Торке се мапирају на слогове табела.
 
-== Virtuelna mašina
+== Виртуелна машина
 
-Virtuelna mašina _LBDB_ sistema predstavlja okruženje izvršavanja logičkih i aritmetičkih operacija i sastoji se od klasa koje modeluju komponente tih operacija.
+Виртуелна машина _LBDB_ система представља окружење извршавања логичких и аритметичких операција и састоји се од класа које моделују компоненте тих операција.
 
-=== Konstante
+=== Константе
 
-Sve vrednosti sa kojima relacioni operatori barataju predstavljene su `Constant` klasom. Ona omogućava sistemu da definiše generičko ponašanje za sve različite tipove podržane u sistemu. Relacioni operatori uvek vraćaju `Constant` objekte na svom izlazu. Implementira `Comparable<Constant>` interfejs zarad lakog poređenja.
+Све вредности са којима релациони оператори баратају представљене су `Constant` класом. Она омогућава систему да дефинише генеричко понашање за све различите типове подржане у систему. Релациони оператори увек враћају `Constant` објекте на свом излазу. Имплементира `Comparable<Constant>` интерфејс зарад лаког поређења.
 
 #figure(
   image("../dijagrami/konstante.pdf", height: 28%),
   caption: [
-    Hijerarhija konstanti
+    Хијерархија константи
   ],
 )<fig:hijerarhija_konstanti>
 
-Interfejs konstante je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Konkretne konstante su predstavljene _Java_ _record_ strukturom. `NullConstant` nema nikakve podatke instance, jer su sve `NULL` vrednosti identične u sistemu, pa se na svim mestima koristi ista instanca.
+Интерфејс константе је дефинисан _sealed interface_ _Java_ конструктом, због његове одличне компатибилности са `switch` синтаксом. Конкретне константе су представљене _Java_ _record_ структуром. `NullConstant` нема никакве податке инстанце, јер су све `NULL` вредности идентичне у систему, па се на свим местима користи иста инстанца.
 
-=== Izrazi <izrazi>
+=== Изрази <izrazi>
 
-Sve aritmetičke operacije koje sistem evaluira su predstavljene `Expression` klasom. Evaluacija izraza uvek proizvodi `Constant` objekte. Izrazi se sastoje od proizvoljne kombinacije aritmetičkih operatora (`+`, `-`, `*`, `/`, `^`), zagrada, konstanti i identifikatora kolona tabele. Interfejs izraza je definisan _sealed interface_ _Java_ konstruktom, zbog njegove odlične kompatibilnosti sa `switch` sintaksom. Konkretni izrazi su predstavljeni _Java_ _record_ strukturom.
+Све аритметичке операције које систем евалуира су представљене `Expression` класом. Евалуација израза увек производи `Constant` објекте. Изрази се састоје од произвољне комбинације аритметичких оператора (`+`, `-`, `*`, `/`, `^`), заграда, константи и идентификатора колона табеле. Интерфејс израза је дефинисан _sealed interface_ _Java_ конструктом, због његове одличне компатибилности са `switch` синтаксом. Конкретни изрази су представљени _Java_ _record_ структуром.
 
 #figure(
-  image("../dijagrami/izrazi.pdf", height: 52%),
+  image("../dijagrami/izrazi.pdf", height: 49%),
   caption: [
-    Hijerarhija izraza
+    Хијерархија израза
   ],
 )<fig:hijerarhija_izraza>
 
-Evaluacija izraza predstavlja proces računanja konstante koja predstavlja vrednost tog izraza za neki slog tabele.
+Евалуација израза представља процес рачунања константе која представља вредност тог израза за неки слог табеле.
 
-`BinaryArithmeticExpression` je izraz koji u sebi sadrži izraze i omogućava kreiranje stabla izraza, gde se prvo evaluiraju njegovi članovi, pa onda on. `UnaryArithmeticExpression` ima istu funkciju, ali za prefiksne operatore (`+`, `-`) i ima samo jedan član.
+`BinaryArithmeticExpression` је израз који у себи садржи изразе и омогућава креирање стабла израза, где се прво евалуирају његови чланови, па онда он. `UnaryArithmeticExpression` има исту функцију, али за префиксне операторе (`+`, `-`) и има само један члан.
 
-`WildcardExpression` suštinski ne predstavlja izraz, ali zbog načina parsiranja izraza (sekcija @parsiranje_izraza), tretira se kao jedan. Služi kao zamenski član (eng. _placeholder_) svih kolona upitanih tabela. Evaluacija je zabranjena operacija i onemogućena je izuzetkom.
+`WildcardExpression` суштински не представља израз, али због начина парсирања израза (секција @parsiranje_izraza), третира се као један. Служи као заменски члан (енг. _placeholder_) свих колона упитаних табела. Евалуација је забрањена операција и онемогућена је изузетком.
 
-`FieldNameExpression` je izraz koji identifikuje virtuelnu kolonu neke tabele upita, sa opcionim preimenovanjem tabele i evaluira se na vrednost te kolone. `ConstantExpression` se evaluira direktno na konstantu za koju je vezan i nezavisan je od tabela.
+`FieldNameExpression` је израз који идентификује виртуелну колону неке табеле упита, са опционим преименовањем табеле и евалуира се на вредност те колоне. `ConstantExpression` се евалуира директно на константу за коју је везан и независан је од табела.
 
-=== Članovi
+=== Чланови
 
-Član (eng. _term_) enkapsulira logiku za poređenje konstanti dva evaluirana izraza. Poređenje dve konstante zavisi od operatora poređenja koji mogu biti `=`, `!=`, `>`, `>=`, `<`, `<=`, `IS`, `IS NOT`. Razlika između `=` i `IS` (isto tako i između `!=` i `IS NOT`) je u tome kako se ponašaju sa _NULL_ vrednostima. `IS` omogućava poređenje sa _NULL_ vrednostima, dok `=` to ne podržava. Evaluacija člana nad nekim relacionim operatorom, za razliku od evaluacije izraza, vraća samo da li član važi ili ne.
+Члан (енг. _term_) енкапсулира логику за поређење константи два евалуирана израза. Поређење две константе зависи од оператора поређења који могу бити `=`, `!=`, `>`, `>=`, `<`, `<=`, `IS`, `IS NOT`. Разлика између `=` и `IS` (исто тако и између `!=` и `IS NOT`) је у томе како се понашају са _NULL_ вредностима. `IS` омогућава поређење са _NULL_ вредностима, док `=` то не подржава. Евалуација члана над неким релационим оператором, за разлику од евалуације израза, враћа само да ли члан важи или не.
 
-=== Predikati <predikati>
+=== Предикати <predikati>
 
-Predikati ulančavaju članove logičkim operatorima. Evaluacija predikata nad nekim relacionim operatorom funkcioniše isto kao i evaluacija jednog člana, ali između tih članova stoje različite logičke operacije. _LBDB_ sistem podržava samo `AND` logičke operatore između članova i ovo ograničenje je detaljnije opisano u sekciji @samo-and.
+Предикати уланчавају чланове логичким операторима. Евалуација предиката над неким релационим оператором функционише исто као и евалуација једног члана, али између тих чланова стоје различите логичке операције. _LBDB_ систем подржава само `AND` логичке операторе између чланова и ово ограничење је детаљније описано у секцији @samo-and.
 
-=== Generalizacija evaluacije <evaluatable-interfejs>
+=== Генерализација евалуације <evaluatable-interfejs>
 
-Izrazi i predikati implementiraju `Evaluatable` interfejs koji definiše sve operacije potrebne za njihovu evaluaciju i kasniju proveru validnosti. Ovaj interfejs omogućava sistemu da se ne brine o tome šta se evaluira, već samo o konstanti koju će dobiti, što dalje omogućava da se vrednosti projektovanih kolona (sekcija @operator_projekcije) dobijaju i preko evaluacije izraza i preko evaluacije predikata.
+Изрази и предикати имплементирају `Evaluatable` интерфејс који дефинише све операције потребне за њихову евалуацију и каснију проверу валидности. Овај интерфејс омогућава систему да се не брине о томе шта се евалуира, већ само о константи коју ће добити, што даље омогућава да се вредности пројектованих колона (секција @operator_projekcije) добијају и преко евалуације израза и преко евалуације предиката.
 
 #figure(
   ```java
@@ -68,124 +68,122 @@ Izrazi i predikati implementiraju `Evaluatable` interfejs koji definiše sve ope
   }
   ```,
   caption: [
-    `Evaluatable` interfejs
+    `Evaluatable` интерфејс
   ],
 )<fig:evaluatable>
 
-== Struktura relacionih operatora u sistemu
+== Структура релационих оператора у систему
 
-Za izvršavanje naredbi definisanih _SQL_ jezikom, često je potrebno primeniti više relacionih operatora. Primena više relacionih operatora se radi njihovim ulančavanjem u stablovsku strukturu podataka i zbog ovoga se kaže da sistem izvršava "stablo" relacionih operatora.
+За извршавање наредби дефинисаних _SQL_ језиком, често је потребно применити више релационих оператора. Примена више релационих оператора се ради њиховим уланчавањем у стабловску структуру података и због овога се каже да систем извршава "стабло" релационих оператора.
 
-=== Protočna obrada
+=== Проточна обрада
 
-Relacioni operatori podržani u sistemu imaju dve zajedničke osobine @simpledb:
-- generišu slogove jedan po jedan
-- ne čuvaju generisane slogove i ne čuvaju nikakve međurezultate
+Релациони оператори подржани у систему имају две заједничке особине @simpledb:
+- генеришу слогове један по један
+- не чувају генерисане слогове и не чувају никакве међурезултате
 
-Zahtev za izvršavanje neke operacije nad stablom operatora počinje od korena stabla, koji formira rezultat uz pomoć čvorova ispod njega, ali nekad i direktno. Ovim načinom, zahtev prolazi kroz celo stablo operatora. Vraća se greška klijentu ukoliko barem jedan čvor nije uspeo da formira rezultat zbog greške prilikom izvršavanja.
+Захтев за извршавање неке операције над стаблом оператора почиње од корена стабла, који формира резултат уз помоћ чворова испод њега, али некад и директно. Овим начином, захтев пролази кроз цело стабло оператора. Враћа се грешка клијенту уколико барем један чвор није успео да формира резултат због грешке приликом извршавања.
 
-Kombinacija dve navedene osobine uz delegaciju operacija se zove protočna obrada (eng. _pipelined processing_). Korišćenje protočne obrade u mnogim scenarijima ne dodaje nikakvno dodatno _U/I_ opterećenje, pa ju je pogodno koristiti.
+Комбинација две наведене особине уз делегацију операција се зове проточна обрада (енг. _pipelined processing_). Коришћење проточне обраде у многим сценаријима не додаје никаквно додатно _U/I_ оптерећење, па ју је погодно користити.
 
-Prednost protočne obrade što ne čuva međurezultate je upravo i njena mana za određene operacije. Materijalizovana obrada (eng. _materialization_, _materialized processing_) omogućava i čuvanje međurezultata pa može rešiti ovu manu, ali dolazi sa svojim problemima. Takođe, neke operacije poput grupisane agregacije, vraćanje samo jedinstvenih slogova i proizvoljno sortiranje nije moguće obaviti bez materijalizovane obrade. Potrebno je koristiti oba načina obrade u sistemu za najbolje rezultate, ali _LBDB_ sistem implementira samo protočnu obradu.
+Предност проточне обраде што не чува међурезултате је управо и њена мана за одређене операције. Материјализована обрада (енг. _materialization_, _materialized processing_) омогућава и чување међурезултата па може решити ову ману, али долази са својим проблемима. Такође, неке операције попут груписане агрегације, враћање само јединствених слогова и произвољно сортирање није могуће обавити без материјализоване обраде. Потребно је користити оба начина обраде у систему за најбоље резултате, али _LBDB_ систем имплементира само проточну обраду.
 
-=== Hijerarhija implementacije relacionih operatora <hijerarhija_rel_op>
+=== Хијерархија имплементације релационих оператора <hijerarhija_rel_op>
 
-Najopštija podela relacionih operatora je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke. Ova distinkcija je napravljena da se obezbedi sigurnost od pogrešne primene operatora u vremenu kompajliranja koda (eng. _compile time_). Hijerarhija podrazumevanih implementacija se sastoji od raznih kosturskih implementacija koje se koriste za lako definisanje novog relacionog operatora. Ostale klase van hijerarhije podrazumevanih implementacija predstavljaju različite relacione operatore podržane u sistemu i objašnjene su ispod.
+Најопштија подела релационих оператора је на оне који само читају податке (енг. _read-only_) и на оне који могу да модификују податке. Ова дистинкција је направљена да се обезбеди сигурност од погрешне примене оператора у времену компајлирања кода (енг. _compile time_). Хијерархија подразумеваних имплементација се састоји од разних костурских имплементација које се користе за лако дефинисање новог релационог оператора. Остале класе ван хијерархије подразумеваних имплементација представљају различите релационе операторе подржане у систему и објашњене су испод.
 
 #figure(
   image("../dijagrami/hijerarhija_relacionih_operatora.pdf"),
   caption: [
-    Hijerarhija implementacije relacionih operatora
+    Хијерархија имплементације релационих оператора
   ],
 )<fig:hijerarhija_skenova>
 
 ==== `Scan`
 
-`Scan` apstraktna klasa definiše operacije neophodne za prolazak kroz sve vrednosti rezultujuće virtuelne tabele. Svaki relacioni operator implementira bar ove operacije. Vraćanje vrednosti se radi isključivo kroz `Constant` objekte. `Scan` se može, ali ne mora, mapirati na fizičku tabelu. Implementira `AutoCloseable` interfejs koji omogućava _RAII_ (eng. _Resource Acquisition Is Initialization_) šablon, ali ne pruža implementaciju logike oslobađanja resursa.
+`Scan` апстрактна класа дефинише операције неопходне за пролазак кроз све вредности резултујуће виртуелне табеле. Сваки релациони оператор имплементира бар ове операције. Враћање вредности се ради искључиво кроз `Constant` објекте. `Scan` се може, али не мора, мапирати на физичку табелу. Имплементира `AutoCloseable` интерфејс који омогућава _RAII_ (енг. _Resource Acquisition Is Initialization_) шаблон, али не пружа имплементацију логике ослобађања ресурса.
 
 ==== `UpdateScan`
 
-Rezultujuće virtuelne tabele relacionih operatora koji dozvoljavaju modifikaciju vrednosti se moraju mapirati na fizičke tabele, jer nema smisla menjati virtuelne vrednosti. To znači da za svaki virtuelni slog $r$ u stablu modifikujućih operatora, mora da postoji $r'$ koji ima identičnu strukturu, poziciju i vrednosti u datoteci tabele. `UpdateScan` klasa definiše operacije promene vrednosti kolona nekog sloga, umetanja novog sloga i brisanja sloga.
+Резултујуће виртуелне табеле релационих оператора који дозвољавају модификацију вредности се морају мапирати на физичке табеле, јер нема смисла мењати виртуелне вредности. То значи да за сваки виртуелни слог $r$ у стаблу модификујућих оператора, мора да постоји $r'$ који има идентичну структуру, позицију и вредности у датотеци табеле. `UpdateScan` класа дефинише операције промене вредности колона неког слога, уметања новог слога и брисања слога.
 
 ==== `UnaryScan`
 
-`UnaryScan` sadrži podrazumevane implementacije proizvoljnog relacionog operatora koji transformiše *jednu* relaciju, to jest jednu tabelu. Svaki poziv podrazumevane implementacije je samo prosleđen operatoru ispod. Ovakva struktura omogućava da operatori koji nasleđuju ovu klasu redefinišu samo metode koje su potrebne za funkcionisanje tog operatora i izbegava se dupliranje istog koda.
+`UnaryScan` садржи подразумеване имплементације произвољног релационог оператора који трансформише *једну* релацију, то јест једну табелу. Сваки позив подразумеване имплементације је само прослеђен оператору испод. Оваква структура омогућава да оператори који наслеђују ову класу редефинишу само методе које су потребне за функционисање тог оператора и избегава се дуплирање истог кода.
 
 ==== `UnaryUpdateScan`
 
-`UnaryUpdateScan` sadrži podrazumevane implementacije proizvoljnog relacionog operatora koji može da modifikuje vrednosti fizičke tabele. Funkcioniše isto kao i `UnaryScan` i ima sve podrazumevane implementacije iz njega.
+`UnaryUpdateScan` садржи подразумеване имплементације произвољног релационог оператора који може да модификује вредности физичке табеле. Функционише исто као и `UnaryScan` и има све подразумеване имплементације из њега.
 
 ==== `BinaryScan`
 
-`BinaryScan` sadrži podrazumevane implementacije proizvoljnog relacionog operatora koji transformiše *dve* relacije, to jest dve tabele. Pošto operatori koji rade nad dve tabele nemaju toliko međusobnih preklapanja, `BinaryScan` implementira samo `close()` metodu koja oslobađa resurse oba deteta.
+`BinaryScan` садржи подразумеване имплементације произвољног релационог оператора који трансформише *две* релације, то јест две табеле. Пошто оператори који раде над две табеле немају толико међусобних преклапања, `BinaryScan` имплементира само `close()` методу која ослобађа ресурсе оба детета.
 
 ==== `DiffSchemaJoinContextScan`
 
-`DiffSchemaJoinContextScan` ima sličnu ulogu kao `BinaryScan`, ali samo za operatore koji vrše multiplikativno objedinjavanje dve tabele i enkapsulira korektan pristup kolonama iz dve šeme koje nemaju preklapanje.
+`DiffSchemaJoinContextScan` има сличну улогу као `BinaryScan`, али само за операторе који врше мултипликативно обједињавање две табеле и енкапсулира коректан приступ колонама из две шеме које немају преклапање.
 
 ==== `TableScan` <table_sken>
 
-`TableScan` nije pravi relacioni operator zato što njegova implementacija ne radi transformacije tabele, već pruža logiku za dobavljanje i modifikaciju fizičkih vrednosti. Služi kao omotač oko objekata stranice slogova i zadužen je za konstruisanje novih povezanih objekata stranice slogova. Pošto pruža inicijalne vrednosti koje će dalje biti transformisane, uvek se nalazi na dnu stabla relacionih operatora.
+`TableScan` није прави релациони оператор зато што његова имплементација не ради трансформације табеле, већ пружа логику за добављање и модификацију физичких вредности. Служи као омотач око објеката странице слогова и задужен је за конструисање нових повезаних објеката странице слогова. Пошто пружа иницијалне вредности које ће даље бити трансформисане, увек се налази на дну стабла релационих оператора.
 
 ==== `DummyTableScan` <dummy_table_sken>
 
-`DummyTableScan` nije pravi relacioni operator zato što njegova implementacija ne radi transformacije tabele, već pruža logiku za dobavljanje i navigaciju jedinog sloga virtuelne tabele koja se konstruiše u _SQL_ upitima koji ne rade ni sa jednom fizičkom tabelom.
+`DummyTableScan` није прави релациони оператор зато што његова имплементација не ради трансформације табеле, већ пружа логику за добављање и навигацију јединог слога виртуелне табеле која се конструише у _SQL_ упитима који не раде ни са једном физичком табелом.
 
 ==== `SelectScan` <operator_selekcije>
 
-`SelectScan` implementira operator generalizovane selekcije $sigma_phi (R)$ iz relacione algebre, gde je $sigma$ ime selekcionog operatora, $phi$ je formula filtera, a $R$ je relacija nad kojom se operator primenjuje. Redefiniše samo metode za prolazak kroz slogove, jer je to jedino neophodno da se ukinu slogovi koji ne prolaze filter. Sadrži `Predicate` objekat pomoću kog filtrira. Može da se koristi i u kontekstima modifikujućih stabala operatora i u kontekstima _read-only_ stabala operatora i zbog toga postoji i `SelectReadOnlyScan` varijanta koja ima istu funkciju.
+`SelectScan` имплементира оператор генерализоване селекције $sigma_phi (R)$ из релационе алгебре, где је $sigma$ име селекционог оператора, $phi$ је формула филтера, а $R$ је релација над којом се оператор примењује. Редефинише само методе за пролазак кроз слогове, јер је то једино неопходно да се укину слогови који не пролазе филтер. Садржи `Predicate` објекат помоћу ког филтрира. Може да се користи и у контекстима модификујућих стабала оператора и у контекстима _read-only_ стабала оператора и због тога постоји и `SelectReadOnlyScan` варијанта која има исту функцију.
 
 ==== `ExtendProjectScan` <operator_projekcije>
 
-`ExtendProjectScan` implementira operator projekcije $Pi_(a_1, ..., a_n) (R)$ iz relacione algebre, gde je $Pi$ ime projekcionog operatora, a $a_n$ predstavlja izraz čija evaluacija proizvodi vrednost komponente $n$. Operator projekcije koji klasa implementira nije striktno operator projekcije formalno definisan u relacionoj algebri, zato što dozvoljava kreiranje novih kolona sa izrazima koji će biti izračunati u trenutku izvršavanja stabla, a ne povučene direktno iz fizičke tabele. Dozvoljava i dodeljivanje proizvoljnog imena izrazima kolona, ali se to ne treba pomešati sa operatorom preimenovanja. Redefiniše metode dobavljanja vrednosti i provere postojanja kolone nekog imena.
+`ExtendProjectScan` имплементира оператор пројекције $Pi_(a_1, ..., a_n) (R)$ из релационе алгебре, где је $Pi$ име пројекционог оператора, а $a_n$ представља израз чија евалуација производи вредност компоненте $n$. Оператор пројекције који класа имплементира није стриктно оператор пројекције формално дефинисан у релационој алгебри, зато што дозвољава креирање нових колона са изразима који ће бити израчунати у тренутку извршавања стабла, а не повучене директно из физичке табеле. Дозвољава и додељивање произвољног имена изразима колона, али се то не треба помешати са оператором преименовања. Редефинише методе добављања вредности и провере постојања колоне неког имена.
 
 ==== `RenameScan`
 
-`RenameScan` implementira operator preimenovanja $rho_(a_n slash b_n) (R)$ iz relacione algebre, gde je $rho$ ime operatora preimenovanja, a $b_n$ predstavlja novo ime komponente $a_n$. Razlikuje se od formalne definicije operatora preimenovanja iz relacione algebre jer dozvoljava $n$ preimenovanja odjednom da bi se izbeglo ulančavanje istih operatora. Bitno je napomenuti da operator preimenovanja omogućava pristup koloni sa imenom $a$ kroz ime $b$, za razliku od operatora projekcije koji samo dodeljuje ime nekom izrazu. Redefiniše metode dobavljanja vrednosti i provere postojanja kolone nekog imena.
+`RenameScan` имплементира оператор преименовања $rho_(a_n slash b_n) (R)$ из релационе алгебре, где је $rho$ име оператора преименовања, а $b_n$ представља ново име компоненте $a_n$. Разликује се од формалне дефиниције оператора преименовања из релационе алгебре јер дозвољава $n$ преименовања одједном да би се избегло уланчавање истих оператора. Битно је напоменути да оператор преименовања омогућава приступ колони са именом $a$ кроз име $b$, за разлику од оператора пројекције који само додељује име неком изразу. Редефинише методе добављања вредности и провере постојања колоне неког имена.
 
 ==== `ProductScan`
 
-`ProductScan` implementira operaciju dekartovog proizvoda relacija $R$ i $S$: $R times S$. Rezultujuća relacija predstavlja virtuelnu tabelu koja ima $|R| * |S|$ torki, a svaka torka se sastoji od svih komponenti obe relacije. Operacija dekartovog proizvoda je multiplikativna, a `ProductScan` zahteva da tabele nemaju kolone sa istim imenom, pa se koristi `DiffSchemaJoinContextScan`. Iteracija kroz rezultujuću tabelu nakon `ProductScan` operatora se vrši tako što se za svaki slog prve tabele, prolazi kroz sve slogove druge tabele. Redefiniše metode dobavljanja vrednosti, provere postojanja kolone nekog imena i sve navigacione metode.
+`ProductScan` имплементира операцију декартовог производа релација $R$ и $S$: $R times S$. Резултујућа релација представља виртуелну табелу која има $|R| * |S|$ торки, а свака торка се састоји од свих компоненти обе релације. Операција декартовог производа је мултипликативна, а `ProductScan` захтева да табеле немају колоне са истим именом, па се користи `DiffSchemaJoinContextScan`. Итерација кроз резултујућу табелу након `ProductScan` оператора се врши тако што се за сваки слог прве табеле, пролази кроз све слогове друге табеле. Редефинише методе добављања вредности, провере постојања колоне неког имена и све навигационе методе.
 
 ==== `UnionAllScan`
 
-`UnionAllScan` implementira operaciju kreiranja relacije koje sadrži sve torke relacija $R$ i $S$. Ne briše duplikate. Zahteva da su komponente torki obe relacije istog tipa i da obe relacije imaju isti broj komponenata po torki. Po _SQL_ standardu, kolonama druge tabele se pristupa po imenima prve. Operacija unije je aditivna. Iteracija kroz rezultujuću tabelu nakon `UnionAllScan` operatora se vrši tako što se prvo prolazi kroz sve slogove prve tabele, pa se prolazi kroz sve slogove druge tabele. Redefiniše metode dobavljanja vrednosti, provere postojanja kolone nekog imena i sve navigacione metode.
+`UnionAllScan` имплементира операцију креирања релације које садржи све торке релација $R$ и $S$. Не брише дупликате. Захтева да су компоненте торки обе релације истог типа и да обе релације имају исти број компонената по торки. По _SQL_ стандарду, колонама друге табеле се приступа по именима прве. Операција уније је адитивна. Итерација кроз резултујућу табелу након `UnionAllScan` оператора се врши тако што се прво пролази кроз све слогове прве табеле, па се пролази кроз све слогове друге табеле. Редефинише методе добављања вредности, провере постојања колоне неког имена и све навигационе методе.
 
-=== Primeri
+=== Примери
 
-Sledeći primeri vizuelno pokazuju različite delove stabla relacionih operatora i kako se neke funkcionalnosti ponašaju.
-Primeri ne oslikavaju stabla relacionih operatora koje bi _LBDB_ sistem napravio, već služe da pokažu uklapanje komponenata virtuelne mašine, protočnu obradu i kako se `Scan` objekti oslanjaju jedni na druge.
+Следећи примери визуелно показују различите делове стабла релационих оператора и како се неке функционалности понашају.
+Примери не осликавају стабла релационих оператора које би _LBDB_ систем направио, већ служе да покажу уклапање компонената виртуелне машине, проточну обраду и како се `Scan` објекти ослањају једни на друге.
 
-==== Primer izgleda komponenti virtuelne mašine
-
-Za datu naredbu _SQL_ jezika se mogu videti jednostavni primeri svake komponente virtuelne mašine.
+==== Пример изгледа компоненти виртуелне машине
 
 #figure(
-  image("../dijagrami/primer_virt_masina.pdf"),
+  image("../dijagrami/primer_virt_masina.pdf", width: 100%),
   caption: [
-    Primer naredbe u _SQL_ jeziku gde se pokazuju sve komponente virtuelne mašine
+    Пример наредбе у _SQL_ језику где се виде све компоненте виртуелне машине
   ],
 )<fig:virt_masina_primer>
 
 
-==== Primer poziva `getValue()` metode
+==== Пример позива `getValue()` методе
 
-Prate se koraci poziva `getValue()` metode, za virtuelnu kolonu `"StudentId"`. Union operator, koji je skroz na vrhu, spaja dve tabele: tabelu koja modeluje zastareli način vođenja evidencije i virtuelnu tabelu koja je rezultat podstabla operatora koji projektuju iste kolone kao i u tabeli zastarele evidencije. `ExtendProjectScan` je preimenovao `"SSId"` u `"StudentId"`. Uz `TableScan` i `ProductScan` operatore stoji i uprošćena šema.
+Прате се кораци позива `getValue()` методе, за виртуелну колону `"StudentId"`. Унион оператор, који је скроз на врху, спаја две табеле: табелу која моделује застарели начин вођења евиденције и виртуелну табелу која је резултат подстабла оператора који пројектују исте колоне као и у табели застареле евиденције. `ExtendProjectScan` је преименовао `"SSId"` у `"StudentId"`. Уз `TableScan` и `ProductScan` операторе стоји и упрошћена шема.
 
 #figure(
-  image("../dijagrami/primer_stabla_relacionih_operatora.pdf", height: 81%),
+  image("../dijagrami/primer_stabla_relacionih_operatora.pdf", height: 78%),
   caption: [
-    Primer poziva `getValue()` metode u konkretnom stablu relacionih operatora
+    Пример позива `getValue()` у конкретном стаблу релационих оператора
   ],
 )<fig:getValue_primer>
 
-==== Primer poziva `next()` metode
+==== Пример позива `next()` методе
 
-Ovaj primer koristi isto relaciono stablo kao i prethodni primer. Pomoću dijagrama sekvence se opisuje procedura iteracije kroz stablo sa svim vrstama operatora koji menjaju podrazumevanu iteraciju.
+Овај пример користи исто релационо стабло као и претходни пример. Помоћу дијаграма секвенце се описује процедура итерације кроз стабло са свим врстама оператора који мењају подразумевану итерацију.
 
 #figure(
   image("../dijagrami/sekvenca_iteracije_stabla_rel_op.svg"),
   caption: [
-    Dijagram sekvence `next()` metode u konkretnom stablu relacionih operatora
+    Дијаграм секвенце `next()` у конкретном стаблу релационих оператора
   ],
 )<fig:getValue_primer>

@@ -31,16 +31,14 @@
   Пројектовати и имплементирати систем за управљање релационим базама података у програмском језику _Java_. Систем треба да обухвати управљање датотекама и блоковима на диску, баферовање страница у радној меморији, трансакционе механизме са гарантовањем _ACID_ особина, управљање метаподацима, као и парсирање, планирање и извршавање подскупа _SQL_ језика кроз стабло релационих оператора. Систем реализовати у клијентско-серверској архитектури са сопственим протоколом за мрежну комуникацију. Исправност решења проверити одговарајућим скупом аутоматизованих тестова.
 ]
 
-// TODO: Датум одбране и чланове комисије добијате од ментора
 #let datum_odbrane = "17.07.2026"
-#let komisija_predsednik = "Петар Петровић"
-#let komisija_predsednik_zvanje = "ванредни професор"
-#let komisija_clan = "Марко Марковић"
+#let komisija_predsednik = "Горан Сладић"
+#let komisija_predsednik_zvanje = "редовни професор"
+#let komisija_clan = "Милан Стојков"
 #let komisija_clan_zvanje = "доцент"
 
-// На енглеском уписати чланове на латиници
-#let komisija_predsednik_eng = "Petar Petrović"
-#let komisija_clan_eng = "Marko Marković"
+#let komisija_predsednik_eng = "Goran Sladić"
+#let komisija_clan_eng = "Milan Stojkov"
 #let mentor_eng = "Branko Milosavljević"
 
 #let zvanje_eng = (

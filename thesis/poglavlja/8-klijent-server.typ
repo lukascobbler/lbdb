@@ -1,161 +1,161 @@
 
 
-= Klijentsko-serverska arhitektura <klijent-server>
+= Клијентско-серверска архитектура <klijent-server>
 
-Postoje dva glavna načina kako sistem upravljanja relacionim bazama podataka može raditi: lokalno, bez mrežne infrastrukture (eng. _embedded connection_) i kao server.
+Постоје два главна начина како систем управљања релационим базама података може радити: локално, без мрежне инфраструктуре (енг. _embedded connection_) и као сервер.
 
-Karakteristike sistema u lokalnom režimu rada:
-- radi u istom procesu operativnog sistema kao i aplikacija koja ga koristi,
-- samo jedna aplikacija može da koristi tu instancu sistema,
-- ne zahteva mrežnu konekciju,
-- zahteva manje resursa,
-- ponaša se kao biblioteka koja razume unutrašnjosti relacionog modela podataka.
+Карактеристике система у локалном режиму рада:
+- ради у истом процесу оперативног система као и апликација која га користи,
+- само једна апликација може да користи ту инстанцу система,
+- не захтева мрежну конекцију,
+- захтева мање ресурса,
+- понаша се као библиотека која разуме унутрашњости релационог модела података.
 
-Karakteristike sistema u serverskom režimu rada:
-- radi kao zaseban proces operativnog sistema,
-- više različitih aplikacija i korisnika može da pristupi toj instanci sistema,
-- zahteva mrežnu konekciju,
-- zahteva više resursa,
-- ponaša se kao pružilac usluge upravljanja relacionim modelom podataka.
+Карактеристике система у серверском режиму рада:
+- ради као засебан процес оперативног система,
+- више различитих апликација и корисника може да приступи тој инстанци система,
+- захтева мрежну конекцију,
+- захтева више ресурса,
+- понаша се као пружилац услуге управљања релационим моделом података.
 
-_LBDB_ sistem podržava samo serverski režim rada.
+_LBDB_ систем подржава само серверски режим рада.
 
-== Komunikacija sa klijentima
+== Комуникација са клијентима
 
-Kod serverskog režima rada, pretpostavlja se da je klijent na udaljenom računaru i nema pristup resursima računara na kom se pokreće server. Posledica ovog je da sva komunikacija mora da se vrši kroz mrežu, preko nekog protokola komunikacije.
+Код серверског режима рада, претпоставља се да је клијент на удаљеном рачунару и нема приступ ресурсима рачунара на ком се покреће сервер. Последица овог је да сва комуникација мора да се врши кроз мрежу, преко неког протокола комуникације.
 
-=== Odgovori sistema <response>
+=== Одговори система <response>
 
-Sve vrste odgovora koje server može dati za neku naredbu koju je klijent zadao predstavljene su _Java_ _record_ konstruktom i implementiraju `Response` _sealed interface_.
+Све врсте одговора које сервер може дати за неку наредбу коју је клијент задао представљене су _Java_ _record_ конструктом и имплементирају `Response` _sealed interface_.
 
-- `QuerySet` predstavlja odgovor na _read-only_ naredbe, čiji je rezultat skup slogova. Jedan slog je predstavljen listom konstanti. Da bi sistem znao kako da pošalje slogove preko mreže, a kasnije i kako da napravi tabelarni prikaz, potrebno je poslati i propratnu šemu koja opisuje poslate slogove.
-- `EmptySet` predstavlja odgovor na modifikacione naredbe. Sadrži samo podatak o tome na koliko slogova je uticano.
-- `ErrorResponse` se vraća klijentu kada se desi greška prilikom parsiranja, prilikom planiranja ili prilikom izvršavanja naredbe.
+- `QuerySet` представља одговор на _read-only_ наредбе, чији је резултат скуп слогова. Један слог је представљен листом константи. Да би систем знао како да пошаље слогове преко мреже, а касније и како да направи табеларни приказ, потребно је послати и пропратну шему која описује послате слогове.
+- `EmptySet` представља одговор на модификационе наредбе. Садржи само податак о томе на колико слогова је утицано.
+- `ErrorResponse` се враћа клијенту када се деси грешка приликом парсирања, приликом планирања или приликом извршавања наредбе.
 
 #figure(
   image("../dijagrami/response.pdf", width: 40%),
   caption: [
-    Struktura `Response` hijerarhije
+    Структура `Response` хијерархије
   ],
 )<fig:struktura_planera>
 
-=== Protokol serijalizacije <protokol>
+=== Протокол серијализације <protokol>
 
-Preko mreže je moguće slati samo niz bajtova. Pošto `Response` objekti nisu podrazumevano predstavljeni nizovima bajtova, za njih se mora definisati način serijalizacije i deserijalizacije.
+Преко мреже је могуће слати само низ бајтова. Пошто `Response` објекти нису подразумевано представљени низовима бајтова, за њих се мора дефинисати начин серијализације и десеријализације.
 
-Protokol serijalizacije `Response` objekata je inspirisan _RESP_ (_REdis Serialization Protocol_) #footnote[https://redis.io/docs/latest/develop/reference/protocol-spec/] protokolom. Svakom tipu se dodeljuje jedan bajt koji ga jedinstveno predstavlja. `'*'` za `QuerySet`, `'_'` za `EmptySet` i `'-'` za `ErrorResponse`.
+Протокол серијализације `Response` објеката је инспирисан _RESP_ (_REdis Serialization Protocol_) #footnote[https://redis.io/docs/latest/develop/reference/protocol-spec/] протоколом. Сваком типу се додељује један бајт који га јединствено представља. `'*'` за `QuerySet`, `'_'` за `EmptySet` и `'-'` за `ErrorResponse`.
 
-Brojčane vrednosti se pretvaraju u bajtove `byte` tipa koji se sastoji od jednog bajta, u bajtove `short` tipa koji se sastoji od $2$ bajta ili u bajtove `int` tipa koji se sastoji od $4$ bajta. `String` vrednosti se pretvaraju u bajtove uz _UTF-8_ (_Unicode Transformation Format_) kodiranje.
+Бројчане вредности се претварају у бајтове `byte` типа који се састоји од једног бајта, у бајтове `short` типа који се састоји од $2$ бајта или у бајтове `int` типа који се састоји од $4$ бајта. `String` вредности се претварају у бајтове уз _UTF-8_ (_Unicode Transformation Format_) кодирање.
 
-`EmptySet` i `ErrorResponse` je trivijalno serijalizovati i deserijalizovati, jer se sastoje od samo jedne vrednosti.
+`EmptySet` и `ErrorResponse` је тривијално серијализовати и десеријализовати, јер се састоје од само једне вредности.
 
-`QuerySet` sadrži dosta vrednosti koje imaju specifičan format, pa je algoritam serijalizacije kompleksniji (svaka vrednost je podrazumevano zapisana u bajtovima):
-- zapisuje se jedinstveni identifikator `QuerySet` tipa: `'*'`
-- zapisuje se količina kolona šeme rezultujuće tabele kao `short`
-- za svaku kolonu se zapisuje:
-  - dužina bajtova imena, kao `short`
-  - kodirano ime kolone
-  - tip kolone, kao `short`, ako je tip _VARCHAR_ zapisuje se i njegova dužina, kao `int`
-  - da li je kolona _nullable_, kao `byte`
-- zapisuje se količina slogova
-- za svaku vrednost svakog sloga se zapisuje:
-  - $0$ ako je _NULL_, $1$ ako nije _NULL_, kao `short`
-  - brojnu vrednost, kao `int` ako je tip _INTEGER_, brojnu vrednost, kao `byte` ako je tip _BOOLEAN_, dužina _String_-a, kao `int` tip zajedno sa kodiranim _String_-om ako je tip _VARCHAR_
+`QuerySet` садржи доста вредности које имају специфичан формат, па је алгоритам серијализације комплекснији (свака вредност је подразумевано записана у бајтовима):
+- записује се јединствени идентификатор `QuerySet` типа: `'*'`
+- записује се количина колона шеме резултујуће табеле као `short`
+- за сваку колону се записује:
+  - дужина бајтова имена, као `short`
+  - кодирано име колоне
+  - тип колоне, као `short`, ако је тип _VARCHAR_ записује се и његова дужина, као `int`
+  - да ли је колона _nullable_, као `byte`
+- записује се количина слогова
+- за сваку вредност сваког слога се записује:
+  - $0$ ако је _NULL_, $1$ ако није _NULL_, као `short`
+  - бројну вредност, као `int` ако је тип _INTEGER_, бројну вредност, као `byte` ако је тип _BOOLEAN_, дужина _String_-а, као `int` тип заједно са кодираним _String_-ом ако је тип _VARCHAR_
 
-Na kraju serijalizacije se računa dužina bajtova i ona se stavlja pre svih bajtova, da bi se prilikom deserijalizacije znalo koliko bajtova da se pročita.
-
-Algoritam deserijalizacije za sve tipove isto funkcioniše, ali u suprotnom smeru.
+На крају серијализације се рачуна дужина бајтова и она се ставља пре свих бајтова, да би се приликом десеријализације знало колико бајтова да се прочита. Алгоритам десеријализације за све типове функционише исто, али у супротном смеру.
 
 #figure(
   image("../dijagrami/protokol_paket.pdf"),
   caption: [
-    Struktura `QuerySet` paketa
+    Структура `QuerySet` пакета
   ],
 )<fig:queryset-paket>
-Na slici plavo predstavlja ceo paket, zeleno predstavlja deo paketa koji se ponavlja za svaku kolonu šeme, crveno predstavlja deo paketa koji se ponavlja za svaki slog, a žuto predstavlja deo paketa koji se ponavlja za svaku vrednost sloga.
+На слици плаво представља цео пакет, зелено представља део пакета који се понавља за сваку колону шеме, црвено представља део пакета који се понавља за сваки слог, а жуто представља део пакета који се понавља за сваку вредност слога.
 
-== Serverski sloj
+== Серверски слој
 
-Klasa `LBDBServer` sadrži `main` funkciju serverske aplikacije sistema. Čita i validira argumente komandne linije: port na kom će server raditi i putanja gde će se čuvati datoteke sistema. Pokreće instancu servera sa prosleđenim argumentima. Sva logika koja podržava serverske operacije se nalazi u `Server` klasi.
+Класа `LBDBServer` садржи `main` функцију серверске апликације система. Чита и валидира аргументе командне линије: порт на ком ће сервер радити и путања где ће се чувати датотеке система. Покреће инстанцу сервера са прослеђеним аргументима. Сва логика која подржава серверске операције се налази у `Server` класи.
 
-=== Rukovođenje klijentima
+=== Руковођење клијентима
 
-Prva funkcionalnost servera je obrada klijentskih konekcija i naredbi koje one šalju. Prilikom pokretanja servera, instancira se serverski _socket_ koji prihvata konekcije na određenom portu i otvara klijentski _socket_ za svakog klijenta.
+Прва функционалност сервера је обрада клијентских конекција и наредби које оне шаљу. Приликом покретања сервера, инстанцира се серверски _socket_ који прихвата конекције на одређеном порту и отвара клијентски _socket_ за сваког клијента.
 
-Pošto su klijenti nezavisni, ne bi trebalo da čekaju jedni druge i zbog toga se obrađuju u zasebnim nitima. Zarad lakšeg upravljanja, postoji `ThreadPool` sa $8$ fiksnih, stalno postojećih niti, koje čim završe sa obradom jednog zahteva ponovo postaju slobodne.
+Пошто су клијенти независни, не би требало да чекају једни друге и због тога се обрађују у засебним нитима. Зарад лакшег управљања, постоји `ThreadPool` са $8$ фиксних, стално постојећих нити, које чим заврше са обрадом једног захтева поново постају слободне.
 
-==== Obrada jednog klijenta <obrada-klijenta>
+==== Обрада једног клијента <obrada-klijenta>
 
-Obrada zahteva klijenata se vrši kroz `handleClient()` funkciju. Svaki klijentski _socket_ se kodira u jedinstveni broj sesije, tako što se izračuna heš vrednost njegove konekcije. Ovim se omogućava mapiranje klijenta na njegovu trenutnu transakciju. Ako broj sesije klijenta ne postoji u sistemu, dodeljuje se nova (prva) transakcija za tog klijenta.
+Обрада захтева клијената се врши кроз `handleClient()` функцију. Сваки клијентски _socket_ се кодира у јединствени број сесије, тако што се израчуна хеш вредност његове конекције. Овим се омогућава мапирање клијента на његову тренутну трансакцију. Ако број сесије клијента не постоји у систему, додељује се нова (прва) трансакција за тог клијента.
 
-Klijentske transakcije mogu da rade u režimu gde se sastoje od jedne naredbe (_autocommit_) ili u režimu gde se sastoje od više naredbi. U režimu gde se transakcije sastoje od više naredbi, potrebno je početi ih sa `START TRANSACTION` naredbom, a završiti sa `COMMIT` ili `ROLLBACK` naredbama. Ovo je glavni razlog zašto je potrebno jedinstveno identifikovati sesije klijenata, da bi njihova transakcija mogla da perzistira kroz više naredbi.
+Клијентске трансакције могу да раде у режиму где се састоје од једне наредбе (_autocommit_) или у режиму где се састоје од више наредби. У режиму где се трансакције састоје од више наредби, потребно је почети их са `START TRANSACTION` наредбом, а завршити са `COMMIT` или `ROLLBACK` наредбама. Ово је главни разлог зашто је потребно јединствено идентификовати сесије клијената, да би њихова трансакција могла да перзистира кроз више наредби.
 
-U slučaju prekida konekcije, server će izvršiti `ROLLBACK` trenutne transakcije klijenta.
-
-U slučaju da se server gasi, povezani klijenti mogu da pošalju samo naredbe koje završavaju transakcije, ali više o tome u opisu gašenja servera.
+У случају прекида конекције, сервер ће извршити `ROLLBACK` тренутне трансакције клијента. У случају да се сервер гаси, повезани клијенти могу да пошаљу само наредбе које завршавају трансакције, али више о томе у опису гашења сервера.
 
 #figure(
   image("../dijagrami/sekvenca_obrade_klijenta.svg"),
   caption: [
-    Dijagram sekvence obrade klijenta
+    Дијаграм секвенце обраде клијента
   ],
 )<fig:obrada_klijenta>
 
-=== Pisanje kontrolnih tačaka
+=== Писање контролних тачака
 
-Druga funkcionalnost servera je određivanje kada (ali ne i kako) će mirna kontrolna tačka biti pisana. Prilikom pokretanja servera startuje se i nit koja na svakih $10$ minuta započinje pisanje mirne kontrolne tačke. Da bi se mirna kontrolna tačka zapisala, nijedna transakcija ne sme biti aktivna u sistemu (sekcija @quiescent_alg).
+Друга функционалност сервера је одређивање када (али не и како) ће мирна контролна тачка бити писана. Приликом покретања сервера стартује се и нит која на сваких $10$ минута започиње писање мирне контролне тачке. Да би се мирна контролна тачка записала, ниједна трансакција не сме бити активна у систему (секција @quiescent_alg).
 
-Kada prođe $10$ minuta od poslednjeg zapisa mirne kontrolne tačke, server poziva algoritam zapisa koji interno čeka da se sve transakcije završe i zaustavlja obradu novih.
+Када прође $10$ минута од последњег записа мирне контролне тачке, сервер позива алгоритам записа који чека да се све трансакције заврше и зауставља обраду нових.
 
-=== Gašenje sistema
+=== Гашење система
 
-Treća funkcionalnost je bezbedno gašenje sistema. Bezbedno gašenje se inicira slanjem `SIGINT` signala na `Unix` operativnim sistemima ili slanjem `CTRL_C` (ili sličnog) signala na `Windows` operativnom sistemu. Najčešće, ovo se mapira na gašenje prozora gde je server pokrenut, ili slanjem signala preko `CTRL + C` prečice.
+Трећа функционалност је безбедно гашење система. Безбедно гашење се иницира слањем `SIGINT` сигнала на `Unix` оперативним системима или слањем `CTRL_C` (или сличног) сигнала на `Windows` оперативном систему. Најчешће, ово се мапира на гашење прозора где је сервер покренут, или слањем сигнала преко `CTRL + C` пречице.
 
-Bezbedno gašenje se sastoji iz tri koraka:
-- prestajanje prihvatanja novih naredbi, sem naredbi završetka transakcije
-- čekanje da se završe sve transakcije
-- zapisivanje mirne kontrolne tačke
+Безбедно гашење се састоји из три корака:
+- престајање прихватања нових наредби, сем наредби завршетка трансакције
+- чекање да се заврше све трансакције
+- записивање мирне контролне тачке
 
-Nakon što je gašenje inicirano, ulazi se u `drain` mod, gde se ne prihvataju konekcije novih klijenata, ali starim klijentima je dozvoljeno da završe svoje transakcije preko `COMMIT` ili `ROLLBACK` naredbi. U `drain` modu, samo ove naredbe su dozvoljene. Ako je server već u procesu pisanja mirne kontrolne tačke u trenutku slanja zahteva za gašenje, neće se pisati još jedna.
+Након што је гашење иницирано, улази се у `drain` мод, где се не прихватају конекције нових клијената, али старим клијентима је дозвољено да заврше своје трансакције преко `COMMIT` или `ROLLBACK` наредби. У `drain` моду, само ове наредбе су дозвољене. Ако је сервер већ у процесу писања мирне контролне тачке у тренутку слања захтева за гашење, неће се писати још једна.
 
 #figure(
   image("../dijagrami/sekvenca_gasenja_servera.svg", height: 38%),
   caption: [
-    Dijagram sekvence bezbednog gašenja servera
+    Дијаграм секвенце безбедног гашења сервера
   ],
 )<fig:gasenje_servera>
 
-== Klijentski sloj
+== Клијентски слој
 
-Klasa `LBDBClient` sadrži `main` funkciju klijentske aplikacije sistema. Čita i validira argument komandne linije: port na kojem se nalazi server na koji se klijent povezuje. Sva logika slanja naredbi se nalazi u ovoj klasi.
+Класа `LBDBClient` садржи `main` функцију клијентске апликације система. Чита и валидира аргумент командне линије: порт на којем се налази сервер на који се клијент повезује. Сва логика слања наредби се налази у овој класи.
 
-Klijentska aplikacija pruža korisnicima terminal gde se naredbe mogu upisivati. Terminal podržava automatsko završavanje ključnih reči (eng. _auto complete_) pritiskom `TAB` tastera i navigaciju istorije komandi. Terminal prati i koliko vremena se izvršavala svaka naredba.
+Клијентска апликација пружа корисницима терминал где се наредбе могу уписивати. Терминал подржава аутоматско завршавање кључних речи (енг. _auto complete_) притиском `TAB` тастера и навигацију историје команди. Терминал прати и колико времена се извршавала свака наредба.
 
-Paketi koje šalje serveru su serijalizovani tako da je na prvom mestu dužina teksta naredbe u bajtovima, a zatim i kodirani tekst naredbe. Pakete koje prima od servera deserijalizuje tako što čita prva $4$ bajta koja predstavljaju dužinu paketa u bajtovima, a zatim koristi algoritam deserijalizacije koji je opisan u protokolu komunikacije (sekcija @protokol).
+Пакети које шаље серверу су серијализовани тако да је на првом месту дужина текста наредбе у бајтовима, а затим и кодирани текст наредбе. Пакете које прима од сервера десеријализује тако што чита прва $4$ бајта која представљају дужину пакета у бајтовима, а затим користи алгоритам десеријализације који је описан у протоколу комуникације (секција @protokol).
 
-Podržava ispis sve tri vrste `Response` objekata, gde se `ErrorResponse` i `EmptySet` trivijalno prikazuju jer sadrže samo jednu vrednost. `QuerySet` objekti su tabele i njihovo prikazivanje se radi algoritmom štampanja tabela.
+Подржава испис све три врсте `Response` објеката, где се `ErrorResponse` и `EmptySet` тривијално приказују јер садрже само једну вредност. `QuerySet` објекти су табеле и њихово приказивање се ради алгоритмом штампања табела.
 
-=== Štampanje tabela <stampac-tabela>
+=== Штампање табела <stampac-tabela>
 
-Algoritam štampanja tabela ima zadatak da formatira sva imena kolona i sve vrednosti slogova iz `QuerySet` objekta. U tom objektu stoji šema tabele, pa ovo nije zahtevan zadatak. Koristi `StringBuilder` za efikasno kreiranje _String_-ova. Za lepši prikaz koristi specijalne _Unicode_ karaktere kao što su: `┌`, `─`, `┬`, `┐`, `┼`, `│`, `└`, `┴`, `┘`, `├`, `┤`.
+Алгоритам штампања табела има задатак да форматира сва имена колона и све вредности слогова из `QuerySet` објекта. У том објекту стоји шема табеле, па ово није захтеван задатак. Користи `StringBuilder` за ефикасно креирање _String_-ова. За лепши приказ користи специјалне _Unicode_ карактере као што су: `┌`, `─`, `┬`, `┐`, `┼`, `│`, `└`, `┴`, `┘`, `├`, `┤`.
 
-#figure(
-  ```text
-  ┌─────────┬──────────────┬──────────┐
-  │ tableid │ tablename    │ slotsize │
-  ├─────────┼──────────────┼──────────┤
-  │       2 │ tablecatalog │      112 │
-  │       3 │ fieldcatalog │      121 │
-  │       5 │ department   │      164 │
-  │       6 │ professor    │      173 │
-  │       7 │ student      │      173 │
-  │       8 │ course       │      172 │
-  │       9 │ enrollment   │       20 │
-  └─────────┴──────────────┴──────────┘
-  ```,
-  caption: [Primer ispisane tabele `SELECT * FROM tablecatalog;` naredbe],
-)<fig:stampanje_tabela>
+#[
+  #show raw: set text(size: 7pt)
 
-=== Masovno pokretanje naredbi
+  #figure(
+    ```text
+    ┌─────────┬──────────────┬──────────┐
+    │ tableid │ tablename    │ slotsize │
+    ├─────────┼──────────────┼──────────┤
+    │       2 │ tablecatalog │      112 │
+    │       3 │ fieldcatalog │      121 │
+    │       5 │ department   │      164 │
+    │       6 │ professor    │      173 │
+    │       7 │ student      │      173 │
+    │       8 │ course       │      172 │
+    │       9 │ enrollment   │       20 │
+    └─────────┴──────────────┴──────────┘
+    ```,
+    caption: [Пример исписане табеле `SELECT * FROM tablecatalog;` наредбе],
+  )<fig:stampanje_tabela>
+]
 
-_LBDB_ paket pruža još jednu vrstu klijentske aplikacije: `BulkExecutor`. Ova klijentska aplikacija funkcioniše slično kao i obična klijentska aplikacija, ali umesto pružanja interakcije sa sistemom preko terminala, redom izvršava sve _SQL_ naredbe iz neke datoteke. Ovo radi u ručno započetoj transakciji i ako bar jedna naredba ne uspe sa izvršavanjem, javlja grešku i vrši _rollback_. Korisna je za popunjavanje tabela ili za testiranje sistema.
+=== Масовно покретање наредби
+
+_LBDB_ пакет пружа још једну врсту клијентске апликације: `BulkExecutor`. Ова клијентска апликација функционише слично као и обична клијентска апликација, али уместо пружања интеракције са системом преко терминала, редом извршава све _SQL_ наредбе из неке датотеке. Ово ради у ручно започетој трансакцији и ако бар једна наредба не успе са извршавањем, јавља грешку и врши _rollback_. Корисна је за попуњавање табела или за тестирање система.

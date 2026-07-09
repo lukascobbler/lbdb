@@ -1,23 +1,23 @@
 
 
-= Pregled sistema <pregled-sistema>
+= Преглед система <pregled-sistema>
 
-U okviru ovog poglavlja su objašnjeni raznovrsni detalji sistema koji nisu vezani za same funkcionalnosti sistema.
+У оквиру овог поглавља су објашњени разноврсни детаљи система који нису везани за саме функционалности система.
 
-== Izgradnja i pokretanje <buildsystem>
+== Изградња и покретање <buildsystem>
 
-Sistem koristi _Maven_ za: automatizaciju kompilacije, izgradnju artefakata (aplikacija koje se pokreću) i za rukovođenje zavisnostima. U _Maven_ ekosistemu, izvorni kod prati striktno definisanu strukturu i nalazi se unutar `src/main` direktorijuma.
+Систем користи _Maven_ за: аутоматизацију компилације, изградњу артефаката (апликација које се покрећу) и за руковођење зависностима. У _Maven_ екосистему, изворни код прати стриктно дефинисану структуру и налази се унутар `src/main` директоријума.
 
-Za korektno funkcionisanje _Maven_ aplikacija, potrebno je definisati `pom.xml` datoteku u kojoj se nalaze sve neophodne instrukcije potrebne _Maven_-u.
+За коректно функционисање _Maven_ апликација, потребно је дефинисати `pom.xml` датотеку у којој се налазе све неопходне инструкције потребне _Maven_-у.
 
-Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serverska aplikacija se grade odvojeno, u tri različita artefakta. Ovo omogućava jednostavno odvojeno pokretanje. Nakon izgradnje, artefakti se mogu pronaći unutar `target` direktorijuma pod imenima: `LBDBServer.jar`, `LBDBClient.jar` i `BulkExecutor.jar`.
+По инструкцијама `pom.xml` датотеке _LBDB_ система, клијентске апликације и серверска апликација се граде одвојено, у три различита артефакта. Ово омогућава једноставно одвојено покретање. Након изградње, артефакти се могу пронаћи унутар `target` директоријума под именима: `LBDBServer.jar`, `LBDBClient.jar` и `BulkExecutor.jar`.
 
 #figure(
   ```sh
   mvn clean package -Dmaven.test.skip=true
   ```,
   caption: [
-    Izgradnja svih artefakata sistema, bez pokretanja testova
+    Изградња свих артефаката система, без покретања тестова
   ],
 )<fig:build>
 
@@ -26,44 +26,44 @@ Po instrukcijama `pom.xml` datoteke _LBDB_ sistema, klijentske aplikacije i serv
   mvn test
   ```,
   caption: [
-    Pokretanje svih funkcionalnih testova u sistemu
+    Покретање свих функционалних тестова у систему
   ],
 )<fig:pokretanje_testova>
 
-=== Rukovođenje zavisnostima
+=== Руковођење зависностима
 
-Klijentske aplikacije i serverska aplikacija dele kod za:
-- protokol komunikacije,
-- definiciju svih ključnih reči (zbog _auto complete_ funkcionalnosti klijentske aplikacije)
-- definiciju konstanti,
-- definiciju šeme i tipa vrednosti zbog korektnog ispisa.
+Клијентске апликације и серверска апликација деле код за:
+- протокол комуникације,
+- дефиницију свих кључних речи (због _auto complete_ функционалности клијентске апликације)
+- дефиницију константи,
+- дефиницију шеме и типа вредности због коректног исписа.
 
-Preostale zavisnosti i kod nisu deljeni.
+Преостале зависности и код нису дељени.
 
-==== Zavisnosti servera
+==== Зависности сервера
 
-Zavisnosti servera su sledeće:
-- `datasketches-java` za _Java_ implementaciju _HyperLogLog_ strukture podataka#footnote[https://datasketches.apache.org/],
-- `annotations` pruža dodatne _Java_ anotacije poput `@NotNull`#footnote[https://github.com/JetBrains/java-annotations].
+Зависности сервера су следеће:
+- `datasketches-java` за _Java_ имплементацију _HyperLogLog_ структуре података#footnote[https://datasketches.apache.org/],
+- `annotations` пружа додатне _Java_ анотације попут `@NotNull`#footnote[https://github.com/JetBrains/java-annotations].
 
-==== Zavisnosti klijenta <zavisnosti-klijenta>
+==== Зависности клијента <zavisnosti-klijenta>
 
-Zavisnosti običnog klijenta su sledeće:
-- `jline-reader`, `jline-terminal` i `jline-terminal-jna` pružaju implementaciju terminala i omogućavaju sistemski agnostičnu podršku za _UTF-8_ ispis#footnote[https://github.com/jline/jline3],
-- `net.java.dev.jna:jna` za pristup _native_ instrukcijama operativnog sistema#footnote[https://github.com/java-native-access/jna].
+Зависности обичног клијента су следеће:
+- `jline-reader`, `jline-terminal` и `jline-terminal-jna` пружају имплементацију терминала и омогућавају системски агностичну подршку за _UTF-8_ испис#footnote[https://github.com/jline/jline3],
+- `net.java.dev.jna:jna` за приступ _native_ инструкцијама оперативног система#footnote[https://github.com/java-native-access/jna].
 
-Zavisnosti `BulkExecutor` klijenta su iste kao i zavisnosti običnog klijenta, sa time da `jline` terminal nije iskorišćen.
+Зависности `BulkExecutor` клијента су исте као и зависности обичног клијента, са тиме да `jline` терминал није искоришћен.
 
-==== Zavisnosti testnog okruženja
+==== Зависности тестног окружења
 
-Ove zavisnosti se koriste u testnom okruženju i nisu deo artefakta:
-- `junit-jupiter-engine` i `junit-jupiter-params` za pokretanje i definisanje testova,
-- `jimfs` je implementacija sistema datoteka u radnoj memoriji#footnote[https://github.com/google/jimfs],
-- `mockito-core` i `mockito-junit-jupiter` za pravljenje objekata koji imaju praznu implementaciju a neophodni su za pozivanje funkcija i metoda#footnote[https://github.com/mockito/mockito].
+Ове зависности се користе у тестном окружењу и нису део артефакта:
+- `junit-jupiter-engine` и `junit-jupiter-params` за покретање и дефинисање тестова,
+- `jimfs` је имплементација система датотека у радној меморији#footnote[https://github.com/google/jimfs],
+- `mockito-core` и `mockito-junit-jupiter` за прављење објеката који имају празну имплементацију а неопходни су за позивање функција и метода#footnote[https://github.com/mockito/mockito].
 
-== Sistemska konfiguracija
+== Системска конфигурација
 
-U okviru sistema postoji i konfiguraciona klasa `LBDBSettings` preko koje je moguće postaviti parametre izbora algoritama ili vrednosti za određene operacije. Podrazumevane vrednosti su dobar izbor za nenadgledanu inicijalizaciju sistema i mogu se videti u sledećem bloku koda:
+У оквиру система постоји и конфигурациона класа `LBDBSettings` преко које је могуће поставити параметре избора алгоритама или вредности за одређене операције. Подразумеване вредности су добар избор за ненадгледану иницијализацију система и могу се видети у следећем блоку кода:
 
 #figure(
   ```java
@@ -78,28 +78,28 @@ U okviru sistema postoji i konfiguraciona klasa `LBDBSettings` preko koje je mog
   }
   ```,
   caption: [
-    Kod sistemske klase `LBDBSettings`
+    Код системске класе `LBDBSettings`
   ],
 )<fig:lbdbsettings>
 
 #pagebreak()
 
-Redom, parametri označavaju:
-1. algoritam oporavka sistema,
-2. veličina jednog bloka u bajtovima gde jedan blok predstavlja najmanju jedinicu interakcije sa diskom,
-3. količina bafera sa kojim sistem raspolaže,
-4. algoritam izbora bafera koji će biti smenjen,
-5. putanja do datoteke gde se čuvaju podaci potrebni za oporavak sistema i poništavanje transakcija,
-6. implementacija planera za operacije upita; podržana samo `BETTER` implementacija,
-7. implementacija planera za operacije modifikacije; podržana samo `BASIC` implementacija.
+Редом, параметри означавају:
+1. алгоритам опоравка система,
+2. величина једног блока у бајтовима где један блок представља најмању јединицу интеракције са диском,
+3. количина бафера са којим систем располаже,
+4. алгоритам избора бафера који ће бити смењен,
+5. путања до датотеке где се чувају подаци потребни за опоравак система и поништавање трансакција,
+6. имплементација планера за операције упита; подржана само `BETTER` имплементација,
+7. имплементација планера за операције модификације; подржана само `BASIC` имплементација.
 
-== Integracija sa _GitHub_ platformom
+== Интеграција са _GitHub_ платформом
 
-_GitHub_#footnote[https://github.com/] platforma omogućava pokretanje testova (eng. _Continuous Integration_, _CI_) i izgradnju i objavljivanje aplikacija (eng. _Continuous Delivery_, _CD_) u okviru njenih servera. _LBDB_ sistem koristi ovu mogućnost i definiše specijalnu _GitHub_ datoteku za _CI_. U okviru nje se definiše _Windows_ i _Ubuntu Linux_ okruženje za testiranje. Rezultat testova stoji u okviru bedža u `README.md` datoteci koja se nalazi u _LBDB_ repozitorijumu.
+_GitHub_#footnote[https://github.com/] платформа омогућава покретање тестова (енг. _Continuous Integration_, _CI_) и изградњу и објављивање апликација (енг. _Continuous Delivery_, _CD_) у оквиру њених сервера. _LBDB_ систем користи ову могућност и дефинише специјалну _GitHub_ датотеку за _CI_. У оквиру ње се дефинише _Windows_ и _Ubuntu Linux_ окружење за тестирање. Резултат тестова стоји у оквиру беџа у `README.md` датотеци која се налази у _LBDB_ репозиторијуму.
 
-== Primer funkcionisanja celokupnog sistema
+== Пример функционисања целокупног система
 
-Dijagram sekvence (slika @fig:sekvenca_ceo_sistem) predstavlja generalno ponašanje svih slojeva _LBDB_ sistema. Opisani su slučajevi za `SELECT` naredbu, za naredbe upravljanja životnim ciklusom transakcija i za naredbe modifikacije tabela. Specifičnosti poput algoritma pravljenja stabla planova ili algoritma poništavanja transakcija nisu obrađeni jer bi dijagram bio prevelik, a njihovo objašnjenje je svakako dato u poglavljima gde su definisani.
+Дијаграм секвенце (слика @fig:sekvenca_ceo_sistem) представља генерално понашање свих слојева _LBDB_ система. Описани су случајеви за `SELECT` наредбу, за наредбе управљања животним циклусом трансакција и за наредбе модификације табела. Специфичности попут алгоритма прављења стабла планова или алгоритма поништавања трансакција нису обрађени јер би дијаграм био превелик, а њихово објашњење је свакако дато у поглављима где су дефинисани.
 
 #pagebreak()
 
@@ -108,6 +108,6 @@ Dijagram sekvence (slika @fig:sekvenca_ceo_sistem) predstavlja generalno ponaša
     #image("../dijagrami/sekvenca_celog_sistema.svg")
   ],
   caption: [
-    Dijagram sekvence funkcionisanja celog sistema
+    Дијаграм секвенце функционисања целог система
   ],
 )<fig:sekvenca_ceo_sistem>

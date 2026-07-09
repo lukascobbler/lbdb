@@ -1,113 +1,113 @@
 
 
-= Planiranje <planiranje>
+= Планирање <planiranje>
 
-Podsistem planiranja je jedan od tri glavna podsistema _LBDB_ sistema obrade upita. U okviru životnog ciklusa obrade jedne _SQL_ naredbe, podsistem planiranja se oslanja na podsistem parsiranja zarad konstrukcije stabala relacionih operatora.
+Подсистем планирања је један од три главна подсистема _LBDB_ система обраде упита. У оквиру животног циклуса обраде једне _SQL_ наредбе, подсистем планирања се ослања на подсистем парсирања зарад конструкције стабала релационих оператора.
 
-Podsistem planiranja se sastoji od dve celine:
-- skup _Java_ klasa pojedinačnih planova. Svaka klasa pojedinačnog plana modeluje primenu *jednog* relacionog operatora bez izvršavanja tog operatora u okviru virtuele mašine
-- planer, čiji je zadatak da konstruiše stablo pojedinačnih klasa planova koje se prevodi u stablo relacionih operatora; ovo stablo često ima i naziv *plan*, ali ga ne treba pomešati sa klasom plana
+Подсистем планирања се састоји од две целине:
+- скуп _Java_ класа појединачних планова. Свака класа појединачног плана моделује примену *једног* релационог оператора без извршавања тог оператора у оквиру виртуеле машине
+- планер, чији је задатак да конструише стабло појединачних класа планова које се преводи у стабло релационих оператора; ово стабло често има и назив *план*, али га не треба помешати са класом плана
 
-== Struktura klasa planova u sistemu
+== Структура класа планова у систему
 
-Klasa plana relacionog operatora opisuje šemu virtuelne tabele nakon primene operatora i omogućava računanje statističkih metapodataka (sekcija @statisticki-metapodaci) za tu virtuelnu tabelu. Ovi statistički metapodaci mogu biti iskorišćeni za efikasnije izvršavanje naredbi.
+Класа плана релационог оператора описује шему виртуелне табеле након примене оператора и омогућава рачунање статистичких метаподатака (секција @statisticki-metapodaci) за ту виртуелну табелу. Ови статистички метаподаци могу бити искоришћени за ефикасније извршавање наредби.
 
-Statističke metapodatke koje klasa plana može da izračuna su isti kao i statistički metapodaci koji se prate za fizičke tabele, a oni su:
-- broj blokova potrebnih za prolazak kroz sve slogove
-- broj slogova
-- broj jedinstvenih vrednosti za svaku kolonu
-- broj _NULL_ vrednosti za svaku kolonu
-Postoje dva ograničenja vezana za ove statističke metapodatke:
-- nisu 100% precizni, ali bez obzira na to, mogu pomoći planerima (više o ovom ograničenju u sekciji @ogranicenje-stat-podataka)
-- implementacija planera _LBDB_ sistema ih ne koristi u punom potencijalu (više o ovom ograničenju u sekciji @neoptimalni-planer)
+Статистичке метаподатке које класа плана може да израчуна су исти као и статистички метаподаци који се прате за физичке табеле, а они су:
+- број блокова потребних за пролазак кроз све слогове
+- број слогова
+- број јединствених вредности за сваку колону
+- број _NULL_ вредности за сваку колону
+Постоје два ограничења везана за ове статистичке метаподатке:
+- нису 100% прецизни, али без обзира на то, могу помоћи планерима (више о овом ограничењу у секцији @ogranicenje-stat-podataka)
+- имплементација планера _LBDB_ система их не користи у пуном потенцијалу (више о овом ограничењу у секцији @neoptimalni-planer)
 
-=== Hijerarhija implementacije planova
+=== Хијерархија имплементације планова
 
-Najopštija podela klasa planova je na one koji samo čitaju podatke (eng. _read-only_) i na one koji mogu da modifikuju podatke. Za razliku od hijerarhije relacionih operatora, ne postoji hijerarhija podrazumevanih implementacija jer klase planova nemaju toliko zajedničkih osobina. Podela na _read-only_ i modifikacione klase planova je odrađena upotrebom _generics_ _Java_ konstrukta, umesto deljenja glavnog interfejsa na dva podtipa. Svaka klasa plana operiše nad jednim ili nad dvoje dece, a dete plana se takođe zove i prodređena klasa plana.
+Најопштија подела класа планова је на оне који само читају податке (енг. _read-only_) и на оне који могу да модификују податке. За разлику од хијерархије релационих оператора, не постоји хијерархија подразумеваних имплементација јер класе планова немају толико заједничких особина. Подела на _read-only_ и модификационе класе планова је одрађена употребом _generics_ _Java_ конструкта, уместо дељења главног интерфејса на два подтипа. Свака класа плана оперише над једним или над двоје деце, а дете плана се такође зове и продређена класа плана.
 
 #figure(
-  image("../dijagrami/struktura_planova.pdf"),
+  image("../dijagrami/struktura_planova.pdf", height: 88.8%),
   caption: [
-    Hijerarhija implementacije planova
+    Хијерархија имплементације планова
   ],
 )<fig:hijerarhija_planova>
 
 ==== `Plan`
 
-`Plan` interfejs definiše operacije neophodne za računanje svih statističkih podataka, dobijanje šeme rezultujuće tabele, pretvaranje stabla planova u stablo relacionih operatora i dobijanje slogova za automatski opis plana (sekcija @explain). Sve klase planova su modelovane preko njega.
+`Plan` интерфејс дефинише операције неопходне за рачунање свих статистичких података, добијање шеме резултујуће табеле, претварање стабла планова у стабло релационих оператора и добијање слогова за аутоматски опис плана (секција @explain). Све класе планова су моделоване преко њега.
 
 ==== `TablePlan` <table-plan>
 
-`TablePlan` opisuje konkretnu fizičku tabelu, umesto da vrši transformacije virtuelne tabele. Izlazna šema je jednaka šemi fizičke tabele. Izvlači statističke podatke direktno iz menadžera metapodataka za tabelu za koju je vezan. Izračunati statistički metapodaci svih planova u stablu planova na kraju zavise od vrednosti statističkih metapodataka ove klase plana. Zbog implementacionih detalja _Java_ jezika, može da se koristi samo u modifikujućim stablima operatora. Postoji i `TableReadOnlyPlan` varijanta koja ima istu funkciju za _read-only_ stabla operatora.
+`TablePlan` описује конкретну физичку табелу, уместо да врши трансформације виртуелне табеле. Излазна шема је једнака шеми физичке табеле. Извлачи статистичке податке директно из менаджера метаподатака за табелу за коју је везан. Израчунати статистички метаподаци свих планова у стаблу планова на крају зависе од вредности статистичких метаподатака ове класе плана. Због имплементационих детаља _Java_ језика, може да се користи само у модификујућим стаблима оператора. Постоји и `TableReadOnlyPlan` варијанта која има исту функцију за _read-only_ стабла оператора.
 
 ==== `DummyTablePlan` <dummy_table_plan>
 
-`DummyTablePlan` opisuje virtuelnu tabelu koja se sastoji od jednog sloga u upitima koji ne rade sa fizičkim tabelama. Izlazna šema se određuje na osnovu konstantnih vrednosti u upitu, a statistički podaci su precizni jer se lako računaju pošto je broj konkretnih vrednosti jako mali.
+`DummyTablePlan` описује виртуелну табелу која се састоји од једног слога у упитима који не раде са физичким табелама. Излазна шема се одређује на основу константних вредности у упиту, а статистички подаци су прецизни јер се лако рачунају пошто је број конкретних вредности јако мали.
 
 ==== `SelectPlan`
 
-`SelectPlan` opisuje virtuelnu tabelu nakon primene uslova filtriranja. Izlazna šema je jednaka šemi podređene klase plana. Broj blokova ostaje nepromenjen jer da bi znali koji sve slogovi ispunjavaju uslov filtera, potrebno je proći kroz sve slogove, pa sa time i kroz sve blokove podređenog plana.
+`SelectPlan` описује виртуелну табелу након примене услова филтрирања. Излазна шема је једнака шеми подређене класе плана. Број блокова остаје непромењен јер да би знали који све слогови испуњавају услов филтера, потребно је проћи кроз све слогове, па са тиме и кроз све блокове подређеног плана.
 
-Redukcioni faktor predstavlja koliko puta će broj slogova na izlazu biti smanjen. Računa se na osnovu uslova filtriranja, koji je predstavljen predikatom. Svaki član predikata predstavlja jedan deo filtera i ima svoj redukcioni faktor. Pošto sistem podržava samo ulančavanje članova `AND` logičkim operatorom, redukcioni faktor predikata se računa kao proizvod svih redukcionih faktora članova od kog se predikat sastoji.
+Редукциони фактор представља колико пута ће број слогова на излазу бити смањен. Рачуна се на основу услова филтрирања, који је представљен предикатом. Сваки члан предиката представља један део филтера и има свој редукциони фактор. Пошто систем подржава само уланчавање чланова `AND` логичким оператором, редукциони фактор предиката се рачуна као производ свих редукционих фактора чланова од ког се предикат састоји.
 
-Algoritam računanja redukcionog faktora jednog člana je predstavljen na figuri @fig:racunanje_redukcionog_faktora. Pošto se broj slogova nakon filtriranja dobija deljenjem broja slogova podređene klase plana i redukcionog faktora, specijalni slučajevi se mogu predstaviti različitim konstantama.
+Алгоритам рачунања редукционог фактора једног члана је представљен на фигури @fig:racunanje_redukcionog_faktora. Пошто се број слогова након филтрирања добија дељењем броја слогова подређене класе плана и редукционог фактора, специјални случајеви се могу представити различитим константама.
 
-Specijalni slučaj nejednakosti je predstavljen konstantom _NEJEDNAKOSTI_ koja ima vrednost $3.0$ i označava procenjenu vrednost redukcije u slučaju korišćenja operacija nejednakosti.
+Специјални случај неједнакости је представљен константом _NEJEDNAKOSTI_ која има вредност $3.0$ и означава процењену вредност редукције у случају коришћења операција неједнакости.
 
-Specijalni slučaj kada postoje suviše kompleksni izrazi je predstavljen konstantom _KOMPLEKSNO_ koja ima vrednost $10.0$ i označava procenjenu vrednost redukcije u slučaju postojanja izraza koji ima ili više od dve kolone ili izraza koji kombinuje kolone sa operacijama poređenja na netrivijalan način.
+Специјални случај када постоје сувише комплексни изрази је представљен константом _KOMPLEKSNO_ која има вредност $10.0$ и означава процењену вредност редукције у случају постојања израза који има или више од две колоне или израза који комбинује колоне са операцијама поређења на нетривијалан начин.
 
-Slučaj kada se nijedan slog ne podudara sa članom je predstavljen konstantom maksimalne vrednosti `Double` tipa i označava maksimalnu redukciju. Slučaj kada svi slogovi podudaraju neki član je predstavljen konstantom $1.0$ i predstavlja odsustvo redukcije.
+Случај када се ниједан слог не подудара са чланом је представљен константом максималне вредности `Double` типа и означава максималну редукцију. Случај када сви слогови подударају неки члан је представљен константом $1.0$ и представља одсуство редукције.
 
-Izbor vrednosti ovih konstanti je opisan u _SystemR_ istraživačkom radu @systemR o putanjama pristupa.
+Избор вредности ових константи је описан у _SystemR_ истраживачком раду @systemR о путањама приступа.
 
 #figure(
-  image("../dijagrami/racunanje_redukcionog_faktora.pdf", height: 76%),
+  image("../dijagrami/racunanje_redukcionog_faktora.pdf", height: 68.5%),
   caption: [
-    _Flowchart_ dijagram računice redukcionog faktora člana
+    _Flowchart_ дијаграм рачунице редукционог фактора члана
   ],
 )<fig:racunanje_redukcionog_faktora>
 
-Procena broja jedinstvenih vrednosti za izlaznu kolonu vrši se analizom predikata i pronalaženjem uslova jednakosti i taj broj je jednak:
-- nula – ukoliko predikat izjednačava traženu kolonu sa dve ili više različitih konstanti. U ovom slučaju, uslov je kontradiktoran i nijedan slog neće zadovoljiti filter, pa samim tim neće biti ni jedinstvenih vrednosti;
-- jedan – ukoliko predikat izjednačava traženu kolonu sa tačno jednom konstantom. Svi slogovi koji prođu filter imaće istu vrednost za tu kolonu;
-- minimumu između broja jedinstvenih vrednosti te kolone i svih kolona sa kojima je izjednačena, ukoliko kolona nije izjednačena ni sa jednom konstantom, ali jeste sa jednom ili više drugih kolona. U ovom slučaju, broj jedinstvenih vrednosti tražene kolone ne može biti veći od njenog originalnog broja jedinstvenih vrednosti iz podređene klase plana, ali ne može biti veći ni od broja jedinstvenih vrednosti najrestriktivnije kolone sa kojom je izjednačena.
+Процена броја јединствених вредности за излазну колону врши се анализом предиката и проналажењем услова једнакости и тај број је једнак:
+- нула – уколико предикат изједначава тражену колону са две или више различитих константи. У овом случају, услов је контрадикторан и ниједан слог неће задовољити филтер, па самим тим неће бити ни јединствених вредности;
+- један – уколико предикат изједначава тражену колону са тачно једном константом. Сви слогови који прођу филтер имаће исту вредност за ту колону;
+- минимуму између броја јединствених вредности те колоне и свих колона са којима је изједначена, уколико колона није изједначена ни са једном константом, али јесте са једном или више других колона. У овом случају, број јединствених вредности тражене колоне не може бити већи од њеног оригиналног броја јединствених вредности из подређене класе плана, али не може бити већи ни од броја јединствених вредности најрестриктивније колоне са којом је изједначена.
 
-Procena broja _NULL_ vrednosti za svaku izlaznu kolonu vrši se analizom predikata i njegovog odnosa prema _NULL_ konstantama i taj broj je jednak:
-- ukupnom broju izlaznih slogova ovog plana, ukoliko predikat eksplicitno izjednačava traženu kolonu sa _NULL_ vrednošću, a izlazna šema dozvoljava _NULL_ vrednosti za tu kolonu. U ovom slučaju, svi slogovi koji prođu filter imaće _NULL_ vrednost;
-- nula – ukoliko predikat izjednačava traženu kolonu sa NULL vrednošću, ali izlazna šema ne dozvoljava _NULL_ vrednosti (nije _nullable_). U ovom slučaju, uslov je nemoguće ispuniti;
-- nula – ukoliko predikat sadrži uslov koji eksplicitno isključuje _NULL_ vrednosti za traženu kolonu. Svi slogovi sa _NULL_ vrednostima neće proći ovakav filter;
-- proporciji broju _NULL_ vrednosti iz podređenog plana, ukoliko predikat ne spominje NULL konstantu u vezi sa traženom kolonom. U ovom slučaju, pretpostavlja se da uslov filtera ravnomerno smanjuje ukupan broj slogova i broj _NULL_ vrednosti, pa se broj _NULL_ vrednosti iz podređene klase plana deli sa faktorom redukcije celokupnog predikata.
+Процена броја _NULL_ вредности за сваку излазну колону врши се анализом предиката и његовог односа према _NULL_ константама и тај број је једнак:
+- укупном броју излазних слогова овог плана, уколико предикат експлицитно изједначава тражену колону са _NULL_ вредношћу, а излазна шема дозвољава _NULL_ вредности за ту колону. У овом случају, сви слогови који прођу филтер имаће _NULL_ вредност;
+- нула – уколико предикат изједначава тражену колону са НУЛЛ вредношћу, али излазна шема не дозвољава _NULL_ вредности (није _nullable_). У овом случају, услов је немогуће испунити;
+- нула – уколико предикат садржи услов који експлицитно искључује _NULL_ вредности за тражену колону. Сви слогови са _NULL_ вредностима неће проћи овакав филтер;
+- пропорцији броју _NULL_ вредности из подређеног плана, уколико предикат не спомиње НУЛЛ константу у вези са траженом колоном. У овом случају, претпоставља се да услов филтера равномерно смањује укупан број слогова и број _NULL_ вредности, па се број _NULL_ вредности из подређене класе плана дели са фактором редукције целокупног предиката.
 
-Zbog implementacionih detalja _Java_ jezika, može da se koristi samo u modifikujućim stablima operatora. Postoji i `SelectReadOnlyPlan` varijanta koja ima istu funkciju za _read-only_ stabla operatora.
+Због имплементационих детаља _Java_ језика, може да се користи само у модификујућим стаблима оператора. Постоји и `SelectReadOnlyPlan` варијанта која има исту функцију за _read-only_ стабла оператора.
 
 ==== `ExtendProjectPlan`
 
-`ExtendProjectPlan` opisuje virtuelnu tabelu sa svim projektovanim kolonama. Izlazna šema ima sve dodate kolone, a iz nje su izbrisane neprojektovane kolone. S obzirom da operacija projekcije ne dodaje nove slogove, broj blokova i broj slogova ostaju nepromenjeni i direktno se preuzimaju od podređene klase plana.
+`ExtendProjectPlan` описује виртуелну табелу са свим пројектованим колонама. Излазна шема има све додате колоне, а из ње су избрисане непројектоване колоне. С обзиром да операција пројекције не додаје нове слогове, број блокова и број слогова остају непромењени и директно се преузимају од подређене класе плана.
 
-Procena broja jedinstvenih vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza ili predikata koji tu kolonu definiše i taj broj je jednak:
-- nula – ukoliko se traži procena za kolonu koja se ne nalazi u projekciji;
-- jedan – ukoliko je izraz ili predikat konstanta (ne referencira nijednu kolonu);
-- dva – ukoliko je u pitanju predikat, koji će najverovatnije imati obe moguće vrednosti;
-- broju jedinstvenih vrednosti te kolone iz podređene klase plana, ukoliko izraz referencira tačno jednu kolonu. Pretpostavka je da većina transformacija nad jednom kolonom (npr. aritmetičke operacije) zadržava sličnu distribuciju vrednosti;
-- ukupnom broju slogova, ukoliko izraz referencira više od jedne kolone. U ovom slučaju, pretpostavlja se da kombinacija više polja rezultuje jedinstvenom vrednošću za svaki slog.
+Процена броја јединствених вредности за сваку излазну колону врши се на основу сложености израза или предиката који ту колону дефинише и тај број је једнак:
+- нула – уколико се тражи процена за колону која се не налази у пројекцији;
+- један – уколико је израз или предикат константа (не референцира ниједну колону);
+- два – уколико је у питању предикат, који ће највероватније имати обе могуће вредности;
+- броју јединствених вредности те колоне из подређене класе плана, уколико израз референцира тачно једну колону. Претпоставка је да већина трансформација над једном колоном (нпр. аритметичке операције) задржава сличну дистрибуцију вредности;
+- укупном броју слогова, уколико израз референцира више од једне колоне. У овом случају, претпоставља се да комбинација више поља резултује јединственом вредношћу за сваки слог.
 
-Procena broja _NULL_ vrednosti za svaku izlaznu kolonu vrši se na osnovu složenosti izraza ili predikata koji tu kolonu definiše i taj broj je jednak:
-- nula – ukoliko se traži procena za kolonu koja se ne nalazi u projekciji;
-- nula – ukoliko je u pitanju predikat, jer se predikat može evaluirati samo na tačno i netačno;
-- nula – ukoliko šema garantuje da izraz ne može imati _NULL_ vrednosti (nije _nullable_);
-- nula – ukoliko je izraz jednak bilo kojoj konstanti sem _NULL_ konstante;
-- jedan – ukoliko je izraz jednak _NULL_ konstanti;
-- broju jedinstvenih vrednosti te kolone iz podređene klase plana, ukoliko izraz referencira tačno jednu kolonu. Pretpostavka je da većina transformacija nad jednom kolonom zadržava sličnu distribuciju _NULL_ vrednosti;
-- maksimalanom broju _NULL_ vrednosti među svim referenciranim kolonama iz podređene klase plana, ukoliko izraz referencira više od jedne kolone. Pretpostavlja se da će izraz biti _NULL_ ukoliko je barem jedan od operanada _NULL_, pa je maksimalan broj _NULL_ vrednosti pesimistična procena.
+Процена броја _NULL_ вредности за сваку излазну колону врши се на основу сложености израза или предиката који ту колону дефинише и тај број је једнак:
+- нула – уколико се тражи процена за колону која се не налази у пројекцији;
+- нула – уколико је у питању предикат, јер се предикат може евалуирати само на тачно и нетачно;
+- нула – уколико шема гарантује да израз не може имати _NULL_ вредности (није _nullable_);
+- нула – уколико је израз једнак било којој константи сем _NULL_ константе;
+- један – уколико је израз једнак _NULL_ константи;
+- броју јединствених вредности те колоне из подређене класе плана, уколико израз референцира тачно једну колону. Претпоставка је да већина трансформација над једном колоном задржава сличну дистрибуцију _NULL_ вредности;
+- максималаном броју _NULL_ вредности међу свим референцираним колонама из подређене класе плана, уколико израз референцира више од једне колоне. Претпоставља се да ће израз бити _NULL_ уколико је барем један од операнада _NULL_, па је максималан број _NULL_ вредности песимистична процена.
 
 ==== `RenamePlan`
 
-`RenamePlan` opisuje virtuelnu tabelu sa svim primenjenim preimenovanjima kolona. Izlazna šema sadrži sve kolone sa novim imenom i nijednu kolonu sa starim imenom. S obzirom da operacija preimenovanja ne dodaje nove slogove, broj blokova i broj slogova ostaju nepromenjeni i direktno se preuzimaju od podređene klase plana.
-Procena broja jedinstvenih vrednosti kolone je jednaka podređenoj klasi plana ukoliko se traži novo ime stare kolone ili ukoliko je kolona nepreimenovana, a jednaka je nuli ako se traži staro ime preimenovane kolone. Procena broja _NULL_ vrednosti funkcioniše isto.
+`RenamePlan` описује виртуелну табелу са свим примењеним преименовањима колона. Излазна шема садржи све колоне са новим именом и ниједну колону са старим именом. С обзиром да операција преименовања не додаје нове слогове, број блокова и број слогова остају непромењени и директно се преузимају од подређене класе плана.
+Процена броја јединствених вредности колоне је једнака подређеној класи плана уколико се тражи ново име старе колоне или уколико је колона непреименована, а једнака је нули ако се тражи старо име преименоване колоне. Процена броја _NULL_ вредности функционише исто.
 
 ==== `ProductPlan`
 
-`ProductPlan` opisuje virtuelnu tabelu koja je proizvod dve tabele. Izlazna šema sadrži sve kolone od obe tabele. Za demonstaciju računice broja blokova definišemo tabele $T_1$ i $T_2$:
+`ProductPlan` описује виртуелну табелу која је производ две табеле. Излазна шема садржи све колоне од обе табеле. За демонстацију рачунице броја блокова дефинишемо табеле $T_1$ и $T_2$:
 
 #figure(
   {
@@ -123,151 +123,151 @@ Procena broja jedinstvenih vrednosti kolone je jednaka podređenoj klasi plana u
       [$T_2$], [$100$], [$500$], [$frac(500, 100) = 5$],
     )
   },
-  caption: [Primer karakteristika tabela za računanje broja blokova plana proizvoda],
+  caption: [Пример карактеристика табела за рачунање броја блокова плана производа],
 )<tbl:product_rpb>
 
-- $text("B")(T_i)$ predstavlja broj blokova neke tabele,
-- $text("R")(T_i)$ predstavlja broj slogova neke tabele,
-- $text("RPB")(T_i)$ predstavlja koliko slogova može da stane po jednom bloku za neku tabelu.
+- $text("B")(T_i)$ представља број блокова неке табеле,
+- $text("R")(T_i)$ представља број слогова неке табеле,
+- $text("RPB")(T_i)$ представља колико слогова може да стане по једном блоку за неку табелу.
 
-Ovaj primer se odnosi na rad sa konkretnim fizičkim tabelama, ali u generalnom slučaju, tabele nisu fizičke, već su predstavljene klasama planova sa kojima klasa plana proizvoda barata.
+Овај пример се односи на рад са конкретним физичким табелама, али у генералном случају, табеле нису физичке, већ су представљене класама планова са којима класа плана производа барата.
 
-Da bi se prošlo kroz svaki slog rezultujuće tabele, potrebno je da se za svaki slog leve tabele prođe kroz svaki slog desne tabele. Formula koja opisuje broj blokova potreban da se ovo izvrši je sledeća @simpledb:
+Да би се прошло кроз сваки слог резултујуће табеле, потребно је да се за сваки слог леве табеле прође кроз сваки слог десне табеле. Формула која описује број блокова потребан да се ово изврши је следећа @simpledb:
 
 $text("B")(T_r) = text("B")(T_l) + (text("R")(T_l) * text("B")(T_d))$
 
-Ako stavimo konkretne vrednosti tabela $T_1$ i $T_2$ u ovu formulu, dobijamo različite rezultate u odnosu na to koja tabela je leva, a koja desna:
+Ако ставимо конкретне вредности табела $T_1$ и $T_2$ у ову формулу, добијамо различите резултате у односу на то која табела је лева, а која десна:
 
 - ($T_l = T_1$, $T_d = T_2$) $=>$ $text("B")(T_r) = 5 + (1000 * 100) = 100005$
 - ($T_l = T_2$, $T_d = T_1$) $=>$ $text("B")(T_r) = 100 + (500 * 5) = 2600$
 
-Vidi se da ako stavimo da tabela $T_1$ bude desna, a $T_2$ leva, dobijamo manji broj blokova rezultujuće tabele, a sa time i efikasniju operaciju proizvoda. Ekvivalentna formula @simpledb:
+Види се да ако ставимо да табела $T_1$ буде десна, а $T_2$ лева, добијамо мањи број блокова резултујуће табеле, а са тиме и ефикаснију операцију производа. Еквивалентна формула @simpledb:
 
 $text("B")(T_r) = text("B")(T_l) + (text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d))$
 
-daje bolji uvid zbog čega računica broja blokova rezultujuće tabele nije simetrična u odnosu na dve tabele koje učestvuju u proizvodu. Sabirak $text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d)$ znatno više utiče na finalni rezultat u odnosu na $text("B")(T_l)$.
+даје бољи увид због чега рачуница броја блокова резултујуће табеле није симетрична у односу на две табеле које учествују у производу. Сабирак $text("RPB")(T_l) * text("B")(T_l) * text("B")(T_d)$ знатно више утиче на финални резултат у односу на $text("B")(T_l)$.
 
-Što je slog manji, jedan blok može da ih sadrži više. U suprotnom, što je slog veći, jedan blok može da ih sadrži manje. U tabelama gde je slog veći, potrebno je pristupiti više blokova da bi se prošlo kroz isti broj slogova kao u tabelama gde je slog manji. U operacijama proizvoda bolje je staviti tabelu gde je slog veći (to jest gde je $text("RPB")$ manji) na levu stranu, a tabelu gde je slog manji (to jest gde je $text("RPB")$ veći) na desnu stranu jer se slogovima desne tabele pristupa znatno više nego slogovima leve tabele.
+Што је слог мањи, један блок може да их садржи више. У супротном, што је слог већи, један блок може да их садржи мање. У табелама где је слог већи, потребно је приступити више блокова да би се прошло кроз исти број слогова као у табелама где је слог мањи. У операцијама производа боље је ставити табелу где је слог већи (то јест где је $text("RPB")$ мањи) на леву страну, а табелу где је слог мањи (то јест где је $text("RPB")$ већи) на десну страну јер се слоговима десне табеле приступа знатно више него слоговима леве табеле.
 
-Broj slogova je proizvod broja slogova obe podređene klase plana, a broj jedinstvenih i broj _NULL_ vrednosti se prosleđuje podređenoj  klasi plana u kom se nalazi tražena kolona.
+Број слогова је производ броја слогова обе подређене класе плана, а број јединствених и број _NULL_ вредности се прослеђује подређеној  класи плана у ком се налази тражена колона.
 
 ==== `UnionAllPlan`
 
-`UnionAllPlan` opisuje virtuelnu tabelu koja je zbir dve tabele. Izlazna šema je jednaka izlaznoj šemi leve podređene klase plana. Broj blokova je zbir broja blokova obe podređene klase plana, a broj slogova je zbir broja slogova obe podređene klase plana. Procena broja jedinstvenih vrednosti kolone je jednaka zbiru procena jedinstvenih vrednosti obe podređene klase plana za tu kolonu. Procena _NULL_ vrednosti kolone je jednaka zbiru procena _NULL_ vrednosti obe podređene klase plana.
+`UnionAllPlan` описује виртуелну табелу која је збир две табеле. Излазна шема је једнака излазној шеми леве подређене класе плана. Број блокова је збир броја блокова обе подређене класе плана, а број слогова је збир броја слогова обе подређене класе плана. Процена броја јединствених вредности колоне је једнака збиру процена јединствених вредности обе подређене класе плана за ту колону. Процена _NULL_ вредности колоне је једнака збиру процена _NULL_ вредности обе подређене класе плана.
 
-== Planer <planer>
+== Планер <planer>
 
-Većina naredbi definisanih _SQL_ standardom zahteva propratno stablo relacionih operatora. Konstrukcija stabla klasa planova koje se dalje prevodi u stablo relacionih operatora i provera semantičke validnosti naredbi su poslovi planera.
+Већина наредби дефинисаних _SQL_ стандардом захтева пропратно стабло релационих оператора. Конструкција стабла класа планова које се даље преводи у стабло релационих оператора и провера семантичке валидности наредби су послови планера.
 
-Glavna podela tehnika planiranja u relacionim bazama podataka je na tehnike praćenja striktnih pravila pravljenja planova (eng. _rule-based optimisation_, _RBO_; _heuristics-based optimisation_, _HBO_) i tehnike planiranja koji rade sa cenama (eng. _cost-based optimisation_, _CBO_). Cena predstavlja kombinaciju statističkih metapodataka relacionih operatora sa hardverskim osobinama koji ti relacioni operatori koriste.
+Главна подела техника планирања у релационим базама података је на технике праћења стриктних правила прављења планова (енг. _rule-based optimisation_, _RBO_; _heuristics-based optimisation_, _HBO_) и технике планирања који раде са ценама (енг. _cost-based optimisation_, _CBO_). Цена представља комбинацију статистичких метаподатака релационих оператора са хардверским особинама који ти релациони оператори користе.
 
-Raniji sistemi upravljanja bazama podataka poput _INGRES_ sistema su koristili _RBO_ tehnike planiranja @ingres_rbo, dok moderni sistemi koriste _CBO_ tehnike planiranja #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] koje su postale popularne nakon _SystemR_ istraživačkog rada o putanjama pristupa @systemR.
+Ранији системи управљања базама података попут _INGRES_ система су користили _RBO_ технике планирања @ingres_rbo, док модерни системи користе _CBO_ технике планирања #footnote[https://www.postgresql.org/docs/current/planner-optimizer.html]#super(",") #footnote[https://www.postgresql.org/docs/current/planner-stats-details.html] које су постале популарне након _SystemR_ истраживачког рада о путањама приступа @systemR.
 
-Evolucija tehnika planiranja, koja se može videti kroz ovu glavnu podelu, postoji jer je kroz istoriju bilo potrebno obezbediti sve efikasnije planere koji rade sa sve većim skupovima podataka.
+Еволуција техника планирања, која се може видети кроз ову главну поделу, постоји јер је кроз историју било потребно обезбедити све ефикасније планере који раде са све већим скуповима података.
 
-=== Evaluacija izraza tokom planiranja
+=== Евалуација израза током планирања
 
-Evaluacija izraza i predikata u stablu relacionih operatora je najskuplje mesto evaluacije, jer se operacije izvršavaju u okviru virtuelne mašine sistema, gde se ne koriste procesorske instrukcije direktno. `PartialEvaluator` pruža obradu operacija u trenutku planiranja, što znatno povećava performansu upita jer se trivijalne operacije ne izvršavaju za svaki slog.
+Евалуација израза и предиката у стаблу релационих оператора је најскупље место евалуације, јер се операције извршавају у оквиру виртуелне машине система, где се не користе процесорске инструкције директно. `PartialEvaluator` пружа обраду операција у тренутку планирања, што знатно повећава перформансу упита јер се тривијалне операције не извршавају за сваки слог.
 
-Trivijalne operacije koje se redukuju su: aritmetičke operacije koje ne transformišu podatke, aritmetičke operacije između dve konstante, operacije poređenja koje su uvek tačne i u slučaju da postoji kontradiktorna operacija poređenja ona skraćuje (eng. _short-circuit_) ceo predikat, čineći ga uvek netačnim bez obzira na njegove ostale komponente.
+Тривијалне операције које се редукују су: аритметичке операције које не трансформишу податке, аритметичке операције између две константе, операције поређења које су увек тачне и у случају да постоји контрадикторна операција поређења она скраћује (енг. _short-circuit_) цео предикат, чинећи га увек нетачним без обзира на његове остале компоненте.
 
-=== Ulazna tačka kreiranja i izvršavanja planova <planner-klasa>
+=== Улазна тачка креирања и извршавања планова <planner-klasa>
 
-Svaka _SQL_ naredba, koja je prvobitno niz karaktera, se prosleđuje `Planner` klasi, koja prvo vrši parsiranje i pretvaranje niza karaktera u objekat iskaza (`Statement`). Klasa `Planner` definiše dve grupe funkcija koje su prilagođene različitim _API_ (_Application Programming Interface_) interfejsima:
-- `createQueryPlan` i `executeUpdate` koje su prilagođene _JDBC_ (_Java Database Connectivity_) _API_ interfejsu. _JDBC_ definiše generičko ponašanje za interakciju sa sistemima za upravljanje bazama podataka (ne postoji konkretna implementacija za _LBDB_, ali definisanjem ovih metoda ju je lako dodati). `createQueryPlan` kreira plan za _read-only_ naredbu, ali ga ne izvršava, dok se `executeUpdate` oslanja na to da su modifikacione naredbe dizajnirane da se odmah izvrše i vraća broj promenjenih slogova,
-- `execute` koja je prilagođena klijentsko-serverskoj arhitekturi (poglavlje @klijent-server) _LBDB_ sistema, u okviru koje se brine o automatskom ili ručnom potvrđivanju transakcija, kreiranju i izvršavanju plana. Vraća instancu `Response` objekta (sekcija @response), koja predstavlja sve moguće vrste odgovora na neku naredbu.
+Свака _SQL_ наредба, која је првобитно низ карактера, се прослеђује `Planner` класи, која прво врши парсирање и претварање низа карактера у објекат исказа (`Statement`). Класа `Planner` дефинише две групе функција које су прилагођене различитим _API_ (_Application Programming Interface_) интерфејсима:
+- `createQueryPlan` и `executeUpdate` које су прилагођене _JDBC_ (_Java Database Connectivity_) _API_ интерфејсу. _JDBC_ дефинише генеричко понашање за интеракцију са системима за управљање базама података (не постоји конкретна имплементација за _LBDB_, али дефинисањем ових метода ју је лако додати). `createQueryPlan` креира план за _read-only_ наредбу, али га не извршава, док се `executeUpdate` ослања на то да су модификационе наредбе дизајниране да се одмах изврше и враћа број промењених слогова,
+- `execute` која је прилагођена клијентско-серверској архитектури (поглавље @klijent-server) _LBDB_ система, у оквиру које се брине о аутоматском или ручном потврђивању трансакција, креирању и извршавању плана. Враћа инстанцу `Response` објекта (секција @response), која представља све могуће врсте одговора на неку наредбу.
 
 #figure(
-  image("../dijagrami/struktura_planera.pdf", width: 99%),
+  image("../dijagrami/struktura_planera.pdf"),
   caption: [
-    Struktura planera
+    Структура планера
   ],
 )<fig:struktura_planera>
 
-=== Planiranje _read-only_ naredbi
+=== Планирање _read-only_ наредби
 
-_SQL_ naredbe se dele na _read-only_ i modifikacione. Glavni primer _read-only_ naredbe je `SELECT` naredba, koja služi za struktuirano upitivanje (eng. _query_) baze podataka.
+_SQL_ наредбе се деле на _read-only_ и модификационе. Главни пример _read-only_ наредбе је `SELECT` наредба, која служи за структуирано упитивање (енг. _query_) базе података.
 
-Svaka `SELECT` naredba prvo mora proći semantičku proveru pre pravljenja samog plana. Semantička provera se sastoji od sledećih koraka:
-- provera postojanja fizičkih tabela spomenutih u naredbi
-- proširenje zamenskih članova na konkretne kolone
-- provera da se zamenski članovi ne koriste u izrazima
-- provera postojanja kolona spomenutih u projekcijama i predikatu
-- provera dvosmislenih imena kolona (u slučaju da dve tabele imaju isti naziv kolone i ne može da se trivijalno razume na koju kolonu je korisnik mislio)
-- provera da li aritmetičke operacije mogu da se izvrše za tip kolone
-- provera da li kolone u unijama imaju iste tipove
+Свака `SELECT` наредба прво мора проћи семантичку проверу пре прављења самог плана. Семантичка провера се састоји од следећих корака:
+- провера постојања физичких табела споменутих у наредби
+- проширење заменских чланова на конкретне колоне
+- провера да се заменски чланови не користе у изразима
+- провера постојања колона споменутих у пројекцијама и предикату
+- провера двосмислених имена колона (у случају да две табеле имају исти назив колоне и не може да се тривијално разуме на коју колону је корисник мислио)
+- провера да ли аритметичке операције могу да се изврше за тип колоне
+- провера да ли колоне у унијама имају исте типове
 
-`QueryPlanner` apstraktna klasa pruža implementaciju semantičke provere, a konkretni algoritmi planiranja `SELECT` naredbe koji je nasleđuju mogu da podrazumevaju da su naredbe koje dobiju sigurno semantički validne. `QueryPlanner` takođe redukuje sve izraze i predikat pomoću `PartialEvaluator` klase.
+`QueryPlanner` апстрактна класа пружа имплементацију семантичке провере, а конкретни алгоритми планирања `SELECT` наредбе који је наслеђују могу да подразумевају да су наредбе које добију сигурно семантички валидне. `QueryPlanner` такође редукује све изразе и предикат помоћу `PartialEvaluator` класе.
 
-==== Algoritam planiranja `SELECT` naredbi <plan-select>
+==== Алгоритам планирања `SELECT` наредби <plan-select>
 
-`BetterQueryPlanner` klasa nasleđuje `QueryPlanner` i predstavlja implementaciju osnovnog planera koji podržava sve alternative `SELECT` naredbe predstavljene u njenoj gramatici (sekcija @parse_select).
+`BetterQueryPlanner` класа наслеђује `QueryPlanner` и представља имплементацију основног планера који подржава све алтернативе `SELECT` наредбе представљене у њеној граматици (секција @parse_select).
 
-Stablo relacionih operatora je korektno (eng. _sound_), ako svi slogovi koje ono proizvodi ispunjavaju sve uslove relacionih operacija definisanih nekom `SELECT` naredbom. Stablo planova, koje se prevodi u stablo relacionih operatora, koje `BetterQueryPlanner` konstruiše je uvek korektno.
+Стабло релационих оператора је коректно (енг. _sound_), ако сви слогови које оно производи испуњавају све услове релационих операција дефинисаних неком `SELECT` наредбом. Стабло планова, које се преводи у стабло релационих оператора, које `BetterQueryPlanner` конструише је увек коректно.
 
-Problem `BetterQueryPlanner` implementacije je niska efikasnost konstruisanih stabala planova, jer ne koristi ni tehnike _RBO_ planiranja, ni tehnike _CBO_ planiranja, već izvršava samo minimalni skup koraka koji su neophodni da se obezbedi korektnost.
+Проблем `BetterQueryPlanner` имплементације је ниска ефикасност конструисаних стабала планова, јер не користи ни технике _RBO_ планирања, ни технике _CBO_ планирања, већ извршава само минимални скуп корака који су неопходни да се обезбеди коректност.
 
-Algoritam planiranja se može videti na figuri @fig:algoritam_planiranja.
+Алгоритам планирања се може видети на фигури @fig:algoritam_planiranja.
 
 #figure(
   image("../dijagrami/planer_algoritam_dijagram.pdf"),
-  caption: [_Flowchart_ dijagram `BetterQueryPlanner` algoritma planiranja],
+  caption: [_Flowchart_ дијаграм `BetterQueryPlanner` алгоритма планирања],
 )<fig:algoritam_planiranja>
 
-Kreira finalno stablo planova kroz četiri funkcije koje se međusobno pozivaju, imaju rastući prioritet i zadužene su za različite operacije:
-- `createPlan` funkcija je ulazna tačka algoritma, definisana u `QueryPlanner` klasi i ima zaduženje kreiranja unija više `SELECT` naredbi, u slučaju postojanja `UNION ALL` gramatičke alternative.
+Креира финално стабло планова кроз четири функције које се међусобно позивају, имају растући приоритет и задужене су за различите операције:
+- `createPlan` функција је улазна тачка алгоритма, дефинисана у `QueryPlanner` класи и има задужење креирања унија више `SELECT` наредби, у случају постојања `UNION ALL` граматичке алтернативе.
 
-  Unije `SELECT` naredbi zahtevaju da se kolonama svake `SELECT` naredbe pristupa pomoću imena datih u prvoj `SELECT` naredbi. Zbog ovoga se dodaje operator preimenovanja ispred svakog podstabla planova svake naredbe u uniji, sem prve. Operacija unije ima najmanji prioritet, pa se poslednja izvršava.
-  Ukoliko ne postoji `UNION ALL` gramatička alternativa, funkcija vraća podstablo planova jedine `SELECT` naredbe.
+  Уније `SELECT` наредби захтевају да се колонама сваке `SELECT` наредбе приступа помоћу имена датих у првој `SELECT` наредби. Због овога се додаје оператор преименовања испред сваког подстабла планова сваке наредбе у унији, сем прве. Операција уније има најмањи приоритет, па се последња извршава.
+  Уколико не постоји `UNION ALL` граматичка алтернатива, функција враћа подстабло планова једине `SELECT` наредбе.
 
   #figure(
     image("../dijagrami/primeri_stabla_planova/unija.pdf", width: 66%),
-    caption: [Primer stabla planova nakon unije 3 naredbe],
+    caption: [Пример стабла планова након уније 3 наредбе],
   ) <fig:primer_plan_unija>
 
-- `createSingleSelectionPlan` funkcija obezbeđuje korektnost filtriranja i projekcije.
+- `createSingleSelectionPlan` функција обезбеђује коректност филтрирања и пројекције.
 
-  Dodaje operator filtriranja samo ako filter postoji; dodaje nove virtuelne kolone i briše kolone koje nisu spomenute.
+  Додаје оператор филтрирања само ако филтер постоји; додаје нове виртуелне колоне и брише колоне које нису споменуте.
 
   #figure(
     image("../dijagrami/primeri_stabla_planova/filtriranje_projekcija.pdf", width: 20%),
-    caption: [Primer stabla planova nakon filtriranja i projekcije],
+    caption: [Пример стабла планова након филтрирања и пројекције],
   ) <fig:primer_plan_filter_projekcija>
 
-- `getDataSourcePlan` funkcija se brine o tome odakle će doći slogovi i ima dve putanje izvršavanja.
+- `getDataSourcePlan` функција се брине о томе одакле ће доћи слогови и има две путање извршавања.
 
-  Prva putanja izvršavanja se dešava kada se u `SELECT` naredbi ne spominje nijedna fizička tabela, već se radi upit virtuelne tabele koja ima jedan slog koji se sastoji samo od konstanti. U tom slučaju, samo vraća `DummyTablePlan` klasu plana.
+  Прва путања извршавања се дешава када се у `SELECT` наредби не спомиње ниједна физичка табела, већ се ради упит виртуелне табеле која има један слог који се састоји само од константи. У том случају, само враћа `DummyTablePlan` класу плана.
 
-  Druga putanja izvršavanja se dešava kada se spominje jedna ili više fizičkih tabela. Ako se spominje jedna fizička tabela, njen plan biva vraćen. Ako se spominje više od jedne fizičke tabele, potrebno je uraditi operaciju proizvoda. Proizvod tabela se vrši tako što se prva spomenuta tabela proglasi da bude početna, pa se prolazi kroz sve ostale spomenute tabele i ponavlja se postupak: kreiraju se dva proizvod plana, jedan gde je dosadašnje podstablo planova na levom mestu, a plan sledeće tabele na desnom i jedan gde je redosled obrnut. Plan koji ima manje pristupa blokovima se uzima kao sledeći koren podstabla planova i postupak se ponavlja dok se ne prođe kroz sve spomenute tabele. Time se dobija oformljeno podstablo planova gde su proizvodi tabela zadovoljeni. Ovakva provera broja pristupanih blokova nije optimalna, ali može pomoći u otklanjanju veoma neefikasnih stabala planova i predstavlja jedino mesto gde se primenjuje _RBO_ tehnika planiranja.
+  Друга путања извршавања се дешава када се спомиње једна или више физичких табела. Ако се спомиње једна физичка табела, њен план бива враћен. Ако се спомиње више од једне физичке табеле, потребно је урадити операцију производа. Производ табела се врши тако што се прва споменута табела прогласи да буде почетна, па се пролази кроз све остале споменуте табеле и понавља се поступак: креирају се два производ плана, један где је досадашње подстабло планова на левом месту, а план следеће табеле на десном и један где је редослед обрнут. План који има мање приступа блоковима се узима као следећи корен подстабла планова и поступак се понавља док се не прође кроз све споменуте табеле. Тиме се добија оформљено подстабло планова где су производи табела задовољени. Оваква провера броја приступаних блокова није оптимална, али може помоћи у отклањању веома неефикасних стабала планова и представља једино место где се примењује _RBO_ техника планирања.
 
   #figure(
     image("../dijagrami/primeri_stabla_planova/proizvod.pdf", width: 66%),
-    caption: [Primer stabla planova nakon proizvoda 3 tabele],
+    caption: [Пример стабла планова након производа 3 табеле],
   ) <fig:primer_plan_proizvod>
 
-- `fullyQualifiedTablePlan` obezbeđuje davanje punokvalifikujućih imena kolonama fizičkih tabela.
+- `fullyQualifiedTablePlan` обезбеђује давање пуноквалификујућих имена колонама физичких табела.
 
-  U slučajevima gde se vrši proizvod dve ili više tabele, postoji mogućnost da te tabele imaju istoimenu kolonu. Ovo je čest slučaj jer povećava čitljivost upita i strukture tabela, pa je za njega potrebno pružiti adekvatnu podršku.
+  У случајевима где се врши производ две или више табеле, постоји могућност да те табеле имају истоимену колону. Ово је чест случај јер повећава читљивост упита и структуре табела, па је за њега потребно пружити адекватну подршку.
 
-  U prethodnoj funkciji koja vrši proizvode, rečeno je da se direktno barata sa planovima tabela. Ovo nije precizno, jer se ne barata direktno sa tabelama, već sa podstablom planova koje predstavlja tabelu sa punokvalifikovanim imenama kolona. Kvalifikacija imena kolona se vrši preko operatora preimenovanja, tako što se pre samog imena kolone doda ime tabele i tačka (`ime_kolone` postaje `ime_tabele.ime_kolone`). Dozvoljava i preimenovanje tabela u slučaju da vršimo proizvod dve (ili više) iste tabele.
+  У претходној функцији која врши производе, речено је да се директно барата са плановима табела. Ово није прецизно, јер се не барата директно са табелама, већ са подстаблом планова које представља табелу са пуноквалификованим именама колона. Квалификација имена колона се врши преко оператора преименовања, тако што се пре самог имена колоне дода име табеле и тачка (`ime_kolone` постаје `ime_tabele.ime_kolone`). Дозвољава и преименовање табела у случају да вршимо производ две (или више) исте табеле.
 
-  Ako se proizvodu nalaze samo tabele sa sa punokvalifikovanim kolonama, ne postoji mogućnost da sistem ne može da prepozna kojoj tabeli kolona pripada, sem ako korisnik nije zadao semantički neispravnu naredbu.
+  Ако се производу налазе само табеле са са пуноквалификованим колонама, не постоји могућност да систем не може да препозна којој табели колона припада, сем ако корисник није задао семантички неисправну наредбу.
 
   #figure(
     image("../dijagrami/primeri_stabla_planova/kvalifikacija_tabele.pdf", width: 20%),
-    caption: [Primer stabla planova nakon kvalifikacije kolona tabele],
+    caption: [Пример стабла планова након квалификације колона табеле],
   ) <fig:primer_kvalifikacija>
 
 #figure(
   image("../dijagrami/primeri_stabla_planova/celo_stablo.pdf", width: 88%),
-  caption: [Primer kompletnog stabla planova],
+  caption: [Пример комплетног стабла планова],
 ) <fig:primer_kvalifikacija>
 
-==== Automatsko generisanje opisa planova <explain>
+==== Аутоматско генерисање описа планова <explain>
 
-Drugi primer _read-only_ naredbe je `EXPLAIN` naredba. Njena uloga u sistemu je tabelarno ispisivanje kompletnih stabla planova. `EXPLAIN` naredba se poziva tako što se doda ključna reč `EXPLAIN` ispred `SELECT` naredbe. Nije podržana za modifikacione naredbe.
+Други пример _read-only_ наредбе је `EXPLAIN` наредба. Њена улога у систему је табеларно исписивање комплетних стабла планова. `EXPLAIN` наредба се позива тако што се дода кључна реч `EXPLAIN` испред `SELECT` наредбе. Није подржана за модификационе наредбе.
 
-`EXPLAIN` naredba je implementirana tako da generiše slogove koji prate šemu specijalne tabele koja ima sledeće kolone: ime relacionog operatora, procena kroz koliko blokova će taj relacioni operator proći da generiše sve slogove, procena broja slogova i specijalni detalji. Svaki slog predstavlja čvor rezultujućeg stabla relacionih operatora. Iako je poenta naredbe tabelarni prikaz stabla, naredba samo generiše ove slogove i ne brine se o formatiranju tabele (sekcija @stampac-tabela).
+`EXPLAIN` наредба је имплементирана тако да генерише слогове који прате шему специјалне табеле која има следеће колоне: име релационог оператора, процена кроз колико блокова ће тај релациони оператор проћи да генерише све слогове, процена броја слогова и специјални детаљи. Сваки слог представља чвор резултујућег стабла релационих оператора. Иако је поента наредбе табеларни приказ стабла, наредба само генерише ове слогове и не брине се о форматирању табеле (секција @stampac-tabela).
 
 #figure(
   ```text
@@ -280,56 +280,56 @@ Drugi primer _read-only_ naredbe je `EXPLAIN` naredba. Njena uloga u sistemu je 
   │       └─ TableScan │          5 │         103 │ 'student'               │
   └────────────────────┴────────────┴─────────────┴─────────────────────────┘
   ```,
-  caption: [Primer rezultujuće tabele `EXPLAIN` naredbe],
+  caption: [Пример резултујуће табеле `EXPLAIN` наредбе],
 )<fig:explain_naredba>
 
-=== Planiranje modifikacionih naredbi
+=== Планирање модификационих наредби
 
-Modifikacione naredbe su razne, a `UpdatePlanner` ima istu ulogu za njih, kao što `QueryPlanner` ima za `SELECT` naredbu, a to je samo semantička provera. Konkretni algoritmi planiranja modifikacionih naredbi mogu da podrazumevaju da je naredba semantički validna i da su izrazi i predikati redukovani pomoću `PartialEvaluator` klase.
-Za svaku modifikacionu naredbu su opisani koraci za semantičku proveru.
+Модификационе наредбе су разне, а `UpdatePlanner` има исту улогу за њих, као што `QueryPlanner` има за `SELECT` наредбу, а то је само семантичка провера. Конкретни алгоритми планирања модификационих наредби могу да подразумевају да је наредба семантички валидна и да су изрази и предикати редуковани помоћу `PartialEvaluator` класе.
+За сваку модификациону наредбу су описани кораци за семантичку проверу.
 
-`INSERT` naredba služi za umetanje novih slogova. Semantička provera `INSERT` naredbi se sastoji od sledećih koraka:
-- da li postoji fizička tabela u koju se umeću novi slogovi
-- da li se broj kolona novih slogova podudara sa brojem definisanim u šemi tabele
-- provera tipova kolona novih slogova sa tipovima kolona definisanih u šemi tabele
-- da li su dozvoljene _NULL_ vrednosti za kolone gde je vrednost novih slogova _NULL_
+`INSERT` наредба служи за уметање нових слогова. Семантичка провера `INSERT` наредби се састоји од следећих корака:
+- да ли постоји физичка табела у коју се умећу нови слогови
+- да ли се број колона нових слогова подудара са бројем дефинисаним у шеми табеле
+- провера типова колона нових слогова са типовима колона дефинисаних у шеми табеле
+- да ли су дозвољене _NULL_ вредности за колоне где је вредност нових слогова _NULL_
 
-`UPDATE` naredba služi za ažuriranje vrednosti postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `UPDATE` naredbi se sastoji od sledećih koraka:
-- da li postoji fizička tabela čiji se slogovi ažuriraju
-- da li postoje kolone spomenute u predikatu i izrazima ažuriranja
-- da li su dozvoljene _NULL_ vrednosti za kolone gde je nova vrednost _NULL_
-- provera tipova kolona ažuriranih slogova sa tipovima kolona definisanih u šemi tabele
+`UPDATE` наредба служи за ажурирање вредности постојећих слогова на основу неког услова филтрирања. Семантичка провера `UPDATE` наредби се састоји од следећих корака:
+- да ли постоји физичка табела чији се слогови ажурирају
+- да ли постоје колоне споменуте у предикату и изразима ажурирања
+- да ли су дозвољене _NULL_ вредности за колоне где је нова вредност _NULL_
+- провера типова колона ажурираних слогова са типовима колона дефинисаних у шеми табеле
 
-`DELETE` naredba služi za brisanje postojećih slogova na osnovu nekog uslova filtriranja. Semantička provera `DELETE` naredbi se sastoji od sledećih koraka:
-- da li postoji fizička tabela čiji se slogovi brišu
-- da li postoje kolone spomenute u predikatu
+`DELETE` наредба служи за брисање постојећих слогова на основу неког услова филтрирања. Семантичка провера `DELETE` наредби се састоји од следећих корака:
+- да ли постоји физичка табела чији се слогови бришу
+- да ли постоје колоне споменуте у предикату
 
-`CREATE TABLE` naredba služi za kreiranje novih tabela. Semantička provera `CREATE TABLE` naredbi se sastoji od sledećih koraka:
-- da li tabela sa tim imenom već postoji
-- da li je veličina sloga prešla maksimalnu veličinu (ograničenje opisano u sekciji @slogovi-fiksne-duzine)
+`CREATE TABLE` наредба служи за креирање нових табела. Семантичка провера `CREATE TABLE` наредби се састоји од следећих корака:
+- да ли табела са тим именом већ постоји
+- да ли је величина слога прешла максималну величину (ограничење описано у секцији @slogovi-fiksne-duzine)
 
-==== Algoritam planiranja `INSERT` naredbe
+==== Алгоритам планирања `INSERT` наредбе
 
-Stablo planova za `INSERT` naredbe je uvek isto i sastoji se samo od `TablePlan` klase plana. Taj čvor se pretvara u svoj prateći relacioni operator nad kojim se vrše umetanja novih slogova. Vraća broj dodatih slogova.
+Стабло планова за `INSERT` наредбе је увек исто и састоји се само од `TablePlan` класе плана. Тај чвор се претвара у свој пратећи релациони оператор над којим се врше уметања нових слогова. Враћа број додатих слогова.
 
-Algoritam umetanja novog sloga implementiran u `TableScan` operatoru funkcioniše tako što traži prvo slobodno mesto za novi slog, ali počevši od pozicije trenutnog sloga tog `TableScan` objekta. Nakon što se operator inicijalizuje, pozicioniran je na početku tabele, to jest pre prvog sloga. Ovo znači da će umetanje prvog sloga u listi novih slogova uvek kretati od početka. Prednost ovog pristupa je to što će obrisani slogovi brzo biti ponovo popunjeni, pa se prostor maksimalno iskorišćava. Mana ovog pristupa je to što umetanje prvog novog sloga može da potraje, jer u najgorem slučaju mora da se prođe kroz sve slogove tabele da se pronađe prazno mesto. Drugi način implementacije algoritma je da se umetanje novih slogova uvek vrši na kraju. Prednost je dobra brzina umetanja, jer se preskače pretraga za slobodno mesto. Mana je to što se sve više i više prostora troši na obrisane slogove.
+Алгоритам уметања новог слога имплементиран у `TableScan` оператору функционише тако што тражи прво слободно место за нови слог, али почевши од позиције тренутног слога тог `TableScan` објекта. Након што се оператор иницијализује, позициониран је на почетку табеле, то јест пре првог слога. Ово значи да ће уметање првог слога у листи нових слогова увек кретати од почетка. Предност овог приступа је то што ће обрисани слогови брзо бити поново попуњени, па се простор максимално искоришћава. Мана овог приступа је то што уметање првог новог слога може да потраје, јер у најгорем случају мора да се прође кроз све слогове табеле да се пронађе празно место. Други начин имплементације алгоритма је да се уметање нових слогова увек врши на крају. Предност је добра брзина уметања, јер се прескаче претрага за слободно место. Мана је то што се све више и више простора троши на обрисане слогове.
 
-Implementirano rešenje je kompromis ova dva algoritma, gde se za svaku tabelu pamti pozicija poslednjeg umetnutog sloga i novi slogovi se umeću od te pozicije. Pamćenje pozicija poslednje umetnutih slogova važi samo dok je sistem upaljen i resetuje se prilikom gašenja sistema. Zadržava prednost brzine umetanja, a nakon restarta sistema mesta obrisanih slogova mogu ponovo biti popunjena. Takođe, resetuje se pri poništavanju transakcije.
+Имплементирано решење је компромис ова два алгоритма, где се за сваку табелу памти позиција последњег уметнутог слога и нови слогови се умећу од те позиције. Памћење позиција последње уметнутих слогова важи само док је систем упаљен и ресетује се приликом гашења система. Задржава предност брзине уметања, а након рестарта система места обрисаних слогова могу поново бити попуњена. Такође, ресетује се при поништавању трансакције.
 
-==== Algoritam planiranja `UPDATE` naredbe
+==== Алгоритам планирања `UPDATE` наредбе
 
-Stablo planova za `UPDATE` naredbe se može sastojati samo od  `TablePlan` klase plana, ali ispred njega može stajati i `SelectReadOnlyPlan` klasa plana u slučaju da slogovi koji trebaju biti ažurirani moraju da ispune neki uslov filtriranja. Ove dve (ili jedan) klase plana se pretvaraju u svoje prateće relacione operatore koji znaju da postave nove vrednosti. Vraća broj ažuriranih slogova.
+Стабло планова за `UPDATE` наредбе се може састојати само од  `TablePlan` класе плана, али испред њега може стајати и `SelectReadOnlyPlan` класа плана у случају да слогови који требају бити ажурирани морају да испуне неки услов филтрирања. Ове две (или један) класе плана се претварају у своје пратеће релационе операторе који знају да поставе нове вредности. Враћа број ажурираних слогова.
 
-Za razliku od `INSERT` naredbe, `UPDATE` naredba može da sadrži izraze koji nisu konstantni, to jest koji spominju kolone tabele koja se ažurira.
+За разлику од `INSERT` наредбе, `UPDATE` наредба може да садржи изразе који нису константни, то јест који спомињу колоне табеле која се ажурира.
 
-==== Algoritam planiranja `DELETE` naredbe
+==== Алгоритам планирања `DELETE` наредбе
 
-Stablo planova za `DELETE` naredbe se može sastojati samo od  `TablePlan` klase plana, ali ispred njega može stojati i `SelectReadOnlyPlan` klasa plana u slučaju da ne trebaju da se obrišu svi slogovi iz tabele već samo oni koji ispunjavaju uslov filtriranja. Vraća broj obrisanih slogova.
+Стабло планова за `DELETE` наредбе се може састојати само од  `TablePlan` класе плана, али испред њега може стојати и `SelectReadOnlyPlan` класа плана у случају да не требају да се обришу сви слогови из табеле већ само они који испуњавају услов филтрирања. Враћа број обрисаних слогова.
 
-Brisanje nekog sloga samo označava mesto gde se taj slog nalazio kao slobodno za umetanje novog sloga, umesto da radi kompresiju datoteke i zapravo izvrši fizičko brisanje.
+Брисање неког слога само означава место где се тај слог налазио као слободно за уметање новог слога, уместо да ради компресију датотеке и заправо изврши физичко брисање.
 
-==== Algoritam planiranja `CREATE TABLE` naredbe
+==== Алгоритам планирања `CREATE TABLE` наредбе
 
-`CREATE TABLE` naredba je specijalna vrsta naredbe jer ne modifikuje slogove običnih tabela, već slogove kataloških tabela (sekcija @kataloske-tabele). Dodaje jedan slog u katalošku tabelu koja pamti sve postojeće tabele. Dodaje slog za svaku kolonu nove tabele u katalošku tabelu koja pamti sve postojeće kolone. Pošto ne utiče na slogove običnih tabela, uvek vraća nula za broj slogova na koje je uticala.
+`CREATE TABLE` наредба је специјална врста наредбе јер не модификује слогове обичних табела, већ слогове каталошких табела (секција @kataloske-tabele). Додаје један слог у каталошку табелу која памти све постојеће табеле. Додаје слог за сваку колону нове табеле у каталошку табелу која памти све постојеће колоне. Пошто не утиче на слогове обичних табела, увек враћа нула за број слогова на које је утицала.
 
-Menadžer metapodataka tabela interno konstruiše tri `TableScan` objekta: prvi koristi da proveri jedinstvenost imena nove tabele, drugi koristi da umetne slog za novu tabelu u `tablecatalog` katalošku tabelu, a treći koristi da umetne slogove novih kolona u `fieldcatalog` katalošku tabelu. Posledica ovakve implementacije je ta da `UpdatePlanner` apstraktna klasa zapravo ne vrši semantičku proveru pre pozivanja algoritma planiranja `CREATE TABLE` naredbe, nego reaguje na greške i transformiše ih, ako se dese.
+Менаджер метаподатака табела интерно конструише три `TableScan` објекта: први користи да провери јединственост имена нове табеле, други користи да уметне слог за нову табелу у `tablecatalog` каталошку табелу, а трећи користи да уметне слогове нових колона у `fieldcatalog` каталошку табелу. Последица овакве имплементације је та да `UpdatePlanner` апстрактна класа заправо не врши семантичку проверу пре позивања алгоритма планирања `CREATE TABLE` наредбе, него реагује на грешке и трансформише их, ако се десе.

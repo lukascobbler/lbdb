@@ -1,6 +1,6 @@
 #align(center + horizon)[
   #text(
     size: 15pt,
-  )[_Hvala mojim roditeljima, mom kumu
-  i svim prijateljima koji su mi pružili neverovatne životne prilike i učinili me onim što jesam_]
+  )[_Хвала мојим родитељима, мом куму
+  и свим пријатељима који су ми пружили невероватне животне прилике и учинили ме оним што јесам_]
 ]

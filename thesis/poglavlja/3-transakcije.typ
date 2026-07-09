@@ -1,195 +1,195 @@
 
 
-= Upravljanje transakcijama <transakcije>
+= Управљање трансакцијама <transakcije>
 
-Transakcije su osnovni mehanizam za garantovanje različitih osobina otpornosti sistema za upravljanje relacionim bazama podataka. Omogućavaju sistemu da vrši atomične operacije, da se uvek održi u konzistentnom stanju, da izoluje nezavisne konkurentne operacije i da garantuje perzistentnost podataka. Generalno, ove osobine se zovu _ACID_ osobine (eng. _atomicity, consistency, isolation, durability_) @acid.
+Трансакције су основни механизам за гарантовање различитих особина отпорности система за управљање релационим базама података. Омогућавају систему да врши атомичне операције, да се увек одржи у конзистентном стању, да изолује независне конкурентне операције и да гарантује перзистентност података. Генерално, ове особине се зову _ACID_ особине (енг. _atomicity, consistency, isolation, durability_) @acid.
 
-Svaka operacija u sistemu mora biti izvršena u okviru jedne transakcije, ali se jedna transakcija može sastojati i od više operacija koje se sve moraju ili uspešno izvršiti ili se moraju sve poništiti. Svaka transakcija ima početak i kraj. Kraj može biti potvrda (eng. _commit_) ili poništavanje (eng. _rollback_). Ako je transakcija uspešno potvrđena, od tog trenutka pa na dalje sve izvršene promene moraju biti odmah vidljive drugim transakcijama.
+Свака операција у систему мора бити извршена у оквиру једне трансакције, али се једна трансакција може састојати и од више операција које се све морају или успешно извршити или се морају све поништити. Свака трансакција има почетак и крај. Крај може бити потврда (енг. _commit_) или поништавање (енг. _rollback_). Ако је трансакција успешно потврђена, од тог тренутка па на даље све извршене промене морају бити одмах видљиве другим трансакцијама.
 
-== Realizacija transakcionih mehanizama u sistemu
+== Реализација трансакционих механизама у систему
 
-Vrednost je niz bajtova (određenog tipa), koja dobija semantički značaj tek na apstrakcionim nivoima iznad nivoa transakcija, naime na nivou organizovanja blokova u slogove. Na nivou transakcija, vrednosti nemaju semantičko značenje, ali da bi sistem obezbedio visok stepen usklađenosti sa _ACID_ osobinama, operacije nad vrednostima se obavljaju isključivo kroz transakcije koje enkapsuliraju svu potrebnu logiku tih osobina.
+Вредност је низ бајтова (одређеног типа), која добија семантички значај тек на апстракционим нивоима изнад нивоа трансакција, наиме на нивоу организовања блокова у слогове. На нивоу трансакција, вредности немају семантичко значење, али да би систем обезбедио висок степен усклађености са _ACID_ особинама, операције над вредностима се обављају искључиво кроз трансакције које енкапсулирају сву потребну логику тих особина.
 
-=== Transakcije kao glavno mesto pristupa vrednostima <pristup_vrednostima_u_transakcijama>
+=== Трансакције као главно место приступа вредностима <pristup_vrednostima_u_transakcijama>
 
-Na nivou slogova, operacije se izvršavaju u celinama jednog sloga, ali gradivni elementi tih slogova su ipak vrednosti. Stranica slogova upravlja pozicijama vrednosti, a sam pristup njima delegira transakciji za koju je vezana.
+На нивоу слогова, операције се извршавају у целинама једног слога, али градивни елементи тих слогова су ипак вредности. Страница слогова управља позицијама вредности, а сам приступ њима делегира трансакцији за коју је везана.
 
-Pošto blokovi gde se vrednosti nalaze moraju biti u memoriji da bi se njima pristupalo, potrebno je učitati ih u sistemske bafere. Podsistem za upravljanje baferima je svestan samo načina mapiranja blokova na bafere, ali nema nikakve garancije o redosledu pristupa, ne čuva od konfliktujućih operacija i ne prati istoriju izmena. To je posao transakcija.
+Пошто блокови где се вредности налазе морају бити у меморији да би се њима приступало, потребно је учитати их у системске бафере. Подсистем за управљање баферима је свестан само начина мапирања блокова на бафере, али нема никакве гаранције о редоследу приступа, не чува од конфликтујућих операција и не прати историју измена. То је посао трансакција.
 
-Svi baferi u radnoj memoriji sistema se grupišu u transakcije, tako što svaka transakcija čuva listu svojih bafera i radi operacije samo nad njima. Bafer ulazi u listu neke transakcije tako što ga transakcija pinuje, i time označava da se sadržaj tog bafera ne sme vratiti na disk dok transakcija ne završi sa njim (dok ne prekine baferov pin). Stranica slogova i transakcija rade u paru: stranica slogova zna kojem bloku želi da pristupi, a transakcija zna kako da obezbedi da operacije nad baferom tog bloka ispoštuju _ACID_ osobine.
+Сви бафери у радној меморији система се групишу у трансакције, тако што свака трансакција чува листу својих бафера и ради операције само над њима. Бафер улази у листу неке трансакције тако што га трансакција пинује, и тиме означава да се садржај тог бафера не сме вратити на диск док трансакција не заврши са њим (док не прекине баферов пин). Страница слогова и трансакција раде у пару: страница слогова зна којем блоку жели да приступи, а трансакција зна како да обезбеди да операције над бафером тог блока испоштују _ACID_ особине.
 
-=== Sistem za oporavak
+=== Систем за опоравак
 
-Sistem za oporavak je podsistem u okviru transakcija koji sadrži prvi deo logike zbog kojeg se sav pristup vrednostima radi kroz transakcije. Primarno se brine o oporavku sistema, ali se brine i o poništavanju operacija jedne transakcije (eng. _rollback_). Obuhvata _*AC*__I__*D*_ (eng. _atomicity, consistency, durability_) osobine.
+Систем за опоравак је подсистем у оквиру трансакција који садржи први део логике због којег се сав приступ вредностима ради кроз трансакције. Примарно се брине о опоравку система, али се брине и о поништавању операција једне трансакције (енг. _rollback_). Обухвата _*AC*__I__*D*_ (енг. _atomicity, consistency, durability_) особине.
 
-_LBDB_ sistem je softversko rešenje koje radi u kontekstu nekog hardvera i operativnog sistema. Svaki od slojeva na koje se _LBDB_ sistem oslanja, ima mogućnost da zakaže zbog nekog faktora koji je izvan kontrole _LBDB_ sistema. Primeri su nestajanje struje, ubijanje _LBDB_ serverskog procesa ili neuspešno pisanje na disk. Ako se u trenutku zakazivanja izvršava neka operacija koja menja podatke u sistemu, ti podaci će biti izgubljeni, a sistem će biti ostavljen u nekonzistentnom stanju. Korišćenje sistema koji je u nekonzistentnom stanju može dovesti do lošeg tumačenja podataka, ali može biti i opasno u pojedinim situacijama. Zbog ovoga se uvodi podsistem koji oporavlja sistem od nekonzistentnog stanja.
+_LBDB_ систем је софтверско решење које ради у контексту неког хардвера и оперативног система. Сваки од слојева на које се _LBDB_ систем ослања, има могућност да закаже због неког фактора који је изван контроле _LBDB_ система. Примери су нестајање струје, убијање _LBDB_ серверског процеса или неуспешно писање на диск. Ако се у тренутку заказивања извршава нека операција која мења податке у систему, ти подаци ће бити изгубљени, а систем ће бити остављен у неконзистентном стању. Коришћење система који је у неконзистентном стању може довести до лошег тумачења података, али може бити и опасно у појединим ситуацијама. Због овога се уводи подсистем који опоравља систем од неконзистентног стања.
 
-Konzistentno stanje se može definisati sa sledeće dve osobine @simpledb @acid:
-- sve nedovršene transakcije su poništene,
-- sve modifikacije potvrđenih (eng. _committed_) transakcija moraju biti na disku
+Конзистентно стање се може дефинисати са следеће две особине @simpledb @acid:
+- све недовршене трансакције су поништене,
+- све модификације потврђених (енг. _committed_) трансакција морају бити на диску
 
-==== Sistem _log_-ovanja
+==== Систем _log_-овања
 
-_Log_ podaci su u _log_ datoteci uvek poređani redom kojim su se izvršili u okviru jedne transakcije. Pisanjem _log_ podataka se postiže visoko granulirana istorija izmena. Osnova svakog algoritma oporavka je prolaženje kroz istoriju izmena počevši od poslednje izmene, da bi se te izmene poništile ili ponovo primenile tačnim redosledom.
+_Log_-ови су у _log_ датотеци увек поређани редом којим су се извршили у оквиру једне трансакције. Писањем _log_-ова се постиже високо гранулирана историја измена. Основа алгоритама опоравка је пролажење кроз историју измена почевши од последње измене, да би се те измене поништиле или поново примениле тачним редоследом.
 
-U sistemu postoji dve glavne grupe operacija: operacije modifikacije vrednosti i operacije životnog ciklusa transakcija. Za svaku operaciju se definiše struktura _log_-a koja opisuje tu operaciju. Za operacije modifikacije vrednosti, u _log_-u stoje svi podaci neophodni da se ta operacija poništi ili ponovo primeni, dok u _log_-ovima operacija životnog ciklusa transakcija stoje svi neophodni podaci za praćenje rada transakcija.
+У систему постоје две главне групе операција: операције модификације вредности и операције животног циклуса трансакција. За сваку операцију се дефинише структура _log_-а. За операције модификације вредности, у _log_-у стоје сви подаци неопходни да се та операција поништи или поново примени, док у _log_-у операције животног циклуса трансакције стоје сви неопходни подаци за праћење рада трансакције.
 
-Pošto u _log_-ovima operacija modifikacije vrednosti uvek stoje i stara i nova vrednost, poništavanje ili ponovna primena operacije je trivijalna. Specijalna operacija modifikacije je operacija umetanja novog bloka na kraju datoteke, koja ne menja nikakvu vrednost ali je i dalje potrebno pratiti njene pozive zbog održavanja korektne veličine datoteka. Algoritam poništavanja umetanja novog bloka nije trivijalan jer nije samo zamena vrednosti, već je potrebno označiti bafer tog bloka kao nemodifikovan i skratiti datoteku za jedan blok. U _log_ datoteku se uvek zapisuje novi _log_ za pozvanu operaciju modifikacije pre same obrade te operacije.
+Пошто у _log_-овима операција модификације вредности увек стоје и стара и нова вредност, поништавање или поновна примена операције је тривијална. Специјална операција модификације је операција уметања новог блока на крају датотеке, која не мења никакву вредност али је и даље потребно пратити њене позиве због одржавања коректне величине датотека. Алгоритам поништавања уметања новог блока није тривијалан јер није само замена вредности, већ је потребно означити бафер тог блока као немодификован и скратити датотеку за један блок. У _log_ датотеку се увек записује нови _log_ за позвану операцију модификације пре саме обраде те операције.
 
-Operacije životnog ciklusa transakcija je potrebno pratiti da bi sistem oporavka znao koje transakcije su se uspešno i neuspešno izvršile i na osnovu toga reagovao na operacije modifikacije. Marker kontrolne tačke je specijalni zapis koji označava kada nije potrebno dalje prolaziti kroz _log_ datoteku.
+Операције животног циклуса трансакција је потребно пратити да би систем опоравка знао које трансакције су се успешно и неуспешно извршиле и на основу тога реаговао на операције модификације. Маркер контролне тачке је специјални запис који означава када није потребно даље пролазити кроз _log_ датотеку.
 
-Hijerarhija _log_ zapisa počinje od glavnog interfejsa _LogRecord_ koji definiše neophodne operacije koje će algoritmi oporavka sistema zvati. Operacije životnog ciklusa transakcija ostavljaju praznu implementaciju _undo_ i _redo_ metoda jer ne modifikuju podatke. Dodatno, svaki tip _log_ zapisa ima prateću statičku metodu _writeToLog_ koja enkapsulira logiku pisanja same strukture konkretnog _log_-a preko menadžera _log_-ova za neki identifikator transakcije.
+Хијерархија _log_-ова почиње од главног интерфејса _LogRecord_ који дефинише неопходне операције које ће алгоритми опоравка звати. Операције животног циклуса трансакција остављају празну имплементацију _undo_ и _redo_ метода јер не модификују податке. Додатно, сваки тип _log_-а има пратећу статичку методу _writeToLog_ која енкапсулира логику записа _log_-а преко менаджера _log_-ова за неки број трансакције.
 
 #figure(
-  image("../dijagrami/log_tipovi.pdf", width: 96%),
+  image("../dijagrami/log_tipovi.pdf", width: 82%),
   caption: [
-    Operacije, njihovi _log_ tipovi i struktura _log_ tipova
+    Операције, њихови _log_ типови и структура _log_ типова
   ],
 )<fig:log_tipovi>
 
-==== Algoritmi oporavka sistema <alg_oporavka>
+==== Алгоритми опоравка система <alg_oporavka>
 
-Algoritam oporavka sistema je procedura koja prati korake definisane strategijom oporavka koju sistem koristi i zajedno sa podacima iz _log_ datoteke vraća sistem u konzistentno stanje. Svaki algoritam oporavka mora biti idempotentan, jer sistem može naglo prestati sa radom i dok je u procesu oporavljanja @simpledb. Proces oporavka se vrši u okviru podizanja sistema.
+Алгоритам опоравка система је процедура која прати кораке дефинисане стратегијом опоравка коју систем користи и заједно са подацима из _log_ датотеке враћа систем у конзистентно стање. Сваки алгоритам опоравка мора бити идемпотентан, јер систем може нагло престати са радом и док је у процесу опорављања @simpledb. Процес опоравка се врши у оквиру подизања система.
 
-Postoje tri generalna algoritma oporavka sistema @simpledb:
-- ponovna primena uspešnih transakcija i poništavanje neuspešnih transakcija (eng. _undo redo recovery_),
-- samo poništavanje neuspešnih transakcija (eng. _undo only recovery_),
-- samo ponovna primena uspešnih transakcija (eng. _redo only recovery_).
-Izbor algoritma oporavka utiče na to kada će sadržaj bafera biti upisan na disk.
+Постоје три генерална алгоритма опоравка система @simpledb:
+- поновна примена успешних трансакција и поништавање неуспешних трансакција (енг. _undo redo recovery_),
+- само поништавање неуспешних трансакција (енг. _undo only recovery_),
+- само поновна примена успешних трансакција (енг. _redo only recovery_).
+Избор алгоритма опоравка утиче на то када ће садржај бафера бити уписан на диск.
 
-U _LBDB_ sistemu, implementirani su _undo redo_ i _undo only_ algoritmi oporavke i moguće je postaviti koji će sistem koristiti u okviru sistemskih podešavanja (listing @fig:lbdbsettings).
+У _LBDB_ систему, имплементирани су само _undo redo_ и _undo only_ алгоритми опоравка.
 
 ===== _Undo redo recovery_
 
-Algoritam se deli na dva koraka: faza poništavanja i faza ponovne primene.
+Алгоритам се дели на два корака: фаза поништавања и фаза поновне примене.
 
-Faza poništavanja (eng. _undo_):
+Фаза поништавања (енг. _undo_):
 
-- Za svaki log zapis (čitajući unazad od kraja _log_-a):
-  - Ako je tekući zapis _commit_ zapis, dodaj tu transakciju u listu potvrđenih transakcija.
-  - Ako je tekući zapis _rollback_ zapis, dodaj tu transakciju u listu poništenih transakcija.
-  - Ako je tekući zapis _update_ zapis (modifikaciona operacija), i transakcija nije ni u listi potvrđenih ni u listi poništenih, vrati staru vrednost na zadatoj lokaciji.
+- За сваки _log_ запис (читајући уназад од краја _log_ датотеке):
+  - Ако је текући запис _commit_ запис, додај ту трансакцију у листу потврђених.
+  - Ако је текући запис _rollback_ запис, додај ту трансакцију у листу поништених.
+  - Ако је текући запис _update_ запис (модификациона операција), и трансакција није ни у листи потврђених ни у листи поништених, врати стару вредност на задатој локацији.
 
-Faza ponovne primene (eng. _redo_):
+Фаза поновне примене (енг. _redo_):
 
-- Za svaki log zapis (čitajući unapred od početka _log_-a):
-  - Ako je tekući zapis _update_ zapis i transakcija je u listi potvrđenih transakcija, upiši novu vrednost na zadatoj lokaciji.
+- За сваки _log_ запис (читајући унапред од почетка _log_ датотеке):
+  - Ако је текући запис _update_ запис и трансакција је у листи потврђених трансакција, упиши нову вредност на задатој локацији.
 
-Glavna prednost ovog algoritma je to što ne utiče na redosled pisanja bafera na disk, ali mana je to što je proces oporavka sporiji. Ako se pretpostavi da su iznenadna gašenja sistema retka, prednosti ovog algoritma pobeđuju ostale algoritme.
+Главна предност овог алгоритма је то што не утиче на редослед писања бафера на диск, али мана је то што је процес опоравка спорији. Ако се претпостави да су изненадна гашења система ретка, предности овог алгоритма побеђују остале алгоритме.
 
 ===== _Undo only recovery_ <undo_only_recovery>
 
-_Undo only recovery_ algoritam radi samo fazu poništavanja jer je siguran da su svi baferi _committed_ transakcija već zapisani na disku. Ovo se postiže modifikacijom _commit_ algoritma tako da se prvo upisuje sadržaj bafera na disk pre pisanja _commit_ _log_-a. Glavna prednost ovog algoritma je brzina, jer se kroz _log_ datoteku prolazi samo jednom, ali mana je to što _commit_ operacija postaje mnogo sporija.
+_Undo only recovery_ алгоритам ради само фазу поништавања јер је сигуран да су сви бафери _committed_ трансакција већ записани на диску. Ово се постиже модификацијом _commit_ алгоритма тако да се прво уписује садржај бафера на диск пре писања _commit_ _log_-а. Главна предност овог алгоритма је брзина, јер се кроз _log_ датотеку пролази само једном, али мана је то што _commit_ операција постаје много спорија.
 
 ===== _Redo only recovery_
 
-_Redo only recovery_ algoritam radi samo fazu ponovne primene jer je siguran da baferi transakcija koje nisu ni potvrđene ni poništene sigurno nisu zapisani na disk. Ovo se postiže modifikacijom transakcija tako da su baferi u njihovim listama pinovani dokle god se transakcija ne završi. Glavna prednost ovog algoritma je brzina jer se kroz _log_ datoteku prolazi samo jednom, ali mana je to što baferi ostaju pinovani mnogo duže, drastično usporavajući sistem.
+_Redo only recovery_ алгоритам ради само фазу поновне примене јер је сигуран да бафери трансакција које нису ни потврђене ни поништене сигурно нису записани на диск. Ово се постиже модификацијом трансакција тако да су бафери у њиховим листама пиновани докле год се трансакција не заврши. Главна предност овог алгоритма је брзина јер се кроз _log_ датотеку пролази само једном, али мана је то што бафери остају пиновани много дуже, драстично успоравајући систем.
 
-===== Mirna kontrolna tačka
+===== Мирна контролна тачка
 
-Što se sistem duže koristi, to će njegov _log_ datoteka postajati obimniji jer uvek sadrži kompletnu istoriju izmena podataka. Prolazak kroz celu _log_ datoteku prilikom svakog pokretanja sistema može trošiti nepotrebno mnogo resursa, a u jednom trenutku će i biti nemoguće.
+Што се систем дуже користи, то ће његов _log_ датотека постајати обимнији јер увек садржи комплетну историју измена података. Пролазак кроз целу _log_ датотеку приликом сваког покретања система може трошити непотребно много ресурса, а у једном тренутку ће и бити немогуће.
 
-Trenutak kada algoritam oporavka ne mora da čita _log_ datoteku dublje se može okarakterisati sa dve osobine @simpledb:
-- svi prethodni _log_ zapisi su napisani od završenih transakcija (_undo_ faza algoritma)
-- baferi tih transakcija su napisani na disk (_redo_ faza algoritma)
+Тренутак када алгоритам опоравка не мора да чита _log_ датотеку дубље се може окарактерисати са две особине @simpledb:
+- сви претходни _log_-ови су написани од завршених трансакција (_undo_ фаза алгоритма)
+- бафери тих трансакција су написани на диск (_redo_ фаза алгоритма)
 
-Kontrolna tačka predstavlja zapis u _log_ datoteci posle kojeg se ne mora čitati dalje jer je sistem provereno potvrdio da obe osobine važe. Sistem trivijalno ovo može da obezbedi nakon što je završio sa oporavkom, a algoritam koji ovo obezbeđuje u ostalim situacijama se može pronaći u sekciji @quiescent_alg. _LBDB_ implementira samo logiku za mirnu kontrolnu tačku (eng. _quiescent checkpoint_), ali postoji i nemirna kontrolna tačka (eng. _nonquiescent checkpoint_) koja je fleksibilnija, ali i algoritamski zahtevnija.
+Контролна тачка представља запис у _log_ датотеци после којег се не мора читати даље јер је систем проверено потврдио да обе особине важе. Систем тривијално ово може да обезбеди након што је завршио са опоравком, а алгоритам који ово обезбеђује у осталим ситуацијама се може пронаћи у секцији @quiescent_alg. _LBDB_ имплементира само логику за мирну контролну тачку (енг. _quiescent checkpoint_), али постоји и немирна контролна тачка (енг. _nonquiescent checkpoint_) која је флексибилнија, али и алгоритамски захтевнија.
 
-Nakon oporavka, umesto pisanja kontrolne tačke, sistem radi arhiviranje _log_ datoteke. Arhiviranje je ekvivalentna operacija, a omogućava preglednije održavanje sistema tako što se _log_ datoteke kojima nije potreban dalji pristup pomeraju u zaseban direktorijum.
+Након опоравка, уместо писања контролне тачке, систем ради архивирање _log_ датотеке. Архивирање је еквивалентна операција, а омогућава прегледније одржавање система тако што се _log_ датотеке којима није потребан даљи приступ померају у засебан директоријум.
 
-==== Algoritam poništavanja transakcije
+==== Алгоритам поништавања трансакције
 
-Sistem radi poništavanje transakcije tako što prolazi kroz _log_ datoteku od kraja ka početku i poništava svaku modifikacionu operaciju te transakcije, a staje sa prolaskom _log_ datoteke kada naiđe na operaciju koja označava početak te transakcije.
+Систем ради поништавање трансакције тако што пролази кроз _log_ датотеку од краја ка почетку и поништава сваку модификациону операцију те трансакције, а стаје са проласком _log_ датотеке када наиђе на операцију која означава почетак те трансакције.
 
-=== Bezbedan višenitni pristup <bezbedan_visenitni_pristup>
+=== Безбедан вишенитни приступ <bezbedan_visenitni_pristup>
 
-Sistem za bezbedan višenitni pristup je podsistem u okviru transakcija koji sadrži drugi deo logike zbog kojeg se sav pristup vrednostima radi kroz transakcije. Primarno se brine o rešavanju konflikta konkurentnog pristupa istim blokovima. Obuhvata _AC__*I*__D_ osobinu (eng. _isolation_).
+Систем за безбедан вишенитни приступ је подсистем у оквиру трансакција који садржи други део логике због којег се сав приступ вредностима ради кроз трансакције. Примарно се брине о решавању конфликта конкурентног приступа истим блоковима. Обухвата _AC__*I*__D_ особину (енг. _isolation_).
 
-Priroda višenitnih pristupa uvodi nedeterminističan redosled operacija koji implicira konflikte. Konflikt je kada rezultat dve operacije zavisi od njihovog redosleda izvršavanja. Postoje dve vrste konflikta: _write-write_ konflikt i _read-write_ konflikt. Kod _write-write_ konflikta, jedna operacija modifikuje neku vrednost, pa druga modifikuje istu vrednost. Kod _read-write_ konflikta, jedna operacija čita neku vrednost, a druga modifikuje istu tu vrednost. Konflikti ne mogu da se dese kod _read-read_ operacija ili ako operacije rade nad vrednostima koje se nalaze u različitim blokovima @simpledb.
+Природа вишенитних приступа уводи недетерминистичан редослед операција који имплицира конфликте. Конфликт је када резултат две операције зависи од њиховог редоследа извршавања. Постоје две врсте конфликта: _write-write_ конфликт и _read-write_ конфликт. Код _write-write_ конфликта, једна операција модификује неку вредност, па друга модификује исту вредност. Код _read-write_ конфликта, једна операција чита неку вредност, а друга модификује исту ту вредност. Конфликти не могу да се десе код _read-read_ операција или ако операције раде над вредностима које се налазе у различитим блоковима @simpledb.
 
-Sprečavanje konfliktujućih operacija u sistemu se postiže preko sistema katanaca, koji omogućavaju korektan redosled pristupa vrednostima za čitanje i pisanje. Protokol zaključavanja u _LBDB_ sistemu definiše sledeća pravila rada sa katancima:
-- pre čitanja vrednosti iz bloka, potrebno je steći _deljeni_ katanac za taj blok,
-- pre pisanja vrednosti u blok, potrebno je steći _ekskluzivni_ katanac za taj blok,
-- nakon završetka transakcije, potrebno je pustiti sve katance za sve blokove koje je ta transakcija zaključala.
+Спречавање конфликтујућих операција у систему се постиже преко система катанаца, који омогућавају коректан редослед приступа вредностима за читање и писање. Протокол закључавања у _LBDB_ систему дефинише следећа правила рада са катанцима:
+- пре читања вредности из блока, потребно је стећи _дељени_ катанац за тај блок,
+- пре писања вредности у блок, потребно је стећи _ексклузивни_ катанац за тај блок,
+- након завршетка трансакције, потребно је пустити све катанце за све блокове које је та трансакција закључала.
 
-Poštovanje ovakvog protokola zaključavanja uvek garantuje tačnost rada sa vrednostima, ali znatno smanjuje konkurentnost sistema. Povećanje konkurentnosti sistema se radi izborom izolacionog nivoa individualnih transakcija. Izolacioni nivoi transakcija povećavaju konkurentnost ali žrtvuju tačnost pročitanih vrednosti tako što upravljaju životnim ciklusom _deljenih_ katanca na različite načine @simpledb.
+Поштовање оваквог протокола закључавања увек гарантује тачност рада са вредностима, али знатно смањује конкурентност система. Повећање конкурентности система се ради избором изолационог нивоа индивидуалних трансакција. Изолациони нивои трансакција повећавају конкурентност али жртвују тачност прочитаних вредности тако што управљају животним циклусом _дељених_ катанца на различите начине @simpledb.
 
-Različiti izolacioni nivoi su opisani u sekciji @izolacioni_nivoi_transakcija zbog šire slike razumevanja transakcija i potencijalnih proširenja, ali podsistem bezbednog višenitnog pristupa _LBDB_ sistema implementira samo serijalizujući izolacioni nivo transakcija.
+Различити изолациони нивои су описани у секцији @izolacioni_nivoi_transakcija због шире слике разумевања трансакција и потенцијалних проширења, али подсистем безбедног вишенитног приступа имплементира само серијализујући изолациони ниво трансакција.
 
-==== Izolacioni nivoi transakcija <izolacioni_nivoi_transakcija>
+==== Изолациони нивои трансакција <izolacioni_nivoi_transakcija>
 
-#figure(
-  {
-    set par(justify: false)
-    table(
-      columns: (1.3fr, 1.2fr, 1fr, 0.65fr),
-      align: (center, center),
-      inset: 5pt,
-      [Izolacioni nivo], [Problemi], [Puštanje _deljenih_ katanaca], [_EOF_ marker],
-      //
-      [Serijalizujući\ (eng. _serializable_)],
-      [ne postoje],
-      [_deljeni_ katanci se drže do završetka transakcije],
-      [postoji _deljeni_ katanac],
-      //
-      [Ponovno čitanje\ (eng. _repeatable read_)],
-      [fantomske vrednosti],
-      [_deljeni_ katanci se drže do završetka transakcije],
-      [ne postoji _deljeni_ katanac],
-      //
-      [Čitanje samo potvrđenih vrednosti\ (eng. _read committed_)],
-      [fantomske vrednosti,\ promenjene vrednosti],
-      [_deljeni_ katanci se puštaju odmah nakon čitanja],
-      [ne postoji _deljeni_ katanac],
-      //
-      [Čitanje i nepotvrđenih vrednosti\ (eng. _read uncommitted_)],
-      [fantomske vrednosti,\ promenjene vrednosti,\ "prljava" čitanja],
-      [ne koriste se _deljeni_ katanci],
-      [ne postoji _deljeni_ katanac],
-    )
-  },
-  caption: [Različiti izolacioni nivoi transakcija],
-)<tbl:izolacioni_nivoi>
+#[
+  #show table.cell: set text(size: 9.5pt)
 
-Različiti izolacioni nivoi se mogu implementirati i preko _MVCC_ (eng. _multi version concurrency control_) pristupa @mvcc.
+  #figure(
+    {
+      set par(justify: false)
+      table(
+        columns: (1.3fr, 1.3fr, 1fr, 0.65fr),
+        align: (center, center),
+        inset: 3.5pt,
+        [Изолациони ниво], [Проблеми], [Пуштање _дељених_ катанаца], [_EOF_ маркер],
+        //
+        [Серијализујући\ (енг. _serializable_)],
+        [не постоје],
+        [_дељени_ катанци се држе до завршетка трансакције],
+        [постоји _дељени_ катанац],
+        //
+        [Поновно читање\ (енг. _repeatable read_)],
+        [фантомске вредности],
+        [_дељени_ катанци се држе до завршетка трансакције],
+        [не постоји _дељени_ катанац],
+        //
+        [Читање само потврђених вредности\ (енг. _read committed_)],
+        [фантомске вредности,\ промењене вредности],
+        [_дељени_ катанци се пуштају одмах након читања],
+        [не постоји _дељени_ катанац],
+        //
+        [Читање и непотврђених вредности\ (енг. _read uncommitted_)],
+        [фантомске вредности,\ промењене вредности,\ "прљава" читања],
+        [не користе се _дељени_ катанци],
+        [не постоји _дељени_ катанац],
+      )
+    },
+    caption: [Различити изолациони нивои трансакција],
+  )<tbl:izolacioni_nivoi>
+]
 
-Izolacioni nivoi transakcija su koncipirani tako da svaki nivo izolacije rešava sve probleme nivoa ispod njega.
+Различити изолациони нивои се могу имплементирати и преко _MVCC_ (енг. _multi version concurrency control_) приступа @mvcc.
 
-- Problem "prljavog" čitanja je kada transakcija _A_ može da čita vrednosti koja je transakcija _B_ izmenila, pre nego što je transakcija _B_ završila.
-- Problem promenjivih vrednosti je kada transakcija _A_ pročita neku vrednost, transakcija _B_ je modifikuje, transakcija _A_ ponovo pročita istu vrednost i dobije vrednost koju je transakcija _B_ modifikovala umesto vrednosti koju je transakcija _A_ prvobitno pročitala.
-- Problem fantomskih vrednosti je kada transakcija _A_ pročita sve vrednosti nekog blokovskog opsega, transakcija _B_ doda novu vrednost i proširi taj blokovski opseg sa novim blokom, i umesto da transakcija _A_ pri ponovnom čitanju svih vrednosti dobije istu listu prvobitnih vrednosti, dobije i novu vrednost iz novog bloka koju je transakcija _B_ dodala.
+Изолациони нивои трансакција су конципирани тако да сваки ниво изолације решава све проблеме нивоа испод њега.
 
-Pošto je nivo granularnosti zaključavanja na nivou bloka, fantomska čitanja u okviru transakcije _A_ i datoteke _D_ se mogu desiti samo ako transakcija _B_ na kraju _D_ doda novi blok pre završetka transakcije _A_. Sprečavanje ovoga se realizuje dobijanjem virtuelnog _deljenog_ katanca nad _EOF_ (eng. _end of file_) markerom datoteke _D_ od strane transakcije koja čita podatke (transakcija _A_) i dobijanjem virtuelnog _ekskluzivnog_ katanca nad _EOF_ markerom datoteke _D_ od strane transakcije koja dodaje novi blok (transakcija _B_). _B_ neće moći da doda novi blok u _D_ dok _A_ drži virtuelni _deljeni_ katanac nad _EOF_ markerom.
+- Проблем "прљавог" читања је када трансакција _A_ може да чита вредности која је трансакција _B_ изменила, пре него што је трансакција _B_ завршила.
+- Проблем промењивих вредности је када трансакција _A_ прочита неку вредност, трансакција _B_ је модификује, трансакција _A_ поново прочита исту вредност и добије вредност коју је трансакција _B_ модификовала уместо вредности коју је трансакција _A_ првобитно прочитала.
+- Проблем фантомских вредности је када трансакција _A_ прочита све вредности неког блоковског опсега, трансакција _B_ дода нову вредност и прошири тај блоковски опсег са новим блоком, и уместо да трансакција _A_ при поновном читању свих вредности добије исту листу првобитних вредности, добије и нову вредност из новог блока коју је трансакција _B_ додала.
 
-Spomenuti izolacioni nivoi transakcija se odnose samo na operacije koje čitaju vrednosti. Operacije koje modifikuju vrednosti uvek moraju poštovati korektno dobijanje _ekskluzivnih_ katanaca. Transakcije na individualnom nivou mogu tolerisati neprecizne podatke, ali kada bi se dobijanje _ekskluzivnih_ zaobišlo, cela baza podataka bi postala neupotrebljiva @simpledb.
+Пошто је ниво грануларности закључавања на нивоу блока, фантомска читања у оквиру трансакције _A_ и датотеке _D_ се могу десити само ако трансакција _B_ на крају _D_ дода нови блок пре завршетка трансакције _A_. Спречавање овога се реализује добијањем виртуелног _дељеног_ катанца над _EOF_ (енг. _end of file_) маркером датотеке _D_ од стране трансакције која чита податке (трансакција _A_) и добијањем виртуелног _ексклузивног_ катанца над _EOF_ маркером датотеке _D_ од стране трансакције која додаје нови блок (трансакција _B_). _B_ неће моћи да дода нови блок у _D_ док _A_ држи виртуелни _дељени_ катанац над _EOF_ маркером.
 
-==== Katalog katanaca <katalog-katanaca>
+Споменути изолациони нивои трансакција се односе само на операције које читају вредности. Операције које модификују вредности увек морају поштовати коректно добијање _ексклузивних_ катанаца. Трансакције на индивидуалном нивоу могу толерисати непрецизне податке, али када би се добијање _ексклузивних_ заобишло, цела база података би постала неупотребљива @simpledb.
 
-Instanca klase `LockTable` je deljena za sve transakcije u sistemu. U njoj se realizuju mehanizmi praćenja postojanja katanaca za sve blokove.
+==== Каталог катанаца <katalog-katanaca>
 
-_Deljeni_ katanac za neki blok je moguće steći bez obzira na postojanje drugih deljenih katanaca, ali _ekskluzivni_ katanac za neki blok je moguće steći samo kada ne postoji nijedan drugi katanac bilo koje vrste.
+Инстанца класе `LockTable` је дељена за све трансакције у систему. У њој се реализују механизми праћења постојања катанаца за све блокове. _Дељени_ катанац за неки блок је могуће стећи без обзира на постојање других дељених катанаца, али _ексклузивни_ катанац за неки блок је могуће стећи само када не постоји ниједан други катанац било које врсте.
 
-Ako se desi da transakcija nije uspela da zaključa željeni blok (bilo sa _deljenim_ ili _ekskluzivnim_ katancem) vraća se greška klijentu. Sistem nema mehanizam za detekciju zastoja, već čeka da prođe određeni vremenski period, posle kog smatra da je nemoguće zaključati željeni blok. Takođe, sistem ne može da spreči situaciju gde transakcije čekaju jedne na druge u krugu (eng. _deadlock_).
+Ако се деси да трансакција није успела да закључа жељени блок (било са _дељеним_ или _ексклузивним_ катанцем) враћа се грешка клијенту. Систем нема механизам за детекцију застоја, већ чека да прође одређени временски период, после ког сматра да је немогуће закључати жељени блок. Такође, систем не може да спречи ситуацију где трансакције чекају једне на друге у кругу (енг. _deadlock_).
 
-==== Upravljanje katancima na nivou individualnih transakcija
+==== Управљање катанцима на нивоу индивидуалних трансакција
 
-Menadžer konkurentnosti (`ConcurrencyManager` klasa) sadrži skup jednostavnih algoritama koji interaguju sa katalogom katanca da bi transakcijama na individualnom nivou omogućili upravljanje katancima. Svaka transakcija ima svoj menadžer konkurentnosti.
+Менаджер конкурентности (`ConcurrencyManager` класа) садржи скуп једноставних алгоритама који интерагују са каталогом катанца да би трансакцијама на индивидуалном нивоу омогућили управљање катанцима. Свака трансакција има свој менаджер конкурентности.
 
-== Transakcije i klijenti <sesije>
+== Трансакције и клијенти <sesije>
 
-Pošto svaka operacija u sistemu mora biti izvršena u okviru neke transakcije, klijentima _LBDB_ sistema je potrebno dodeliti korektne transakcione objekte. Menadžer transakcija upravlja životnim ciklusom transakcija i vezuje ih za klijente. Menadžer transakcija je jedan od tri glavna podsistema _LBDB_ sistema obrade upita.
+Пошто свака операција у систему мора бити извршена у оквиру неке трансакције, клијентима _LBDB_ система је потребно доделити коректне трансакционе објекте. Менаджер трансакција управља животним циклусом трансакција и везује их за клијенте. Менаджер трансакција је један од три главна подсистема _LBDB_ система обраде упита.
 
-Nova transakcija počinje čim se prethodna transakcija za koju je klijent vezan završi. Prva transakcija se dodeljuje klijentu prilikom njegovog povezivanja na sistem. Podrazumevani režim završetaka transakcija je automatsko završavanje (eng. _autocommit_) u kom se svaka transakcija sastoji od tačno jedne operacije. Drugi režim završetaka transakcija je ručni režim, u kom se transakcija može sastojati od više operacija, i u tom slučaju kraj transakcije označava operacija potvrde ili poništavanja koja se dobija od klijenta.
+Нова трансакција почиње чим се претходна трансакција за коју је клијент везан заврши. Прва трансакција се додељује клијенту приликом његовог повезивања на систем. Подразумевани режим завршетака трансакција је аутоматско завршавање (енг. _autocommit_) у ком се свака трансакција састоји од тачно једне операције. Други режим завршетака трансакција је ручни режим, у ком се трансакција може састојати од више операција, и у том случају крај трансакције означава операција потврде или поништавања која се добија од клијента.
 
-Da bi se postiglo perzistiranje istog transakcionog objekta kroz više operacija, potrebno je pratiti sve aktuelne transakcione objekte u sistemu i unikatno definisati svakog klijenta. Za istog klijenta se operacije moraju izvršavati u okviru njegovog transakcionog objekta dokle god transakciji ne dođe kraj. Unikatni identifikator klijenta predstavljen je njegovom sesijom. Na apstrakcionom nivou upravljanja transakcijama, sesija nije ništa više nego broj, ali na višim slojevima je potrebno generisati tu sesiju korektno. Detalji generisanja sesije se mogu pronaći u sekciji @obrada-klijenta.
+Да би се постигло перзистирање истог трансакционог објекта кроз више операција, потребно је пратити све актуелне трансакционе објекте у систему и јединствено описати сваког клијента. За истог клијента се операције морају извршавати у оквиру његовог трансакционог објекта докле год трансакцији не дође крај. Јединствени идентификатор клијента представљен је његовом сесијом. На апстракционом нивоу управљања трансакцијама, сесија није ништа више него број, али на вишим слојевима је потребно генерисати ту сесију коректно. Детаљи генерисања сесије се налазе у секцији @obrada-klijenta.
 
-=== Algoritam zapisa mirne kontrolne tačke <quiescent_alg>
+=== Алгоритам записа мирне контролне тачке <quiescent_alg>
 
-Da bi mirna kontrolna tačka bila zapisana, nijedna transakcija ne sme biti aktivna u sistemu, a ovo je evidentno zbog prve osobine mirne kontrolne tačke. Korektan zapis mirne kontrolne tačke se izvršava sledećim algoritmom @simpledb:
-- menadžer transakcija prestaje da prihvata nove transakcije od klijenata
-- menadžer transakcija čeka da svi klijenti završe sa svojom transakcijom, bilo ona ručna ili automatska
-- menadžer transakcija zapisuje sve bafere na disk
-- menadžer transakcija dodaje zapis mirne kontrolne tačke u _log_ datoteku
-- menadžer transakcija ponovo prihvata nove transakcije od klijenata
-
-Menadžer transakcija je jedini koji je svestan činjenice da li su sve transakcije završene, jer ih prati, pa je algoritam zapisa mirne kontrolne tačke implementiran u okviru njega.
+Да би мирна контролна тачка била записана, ниједна трансакција не сме бити активна у систему, а ово је евидентно због прве особине мирне контролне тачке. Коректан запис мирне контролне тачке се извршава следећим алгоритмом @simpledb:
+- менаджер трансакција престаје да прихвата нове трансакције од клијената
+- менаджер трансакција чека да сви клијенти заврше са својом трансакцијом, било она ручна или аутоматска
+- менаджер трансакција записује све бафере на диск
+- менаджер трансакција додаје запис мирне контролне тачке у _log_ датотеку
+- менаджер трансакција поново прихвата нове трансакције од клијената

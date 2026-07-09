@@ -50,7 +50,7 @@
   v(1em)
 }
 
-#outline(title: [Sadržaj], depth: 4)
+#outline(title: [Садржај], depth: 4)
 
 #set page(header: context {
   if not (query(heading.where(level: 1)).any(h => h.location().page() == here().page())) {
@@ -84,19 +84,19 @@
 #show outline: set heading(outlined: true)
 #context {
   if query(figure.where(kind: image)).len() > 0 [
-    = Spisak slika
+    = Списак слика
     <spisak-slika>
     #outline(title: none, target: figure.where(kind: image))
   ]
 
   if query(figure.where(kind: image)).len() > 0 [
-    = Spisak listinga
+    = Списак листинга
     <spisak-listinga>
     #outline(title: none, target: figure.where(kind: raw))
   ]
 
   if query(figure.where(kind: table)).len() > 0 [
-    = Spisak tabela
+    = Списак табела
     <spisak-tabela>
     #outline(title: none, target: figure.where(kind: table))
   ]

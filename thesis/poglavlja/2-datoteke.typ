@@ -1,107 +1,107 @@
 
 
-= Upravljanje datotekama <datoteke>
+= Управљање датотекама <datoteke>
 
-Upravljanje datotekama se vrši kroz više slojeva u sistemu, gde je svaki sloj odgovoran za organizaciju datoteka na različitom apstrakcionom nivou. Osnovna premisa je da sve operacije sa datotekama, to jest diskom moraju da se izvršavaju u jedinicama blokova, jer je operativni sistem, a i hardver (disk) optimizovan za rad sa njima @simpledb. Zbog toga što je blok najmanja jedinica interakcije sa diskom i datotekama, sva čitanja, pisanja i modifikacije podataka se rade zajedno sa celim blokom gde se ti podaci nalaze, a ne direktno.
+Управљање датотекама се врши кроз више слојева у систему, где је сваки слој одговоран за организацију датотека на различитом апстракционом нивоу. Основна премиса је да све операције са датотекама, то јест диском морају да се извршавају у јединицама блокова, јер је оперативни систем, а и хардвер (диск) оптимизован за рад са њима @simpledb. Због тога што је блок најмања јединица интеракције са диском и датотекама, сва читања, писања и модификације података се раде заједно са целим блоком где се ти подаци налазе, а не директно.
 
-== Upravljanje blokovima
+== Управљање блоковима
 
-Sistem za upravljanje blokovima je primarno zadužen za dobavljanje bloka sa diska gde se nalaze traženi podaci i za korektno zapisivanje _log_ podataka. Svaki blok ima svoj unikatni identifikator, koji je predstavljen _Java_ _record_ strukturom. Svaki blok je vezan za datoteku i ima svoju blok poziciju u toj datoteci.
+Систем за управљање блоковима је примарно задужен за добављање блока са диска где се налазе тражени подаци и за коректно записивање _log_ података. Сваки блок има свој уникатни идентификатор, који је представљен _Java_ _record_ структуром. Сваки блок је везан за датотеку и има своју блок позицију у тој датотеци.
 
-=== Interfejs ka _file_ sistemu operativnog sistema
+=== Интерфејс ка _file_ систему оперативног система
 
-Najniži nivo apstrakcije predstavlja menadžer datoteka (`FileManager` klasa) koji ima funkciju interfejsa ka _file_ sistemu operativnog sistema i nema predstavu šta se nalazi u samim datotekama _LBDB_ sistema. Menadžer datoteka čuva pokazivače na sve datoteke kojima sistem upravlja i omogućava višenitni bezbedan pristup istim, upotrebom _Java_ `synchronized` ključne reči. Višenitni bezbedan pristup omogućava sistemu da podrži više različitih klijenata u isto vreme, ali nije dovoljan samo na ovom sloju, već je detaljno obrađen u okviru transakcija (sekcija @bezbedan_visenitni_pristup).
+Најнижи ниво апстракције представља менаджер датотека (`FileManager` класа) који има функцију интерфејса ка _file_ систему оперативног система и нема представу шта се налази у самим датотекама _LBDB_ система. Менаджер датотека чува показиваче на све датотеке којима систем управља и омогућава вишенитни безбедан приступ истим, употребом _Java_ `synchronized` кључне речи. Вишенитни безбедан приступ омогућава систему да подржи више различитих клијената у исто време, али није довољан само на овом слоју, већ је детаљно обрађен у оквиру трансакција (секција @bezbedan_visenitni_pristup).
 
-Moguće je podesiti sistem da koristi proizvoljnu veličinu jednog bloka, zavisno od prirode podataka kojima će baza podataka biti popunjena i to je glavni parametar menadžera datoteka.
+Могуће је подесити систем да користи произвољну величину једног блока, зависно од природе података којима ће база података бити попуњена и то је главни параметар менаджера датотека.
 
-=== Stranice
+=== Странице
 
-Stranica (eng. _page_) predstavlja sirove bajtove jednog bloka učitane u radnu memoriju. Iako nije nužno potrebno, sve vrednosti iz stranice zajedno sa njihovim tipom se pretvaraju u ekvivalentne _Java_ objekte (koristeći `ByteBuffer` standardnu _Java_ klasu) da bi se omogućio pristup operacijama iz _Java_ standardne biblioteke za te tipove. Kada menadžer datoteka dobavlja određeni blok, bajtovi tog bloka se smeštaju u radnu memoriju u objekat stranice. Stranice su na apstrakcionom nivou ispod sistema baferovanja i koriste se kao potpora tog sistema.
+Страница (енг. _page_) представља сирове бајтове једног блока учитане у радну меморију. Иако није нужно потребно, све вредности из странице заједно са њиховим типом се претварају у еквивалентне _Java_ објекте (користећи `ByteBuffer` стандардну _Java_ класу) да би се омогућио приступ операцијама из _Java_ стандардне библиотеке за те типове. Када менаджер датотека добавља одређени блок, бајтови тог блока се смештају у радну меморију у објекат странице. Странице су на апстракционом нивоу испод система баферовања и користе се као потпора тог система.
 
-Sistem podržava sledeće proste i kompozitne tipove podataka: _String_, _Boolean_ i _Integer_. Kod prostih tipova, iz stranice se samo čitaju njihovi bajtovi i pretvaraju u određeni _Java_ objekat tog tipa, dok kod kompozitnih tipova kao što je _String_ potrebno je znati dužinu, same bajtove i kodiranje da bi se konstruisao _Java_ objekat _String_ tipa.
+Систем подржава следеће просте и композитне типове података: _String_, _Boolean_ и _Integer_. Код простих типова, из странице се само читају њихови бајтови и претварају у одређени _Java_ објекат тог типа, док код композитних типова као што је _String_ потребно је знати дужину, саме бајтове и кодирање да би се конструисао _Java_ објекат _String_ типа.
 
-=== Upravljanje _log_ datotekom
+=== Управљање _log_ датотеком
 
-Jedan _log_ je niz bajtova čije interpretiranje ukazuje na to kako se promenila neka vrednost u nekom bloku.
+Један _log_ је низ бајтова чије интерпретирање указује на то како се променила нека вредност у неком блоку.
 
-_Log_ datoteka je specijalna vrsta datoteke u kojoj se čuva niz _log_-ova. Na apstrakcionom nivou upravljanja blokovima, nije bitan sadržaj ove datoteke, već samo algoritmi neophodni za korektno prolaženje kroz nju i algoritmi za dodavanje novih _log_-ova. Ovi algoritmi se nalaze u menadžeru _log_-ova (`LogManager` klasa) i _log_ iteratoru (`LogIterator` klasa).
+_Log_ датотека је специјална врста датотеке у којој се чува низ _log_-ова. На апстракционом нивоу управљања блоковима, није битан садржај ове датотеке, већ само алгоритми неопходни за коректно пролажење кроз њу и алгоритми за додавање нових _log_-ова. Ови алгоритми се налазе у менаджеру _log_-ова (`LogManager` класа) и _log_ итератору (`LogIterator` класа).
 
-_Log_ datoteka je organizovana tako da se noviji _log_-ovi nalaze u blokovima bližim kraju datoteke, a unutar jednog bloka _log_ datoteke noviji _log_-ovi se nalaze pri početku bloka. Ako nema mesta da se upiše novi _log_, prelazi se u sledeći blok _log_ datoteke.
+_Log_ датотека је организована тако да се новији _log_-ови налазе у блоковима ближим крају датотеке, а унутар једног блока _log_ датотеке новији _log_-ови се налазе при почетку блока. Ако нема места да се упише нови _log_, прелази се у следећи блок _log_ датотеке.
 
-Menadžer _log_-ova obezbeđuje algoritme upravljanja _log_ datotekom tako što čuva stranicu poslednjeg bloka _log_ datoteke. Upravljanje _log_ datotekom podrazumeva dodavanje novih _log_-ova, upis _log_-ova na disk i arhiviranje _log_ datoteke.
+Менаджер _log_-ова обезбеђује алгоритме управљања _log_ датотеком тако што чува страницу последњег блока _log_ датотеке. Управљање _log_ датотеком подразумева додавање нових _log_-ова, упис _log_-ова на диск и архивирање _log_ датотеке.
 
-Iterator _log_-ova obezbeđuje čitanje _log_ datoteke u korektnom redosledu i implementiran je pomoću _Java_ `Iterator` interfejsa.
+Итератор _log_-ова обезбеђује читање _log_ датотеке у коректном редоследу и имплементиран је помоћу _Java_ `Iterator` интерфејса.
 
 #figure(
   image("../dijagrami/log_fajl_izgled.pdf"),
   caption: [
-    Izgled _log_ datoteke i smer iteracije
+    Изглед _log_ датотеке и смер итерације
   ],
 )<fig:log_fajl>
 
-Svaki blok _log_ datoteke na nultoj poziciji sadrži četvorobajtni broj koji predstavlja lokaciju prvog _log_-a u tom bloku. Svaki _log_ se sastoji iz sadržaja i svoje dužine koja je isto četvorobajtni broj.
+Сваки блок _log_ датотеке на нултој позицији садржи четворобајтни број који представља локацију првог _log_-а у том блоку. Сваки _log_ се састоји из садржаја и своје дужине која је исто четворобајтни број.
 
-Prilikom dodavanja novog _log_-a, sistem izračunava _log_ sekvencu novog _log_-a (eng. _log sequence number_) koja unikatno identifikuje zapisan _log_ i može se koristiti u daljim podsistemima za forsiranje pisanja prethodnih _log_-ova u _log_ datoteku i time garantovati redosled operacija.
+Приликом додавања новог _log_-а, систем израчунава _log_ секвенцу (енг. _log sequence number_) која јединствено идентификује записан _log_ и користи се у даљим подсистемима за форсирање писања претходних _log_-ова, гарантовајући редослед операција.
 
-== Upravljanje baferima
+== Управљање баферима
 
-Čišćenje stranice iz memorije nakon završetka operacije koja ju je koristila može biti jako neefikasno jer se za ponovni pristup tom bloku mora odlaziti do diska, pogotovo u višekorisniškim kontekstima i situacijama kada se istim blokovima često pristupa. Zbog toga se uvodi koncept bafera (eng. _buffer_) koji, uz algoritme u menadžeru bafera (`BufferManager` klasa), omogućava stranicama da ostanu u memoriji prilagodljivu količinu vremena. Posledica ovog sistema je da direktan pristup podacima sa diska više nije moguć, već se sve operacije obavljaju kroz bafere.
+Чишћење странице из меморије након завршетка операције која ју је користила може бити јако неефикасно јер се за поновни приступ том блоку мора одлазити до диска, поготово у вишекориснишким контекстима и ситуацијама када се истим блоковима често приступа. Због тога се уводи концепт бафера (енг. _buffer_) који, уз алгоритме у менаджеру бафера (`BufferManager` класа), омогућава страницама да остану у меморији прилагодљиву количину времена. Последица овог система је да директан приступ подацима са диска више није могућ, већ се све операције обављају кроз бафере.
 
-`Buffer` klasa enkapsulira učitanu stranicu i sadrži dodatne podatke koji se mogu iskoristiti za implementaciju raznih algoritama ubrzanja sistema:
-- kada je stranica učitana
-- kada je bilo poslednje pristupanje stranici
-- koji je redni broj bafera u listi bafera
-- koja transakcija je poslednja modifikovala tu stranicu i _log_ sekvenca poslednje operacije
-- koliko transakcija trenutno upotrebljava tu stranicu, kraće rečeno broj pinova bafera
+`Buffer` класа енкапсулира учитану страницу и садржи додатне податке који се могу искористити за имплементацију разних алгоритама убрзања система:
+- када је страница учитана
+- када је било последње приступање страници
+- који је редни број бафера у листи бафера
+- која трансакција је последња изменила ту страницу и _log_ секвенца задње операције
+- колико трансакција тренутно употребљава ту страницу (број пинова бафера)
 
-Pošto je količina radne memorije ograničena, i količina bafera u sistemu isto mora biti ograničena. Menadžer bafera ima listu bafera sa kojima raspolaže i potrebno je da poveća stepen iskorišćenosti bafera iz te liste što je više moguće. U idealnom, hipotetičkom scenariju, menadžer bafera bi predvideo budućnost i znao kojim baferima bi se sledeće pristupalo i izbacio iz memorije one koji su vremenski najdalje od pristupa. Ovaj scenario je očigledno nemoguć, pa je potrebno iskoristiti algoritme koji najbolje "predviđaju budućnost" na osnovu realnih podataka. Kada se bafer izbaci iz memorije, njegov sadržaj se piše u blok za koji je vezan i na taj način se podaci perzistiraju. Postoje i druge situacije (sekcija @undo_only_recovery) kada se sadržaj bafera odmah zapisuje na disk.
+Пошто је количина радне меморије ограничена, и количина бафера у систему исто мора бити ограничена. Менаджер бафера има листу бафера са којима располаже и потребно је да повећа степен искоришћености бафера из те листе што је више могуће. У идеалном, хипотетичком сценарију, менаджер бафера би предвидео будућност и знао којим баферима би се следеће приступало и избацио из меморије оне који су временски најдаље од приступа. Овај сценарио је очигледно немогућ, па је потребно искористити алгоритме који најбоље "предвиђају будућност" на основу реалних података. Када се бафер избаци из меморије, његов садржај се пише у блок за који је везан и на тај начин се подаци перзистирају. Постоје и друге ситуације (секција @undo_only_recovery) када се садржај бафера одмах записује на диск.
 
-Da bi se bafer izbacio iz memorije, ne sme da bude deo ni jedne aktuelne transakcije, to jest broj pinova mu mora biti nula. Postoje dva scenarija kada stranica koja do sada nije bila u memoriji treba da se mapira na bafer:
+Да би се бафер избацио из меморије, не сме да буде део ни једне актуелне трансакције, то јест број пинова му мора бити нула. Постоје два сценарија када страница која до сада није била у меморији треба да се мапира на бафер:
 
-- U slučaju da ne postoji nijedan bafer sa nula pinova, nova stranica čeka određeni vremenski period da se oslobodi neki bafer i ako se nijedan bafer ne oslobodi, vraća se greška klijentu (detaljnije u sekciji @katalog-katanaca).
-- U slučaju da postoji više bafera sa nula pinova, potrebno je izabrati koji će biti izbačen iz radne memorije pomoću algoritma izbora.
+- У случају да не постоји ниједан бафер са нула пинова, нова страница чека одређени временски период да се ослободи неки бафер и ако се ниједан бафер не ослободи, враћа се грешка клијенту (детаљније у секцији @katalog-katanaca).
+- У случају да постоји више бафера са нула пинова, потребно је изабрати који ће бити избачен из радне меморије помоћу алгоритма избора.
 
-=== Algoritmi izbora bafera za smenu <algoritmi-smene-bafera>
+=== Алгоритми избора бафера за смену <algoritmi-smene-bafera>
 
-U opticaju je nekoliko algoritama @simpledb za izbor bafera koji će biti smenjen. Potvrda svih tvrdnji o performansama se može pronaći u @simpledb i u sekciji @test-perf-asb.
+У оптицају је неколико алгоритама @simpledb за избор бафера који ће бити смењен. Потврда свих тврдњи о перформансама се може пронаћи у @simpledb и у секцији @test-perf-asb.
 
 ==== _Naive_
 
-Naivni algoritam, kako mu i ime kaže, nema nikakvu logiku izbora bafera kojeg će smeniti već samo uzima prvi bafer koji ima nula pinova. Očekivane su loše performanse jer je velika šansa da će se smeniti bafer koji će se uskoro opet koristiti.
+Наивни алгоритам, како му и име каже, нема никакву логику избора бафера којег ће сменити већ само узима први бафер који има нула пинова. Очекиване су лоше перформансе јер је велика шанса да ће се сменити бафер који ће се ускоро опет користити.
 
 ==== _FIFO_
 
-_FIFO_ (eng. _first in first out_) algoritam smenjuje bafer koji je najranije ušao u listu bafera. Performanse su bolje od naivnog algoritma ali _FIFO_ algoritam će smeniti i jako često korišćene bafere iako su najranije ušli u sistem, na primer baferi gde se čuvaju blokovi metapodataka sistema.
+_FIFO_ (енг. _First In First Out_) алгоритам смењује бафер који је најраније ушао у листу бафера. Перформансе су боље од наивног алгоритма али _FIFO_ алгоритам ће сменити и јако често коришћене бафере иако су најраније ушли у систем, на пример бафери где се чувају блокови метаподатака система.
 
 ==== _LRU_
 
-_LRU_ (eng. _least recently used_) algoritam smenjuje bafer koji je najdavnije korišćen. Odlične performanse jer ako bafer dugo nije korišćen, verovatno se neće još dugo ni koristiti @simpledb.
+_LRU_ (енг. _Least Recently Used_) алгоритам смењује најдавније коришћен бафер. Перформансе су одличне јер се неактивни бафери ретко користе у блиској будућности @simpledb.
 
 ==== _Clock_
 
-_Clock_ algoritam pretpostavlja da baferi imaju fiksne pozicije u listi bafera i smenjuje prvi bafer koji ima nula pinova, ali pretragu počinje od prethodnog smenjenog bafera. Performanse su odlične jer je šansa da je bitan bafer pinovan velika @simpledb.
+_Clock_ алгоритам претпоставља да бафери имају фиксне позиције у листи бафера и смењује први бафер који има нула пинова, али претрагу почиње од претходног смењеног бафера. Перформансе су одличне јер је битан бафер вероватно пинован @simpledb.
 
 ==== _First unmodified_
 
-_First unmodified_ algoritam smenjuje prvi bafer koji pronađe da nije modifikovan i da ima nula pinova, ili ako je svaki modifikovan prvi koji ima nula pinova. Performansa može biti bolja od naivnog algoritma, ali može se desiti da modifikovan bafer neće dugo biti korišćen što znači da nije izabran optimalan bafer za smenu.
+_First unmodified_ алгоритам смењује први бафер који пронађе да није модификован и да има нула пинова, или ако је сваки модификован први који има нула пинова. Перформанса може бити боља од наивног алгоритма, али може се десити да модификован бафер неће дуго бити коришћен што значи да није изабран оптималан бафер за смену.
 
 ==== _LRM_
 
-_LRM_ (eng. _least recently modified_) algoritam smenjuje bafer koji ima nula pinova i koji je poslednje izmenjen, to jest bafer sa najmanjim brojem _log_ sekvence. Pretpostavka je da modifikovani bafer neće ponovo biti korišćen neko vreme jer je transakcija već završila. Može biti bolji od naivnog algoritma u specifičnim situacijiama, a često je lošiji od njega.
+_LRM_ (енг. _Least Recently Modified_) алгоритам смењује последње измењен бафер који има нула пинова. Претпоставка је да модификовани бафер неће поново бити коришћен неко време јер је трансакција већ завршила. Може бити бољи од наивног алгоритма у специфичним ситуацијиама, а често је лошији од њега.
 
-== Slogovi
+== Слогови
 
-Podsistem za upravljanje baferima je generalan i ne pruža nikakvu strukturu podataka unutar samih bafera, odnosno blokova. Na nivou relacione baze podataka, najmanja jedinica interakcije nije jedan blok, već jedan slog neke tabele i potrebno je blokove organizovati tako da se to omogući. Jedan slog neke tabele je isto što i jedan red te tabele što je objašnjeno detaljnije u sekciji @relacioni-operatori.
+Подсистем за управљање баферима је генералан и не пружа никакву структуру података унутар самих бафера, односно блокова. На нивоу релационе базе података, најмања јединица интеракције није један блок, већ један слог неке табеле и потребно је блокове организовати тако да се то омогући. Један слог неке табеле је исто што и један ред те табеле што је детаљније објашњено у поглављу @relacioni-operatori.
 
-=== Mehanizmi definisanja strukture sloga
+=== Механизми дефинисања структуре слога
 
-Da bi se podržalo kreiranje perzistentne strukture jednog sloga nove tabele, potrebno je definisati mehanizme kojima će klijenti opisivati tu strukturu. Na apstrakcionom nivou upravljanja datotekama, sistem se samo brine o tome da je teoretska i fizička struktura ispoštovana, a perzistiranje i samo kreiranje strukture je zadatak viših podsistema.
+Да би се подржало креирање перзистентне структуре једног слога нове табеле, потребно је дефинисати механизме којима ће клијенти описивати ту структуру. На апстракционом нивоу управљања датотекама, систем се само брине о томе да је теоретска и физичка структура испоштована, а перзистирање и само креирање структуре је задатак виших подсистема.
 
-==== Šema <sema>
+==== Шема <sema>
 
-Svaki slog jedne tabele se sastoji od istih metapodataka, to jest istih kolona. Svaka kolona se opisuje svojim tipom, svojom dužinom na disku i tome da li može sadržati _NULL_ vrednosti.
+Сваки слог једне табеле се састоји од истих метаподатака, то јест истих колона. Свака колона је описана својим типом, својом дужином и тиме да ли може имати _NULL_ вредности.
 
-Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišćenje tih vrednosti direktno može dovesti do nekompletnosti na raznim mestima gde su tipovi korišćeni u sistemu, pa je zbog toga uvedena enumeracija koja striktno definiše podržane tipove, zajedno sa njihovom podrazumevanom dužinom u bajtovima. Tip _VARCHAR_, to jest _String_ nema podrazumevanu dužinu jer je različita za svako polje. Dodatno postoji i _NULL_ tip koji označava odsustvo vrednosti za to polje.
+Сваки од типова је дефинисан у _SQL_ _Java_ стандардној библиотеци, али коришћење тих вредности директно може довести до некомплетности на разним местима где су типови коришћени у систему, па је због тога уведена енумерација која стриктно дефинише подржане типове, заједно са њиховом подразумеваном дужином у бајтовима. Тип _VARCHAR_, то јест _String_ нема подразумевану дужину јер је различита за свако поље. Додатно постоји и _NULL_ тип који означава одсуство вредности за то поље.
 
 #figure(
   ```java
@@ -109,40 +109,38 @@ Svaki od tipova je definisan u _SQL_ _Java_ standardnoj biblioteci, ali korišć
   public enum DatabaseType {
       INT(Types.INTEGER, 4), BOOLEAN(Types.BOOLEAN, 1),
       VARCHAR(Types.VARCHAR, -1), NULL(Types.NULL, 0);
-
-      ...
   }
   ```,
   caption: [
-    Podržani tipovi kolona
+    Подржани типови колона
   ],
 )<fig:tip>
 
-Šema jedne tabele je skup podataka o kolonama te tabele zajedno sa imenima tih kolona. Bitno je napomenuti da tabele u svojoj osnovnoj definiciji predstavljaju podatke koje se nalaze u datotekama, ali to nije uvek slučaj. Postoje i virtuelne tabele koje su rezultati upita i mogu, ali ne moraju da se direktno mapiraju na tabele koje se nalaze u datotekama. Moguće je kombinovati više tabela u jednu tabelu i dodati virtuelne kolone (sekcija @operator_projekcije) koje se ne nalaze u datoteci već su njihove vrednosti izvedene na osnovu neke kalkulacije.
+Шема једне табеле је скуп података о колонама те табеле заједно са именима тих колона. Битно је напоменути да табеле у својој основној дефиницији представљају податке које се налазе у датотекама, али то није увек случај. Постоје и виртуелне табеле које су резултати упита и могу, али не морају да се директно мапирају на табеле које се налазе у датотекама. Могуће је комбиновати више табела у једну табелу и додати виртуелне колоне (секција @operator_projekcije) које се не налазе у датотеци већ су њихове вредности изведене на основу неке калкулације.
 
-==== Raspored polja <raspored_polja>
+==== Распоред поља <raspored_polja>
 
-Šema predstavlja teoretski izgled jedne tabele, ali to nije dovoljno da bi se taj izgled perzistirao i mogao ponovo rekreirati. Zbog toga je potrebno uvesti mehanizam pamćenja i fizičkih karakteristika kolona tabele (postoji samo za nevirtuelne tabele). Taj mehanizam se realizuje preko rasporeda polja (eng. _layout_).
+Шема представља теоретски изглед једне табеле, али то није довољно да би се тај изглед перзистирао и могао поново рекреирати. Због тога је потребно увести механизам памћења и физичких карактеристика колона табеле (постоји само за невиртуелне табеле). Тај механизам се реализује преко распореда поља (енг. _layout_).
 
-Za svaku kolonu pamte se sledeće fizičke karakteristike: pozicija početka vrednosti te kolone, maksimalna dužina vrednosti te kolone i pozicija te kolone u šemi. Takođe, pamti se i celokupna dužina celog sloga. Kolone se identifikuju pomoću njihovog naziva.
+За сваку колону памте се следеће физичке особине: позиција почетка вредности те колоне, максимална дужина вредности те колоне и позиција те колоне у шеми. Памти се и целокупна дужина целог слога. Колоне се идентификују помоћу њиховог назива.
 
-== Primena strukture slogova na blokove <primena_strukture_na_blok>
+== Примена структуре слогова на блокове <primena_strukture_na_blok>
 
-Nakon definisanja fizičke strukture sloga tabele, potrebno je primeniti tu fizičku strukturu na blokove datoteka. U _LBDB_ sistemu, jedan blok sadrži fiksni broj slogova koji su svi iz iste tabele i ne postoje vrednosti promenjive dužine (više o ovom ograničenju u sekciji @slogovi-fiksne-duzine).
+Након дефинисања физичке структуре слога табеле, потребно је применити ту физичку структуру на блокове датотека. У _LBDB_ систему, један блок садржи фиксни број слогова који су сви из исте табеле и не постоје вредности промењиве дужине (више о овом ограничењу у секцији @slogovi-fiksne-duzine).
 
-Pošto su svi slogovi iste dužine, $B/S$ slogova staje u jedan blok, gde $B$ predstavlja dužinu bloka u sistemu, $S$ predstavlja dužinu jednog sloga te tabele, a $B - S * floor(B/S)$ prostora ostaje neiskorišćeno (sve vrednosti su u bajtovima). Slogovi u blokovima čuvaju samo vrednosti kolona, ali ne i metapodatke tih kolona. Podsistem upravljanja datotekama se ne brine o metapodacima kolona, već za to postoji poseban podsistem (sekcija @metapodaci).
+Пошто су сви слогови исте дужине, $B/S$ слогова стаје у један блок, где $B$ представља дужину блока у систему, $S$ представља дужину једног слога те табеле, а $B - S * floor(B/S)$ простора остаје неискоришћено (све вредности су у бајтовима). Слогови у блоковима чувају само вредности колона, али не и метаподатке тих колона. За чување метаподатака постоји посебан подсистем који је описан у поглављу @metapodaci.
 
-Ipak, u okviru jednog sloga se čuvaju metapodaci o tome koje vrednosti nisu prisutne, to jest imaju _NULL_ vrednost i to da li je slog obrisan. Rezerviše se četvorobajtno zaglavlje na početku svakog sloga i njegovi bitovi predstavljaju ove metapodatke. Da li je slog označen kao obrisan se predstavlja prvim bitom ($O$), dok ostalih 31 bitova ($N_i$) označavaju da li polje na toj poziciji ima _NULL_ vrednost. Zbog ovoga postoji ograničenje na broj polja po tabeli, maksimalno 31 polje.
+Ипак, у оквиру једног слога се чувају метаподаци о томе које вредности нису присутне, то јест имају _NULL_ вредност и то да ли је слог обрисан. Резервише се четворобајтно заглавље на почетку сваког слога и његови битови представљају ове метаподатке. Да ли је слог означен као обрисан се представља првим битом ($O$), док осталих 31 битова ($N_i$) означавају да ли поље на тој позицији има _NULL_ вредност. Због овога постоји ограничење на број поља по табели, максимално 31 поље.
 
 #figure(
-  image("../dijagrami/stanica_slogova_izgled.pdf"),
+  image("../dijagrami/stanica_slogova_izgled.pdf", width: 87%),
   caption: [
-    Izgled jednog bloka popunjenog slogovima
+    Изглед једног блока попуњеног слоговима
   ],
 )<fig:izgled_bloka_sa_podacima>
 
-=== Stranica slogova
+=== Страница слогова
 
-`RecordPage` klasa enkapsulira svu logiku održavanja strukture individualnog bloka tako što pruža interfejs za postavljanje vrednosti samo na osnovu imena kolone i broja sloga u tom bloku. Takođe, pruža interfejs za postavljanje _NULL_ vrednosti i pretragu slobodnih ili zauzetih slogova u bloku za koji je povezana. Za pristup svim blokovima jedne tabele, potrebno je sukcesivno konstruisati objekte `RecordPage` klase, što je posao podsistema relacionih operatora (sekcija @table_sken).
+`RecordPage` класа енкапсулира сву логику одржавања структуре индивидуалног блока тако што пружа интерфејс за постављање вредности само на основу имена колоне и броја слога у том блоку. Такође, пружа интерфејс за постављање _NULL_ вредности и претрагу слободних или заузетих слогова у блоку за који је повезана. За приступ свим блоковима једне табеле, потребно је сукцесивно конструисати објекте `RecordPage` класе, што је посао подсистема релационих оператора (секција @table_sken).
 
-Bitno je napomenuti da logika stranice slogova za postavljanje vrednosti ne radi samo postavljanje vrednosti, već računa gde ta vrednost treba biti postavljena. Postavljanje vrednosti delegira sistemu transakcija.
+Битно је напоменути да логика странице слогова за постављање вредности не ради само постављање вредности, већ рачуна где та вредност треба бити постављена. Постављање вредности делегира систему трансакција.

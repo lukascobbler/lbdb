@@ -1,27 +1,27 @@
 
 
-= Uvod <uvod>
+= Увод <uvod>
 
-== O sistemu
+== О систему
 
-_LBDB_ je višekorisniški sistem sa transakcijama za upravljanje relacionim bazama podataka. Njegova svrha je da prima naredbe dobijene od klijenata, interpretira ih po standardu _SQL_ programskog jezika i da vrati rezultat tim klijentima. Rezultat može biti broj pogođenih slogova za slučaj modifikacionih operacija ili rezultujuća tabela za slučaj upita. Zarad efikasnog interpretiranja, potrebno je obezbediti algoritme i strukture podataka za sledeće module: upravljanje datotekama, rad sa transakcijama, rad sa metapodacima, parsiranje upita, pravljenje planova izvršavanja upita, izvršavanje upita i za mrežnu komunikaciju.
-Moduli ovog sistema su raspoređeni tako da se svaki brine o jednoj grupi algoritama i struktura podataka kroz koju upit prolazi.
+_LBDB_ је вишекориснишки систем са трансакцијама за управљање релационим базама података. Његова сврха је да прима наредбе добијене од клијената, интерпретира их по стандарду _SQL_ програмског језика и да врати резултат тим клијентима. Резултат може бити број погођених слогова за случај модификационих операција или резултујућа табела за случај упита. Зарад ефикасног интерпретирања, потребно је обезбедити алгоритме и структуре података за следеће модуле: управљање датотекама, рад са трансакцијама, рад са метаподацима, парсирање упита, прављење планова извршавања упита, извршавање упита и за мрежну комуникацију.
+Модули овог система су распоређени тако да се сваки брине о једној групи алгоритама и структура података кроз коју упит пролази.
 
 #figure(
-  image("../dijagrami/uprosceni_sistem.pdf", height: 54%),
+  image("../dijagrami/uprosceni_sistem.pdf", height: 51%),
   caption: [
-    Uprošćeni dijagram slojevite arhitekture sistema
+    Упрошћени дијаграм слојевите архитектуре система
   ],
 )<fig:arh_sistema>
 
-Svaki sloj iz uprošćene arhitekture sistema je posebno detaljno objašnjen u nastavku, a uz te slojeve se dodatno objašnjavaju i transakcije, koje su isprepletene kroz ceo sistem. Sličan dijagram koji opisuje celu arhitekturu sistema, ali mnogo detaljnije, se može pronaći na slici @fig:sekvenca_ceo_sistem.
+Сваки слој из упрошћене архитектуре система је посебно детаљно објашњен у наставку, а уз те слојеве се додатно објашњавају и трансакције, које су испреплетене кроз цео систем. Сличан дијаграм који описује целу архитектуру система, али много детаљније, се може пронаћи на слици @fig:sekvenca_ceo_sistem.
 
-Osnovna struktura i algoritmi su izvedeni iz knjige _Database Design And Implementation_ @simpledb, a njihova unapređenja su deo ovog rada. Knjiga definiše zadatke na kraju svakog modula i ti zadaci su osnova za unapređivanje sistema. Pregled znatnih razlika između osnovne implementacije i _LBDB_ sistema se može pronaći u sekciji @razlika-implementacije, a detaljan spisak urađenih zadataka i njihovih beleški se može pronaći u okviru repozitorijuma #footnote[https://github.com/lukascobbler/lbdb].
+Основна структура и алгоритми су изведени из књиге _Database Design And Implementation_ @simpledb, а њихова унапређења су део овог рада. Књига дефинише задатке на крају сваког модула и ти задаци су основа за унапређивање система. Преглед знатних разлика између основне имплементације и _LBDB_ система се може пронаћи у секцији @razlika-implementacije, а детаљан списак урађених задатака и њихових белешки се може пронаћи у оквиру репозиторијума #footnote[https://github.com/lukascobbler/lbdb].
 
-== Klijentsko-serverska arhitektura
+== Клијентско-серверска архитектура
 
-_LBDB_ sistem se pokreće kao server i njemu se pristupa preko mreže i specijalnog protokola. Postoji implementacija klijentske aplikacije koja implementira ovaj protokol. Detalji se mogu pronaći u poglavlju @klijent-server koje opisuje klijentsko-serversku arhitekturu sistema.
+_LBDB_ систем се покреће као сервер и њему се приступа преко мреже и специјалног протокола. Постоји имплементација клијентске апликације која имплементира овај протокол. Детаљи се могу пронаћи у поглављу @klijent-server које описује клијентско-серверску архитектуру система.
 
-== Sistem za obradu upita <sistem_za_obradu_upita>
+== Систем за обраду упита <sistem_za_obradu_upita>
 
-`LBDB` klasa predstavlja najviši apstrakcioni nivo sistema obrade upita na koji se server oslanja. Služi za orkestraciju upravljača glavnih podsistema: menadžer transakcija (sekcija @sesije), menadžer metapodataka (sekcija @metadata-menadzer) i planer (sekcija @planner-klasa). Takođe, klasa `LBDB` je odgovorna za logiku inicijalizacije i oporavljanja sistema od neočekivanog gašenja, za određeni direktorijum baze podataka.
+`LBDB` класа представља највиши апстракциони ниво система обраде упита на који се сервер ослања. Служи за оркестрацију управљача главних подсистема: менаджер трансакција (секција @sesije), менаджер метаподатака (секција @metadata-menadzer) и планер (секција @planner-klasa). Такође, класа `LBDB` је одговорна за логику иницијализације и опорављања система од неочекиваног гашења, за одређени директоријум базе података.
