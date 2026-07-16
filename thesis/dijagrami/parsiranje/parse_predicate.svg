@@ -196,7 +196,7 @@
                 <g class="undefined">
                     <path d="M233 184h0"></path>
                     <path d="M362 184h0"></path>
-                    <text x="297.5" y="187" class="comment">PredicateOperator</text>
+                    <text x="297.5" y="187" class="comment">TermOperator</text>
                 </g>
             </g>
             <path d="M576 213h10"></path>
